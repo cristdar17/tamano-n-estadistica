@@ -1,0 +1,1776 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>Clase 11 — Taller: Tamaño de Muestra en el Mundo Real</title>
+<link href="https://fonts.googleapis.com/css2?family=Sora:wght@300;400;500;600;700;800&family=Source+Serif+4:ital,wght@0,300;0,400;0,600;0,700;1,400&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg-deep: #0b0e14;
+    --bg-card: #141922;
+    --bg-card-alt: #1a2030;
+    --bg-surface: #1e2636;
+    --accent-teal: #00d4aa;
+    --accent-teal-dim: rgba(0,212,170,0.15);
+    --accent-coral: #ff6b6b;
+    --accent-coral-dim: rgba(255,107,107,0.12);
+    --accent-gold: #fbbf24;
+    --accent-gold-dim: rgba(251,191,36,0.12);
+    --accent-violet: #a78bfa;
+    --accent-violet-dim: rgba(167,139,250,0.12);
+    --accent-sky: #38bdf8;
+    --accent-sky-dim: rgba(56,189,248,0.12);
+    --text-primary: #f0ece4;
+    --text-secondary: #9ca3af;
+    --text-dim: #6b7280;
+    --border: rgba(255,255,255,0.06);
+    --font-display: 'Sora', sans-serif;
+    --font-body: 'Source Serif 4', Georgia, serif;
+    --font-mono: 'JetBrains Mono', monospace;
+    --nav-h: 60px;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  html { scroll-behavior: smooth; -webkit-tap-highlight-color: transparent; }
+
+  body {
+    background: var(--bg-deep);
+    color: var(--text-primary);
+    font-family: var(--font-body);
+    overflow: hidden;
+    height: 100dvh;
+    width: 100vw;
+    font-size: 15px;
+    line-height: 1.6;
+  }
+
+  /* ═══════════════════════════════════════ */
+  /*  MOBILE-FIRST BASE (< 480px)           */
+  /* ═══════════════════════════════════════ */
+
+  /* ── Progress Bar ── */
+  .progress-bar {
+    position: fixed;
+    top: 0; left: 0;
+    height: 3px;
+    width: 0;
+    background: linear-gradient(90deg, var(--accent-teal), var(--accent-sky), var(--accent-violet));
+    z-index: 1000;
+    transition: width 0.5s cubic-bezier(0.22, 1, 0.36, 1);
+    box-shadow: 0 0 12px var(--accent-teal);
+  }
+
+  /* ── Nav Controls ── */
+  .nav-controls {
+    position: fixed;
+    bottom: 10px;
+    left: 50%;
+    transform: translateX(-50%);
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    z-index: 100;
+    background: rgba(20,25,34,0.92);
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+    padding: 6px 14px;
+    border-radius: 40px;
+    border: 1px solid var(--border);
+    max-width: calc(100vw - 20px);
+  }
+
+  .nav-btn {
+    background: var(--bg-surface);
+    border: 1px solid var(--border);
+    color: var(--text-primary);
+    width: 36px; height: 36px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    font-size: 15px;
+    transition: all 0.25s;
+    font-family: var(--font-display);
+    flex-shrink: 0;
+    -webkit-appearance: none;
+  }
+  .nav-btn:active:not(:disabled) {
+    background: var(--accent-teal);
+    color: var(--bg-deep);
+    transform: scale(0.92);
+  }
+  .nav-btn:disabled {
+    opacity: 0.25;
+    cursor: not-allowed;
+  }
+
+  .slide-counter {
+    font-family: var(--font-mono);
+    font-size: 11px;
+    color: var(--text-secondary);
+    min-width: 44px;
+    text-align: center;
+    flex-shrink: 0;
+  }
+
+  .slide-dots { display: none; }
+  .slide-dot {
+    width: 7px; height: 7px;
+    border-radius: 50%;
+    background: var(--text-dim);
+    cursor: pointer;
+    transition: all 0.3s;
+    flex-shrink: 0;
+  }
+  .slide-dot.active {
+    background: var(--accent-teal);
+    box-shadow: 0 0 8px rgba(0,212,170,0.5);
+    transform: scale(1.4);
+  }
+
+  .kbd-hint { display: none; }
+
+  /* ── Slides ── */
+  .slides-wrapper {
+    width: 100vw;
+    height: 100dvh;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .slide {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    align-items: flex-start;
+    justify-content: center;
+    padding: 16px 14px calc(var(--nav-h) + 16px);
+    opacity: 0;
+    pointer-events: none;
+    visibility: hidden;
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
+    transform: translateX(50px);
+    transition:
+      opacity 0.45s cubic-bezier(0.22, 1, 0.36, 1),
+      transform 0.45s cubic-bezier(0.22, 1, 0.36, 1),
+      visibility 0s 0.45s;
+  }
+  .slide.active {
+    opacity: 1;
+    transform: translateX(0);
+    pointer-events: all;
+    visibility: visible;
+    transition:
+      opacity 0.45s cubic-bezier(0.22, 1, 0.36, 1),
+      transform 0.45s cubic-bezier(0.22, 1, 0.36, 1),
+      visibility 0s 0s;
+  }
+  .slide.exit-left {
+    opacity: 0;
+    transform: translateX(-50px);
+    visibility: hidden;
+  }
+  .slide.exit-right {
+    opacity: 0;
+    transform: translateX(50px);
+    visibility: hidden;
+  }
+
+  .slide-inner {
+    max-width: 1100px;
+    width: 100%;
+    padding-bottom: 20px;
+  }
+
+  /* ── Typography ── */
+  .slide-tag {
+    font-family: var(--font-mono);
+    font-size: 10px;
+    text-transform: uppercase;
+    letter-spacing: 2px;
+    color: var(--accent-teal);
+    margin-bottom: 8px;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+  .slide-tag::before {
+    content: '';
+    display: inline-block;
+    width: 14px; height: 1px;
+    background: var(--accent-teal);
+  }
+
+  h1 {
+    font-family: var(--font-display);
+    font-weight: 800;
+    font-size: 1.7rem;
+    line-height: 1.15;
+    letter-spacing: -0.5px;
+  }
+
+  h2 {
+    font-family: var(--font-display);
+    font-weight: 700;
+    font-size: 1.2rem;
+    line-height: 1.25;
+    margin-bottom: 12px;
+  }
+
+  h3 {
+    font-family: var(--font-display);
+    font-weight: 600;
+    font-size: 1rem;
+    margin-bottom: 8px;
+  }
+
+  p {
+    font-size: 0.92rem;
+    line-height: 1.65;
+    color: var(--text-secondary);
+  }
+
+  strong { color: var(--text-primary); }
+
+  /* ── Title Slide ── */
+  .title-slide h1 {
+    background: linear-gradient(135deg, var(--text-primary) 0%, var(--accent-teal) 50%, var(--accent-sky) 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    margin-bottom: 12px;
+  }
+  .title-slide .subtitle {
+    font-size: 1rem;
+    color: var(--text-secondary);
+    font-weight: 300;
+    margin-bottom: 24px;
+  }
+  .title-meta {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    margin-top: 20px;
+  }
+  .title-meta-item {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-family: var(--font-mono);
+    font-size: 10px;
+    color: var(--text-dim);
+    letter-spacing: 1px;
+  }
+  .title-meta-item .icon { font-size: 14px; }
+  .title-decoration { display: none; }
+
+  /* ── Cards ── */
+  .card-grid {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 12px;
+    margin-top: 16px;
+  }
+
+  .card {
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 16px;
+    transition: all 0.3s;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .card-icon {
+    font-size: 24px;
+    margin-bottom: 8px;
+    display: block;
+  }
+  .card h3 { color: var(--text-primary); font-size: 0.95rem; }
+  .card p { font-size: 0.88rem; }
+
+  .card-accent-teal { border-left: 3px solid var(--accent-teal); }
+  .card-accent-coral { border-left: 3px solid var(--accent-coral); }
+  .card-accent-gold { border-left: 3px solid var(--accent-gold); }
+  .card-accent-violet { border-left: 3px solid var(--accent-violet); }
+  .card-accent-sky { border-left: 3px solid var(--accent-sky); }
+
+  /* ── Formula Box ── */
+  .formula-box {
+    background: linear-gradient(135deg, var(--bg-card) 0%, var(--bg-card-alt) 100%);
+    border: 1px solid rgba(0,212,170,0.2);
+    border-radius: 12px;
+    padding: 18px 14px;
+    margin: 16px 0;
+    text-align: center;
+    position: relative;
+    overflow: hidden;
+  }
+  .formula-box::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 2px;
+    background: linear-gradient(90deg, transparent, var(--accent-teal), transparent);
+  }
+
+  .formula {
+    font-family: var(--font-mono);
+    font-size: 0.95rem;
+    font-weight: 600;
+    color: var(--accent-teal);
+    line-height: 2;
+    overflow-x: auto;
+    white-space: nowrap;
+    padding-bottom: 4px;
+  }
+
+  .formula-label {
+    font-family: var(--font-display);
+    font-size: 0.72rem;
+    color: var(--text-dim);
+    text-transform: uppercase;
+    letter-spacing: 1.5px;
+    margin-bottom: 8px;
+  }
+
+  /* ── Variable Legend ── */
+  .var-legend {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 8px;
+    margin-top: 14px;
+  }
+  .var-item {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 0.85rem;
+  }
+  .var-symbol {
+    font-family: var(--font-mono);
+    font-weight: 600;
+    color: var(--accent-gold);
+    min-width: 30px;
+    text-align: right;
+    font-size: 0.85rem;
+  }
+  .var-desc { color: var(--text-secondary); }
+
+  /* ── Data Table ── */
+  .table-wrapper {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    margin: 14px 0;
+    border-radius: 8px;
+  }
+  .data-table {
+    width: 100%;
+    min-width: 340px;
+    border-collapse: collapse;
+    font-size: 0.82rem;
+  }
+  .data-table th {
+    font-family: var(--font-display);
+    font-weight: 600;
+    font-size: 0.72rem;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    color: var(--text-dim);
+    padding: 10px 10px;
+    text-align: left;
+    border-bottom: 1px solid var(--border);
+    white-space: nowrap;
+  }
+  .data-table td {
+    padding: 10px;
+    border-bottom: 1px solid var(--border);
+    color: var(--text-secondary);
+    white-space: nowrap;
+  }
+  .data-table .mono {
+    font-family: var(--font-mono);
+    color: var(--accent-teal);
+    font-weight: 500;
+  }
+
+  /* ── Two Column Layout ── */
+  .two-cols {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 20px;
+    align-items: start;
+  }
+
+  /* ── Pills ── */
+  .pills {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    margin: 10px 0;
+  }
+  .pill {
+    font-family: var(--font-mono);
+    font-size: 0.7rem;
+    padding: 3px 8px;
+    border-radius: 20px;
+    border: 1px solid var(--border);
+    color: var(--text-secondary);
+  }
+
+  /* ── Comparison Grid ── */
+  .compare-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+    margin-top: 16px;
+  }
+  .compare-item {
+    background: var(--bg-card);
+    border-radius: 10px;
+    padding: 14px;
+    text-align: center;
+    border: 1px solid var(--border);
+  }
+  .compare-value {
+    font-family: var(--font-mono);
+    font-size: 1.6rem;
+    font-weight: 700;
+    color: var(--accent-teal);
+    margin: 4px 0;
+  }
+  .compare-label {
+    font-family: var(--font-display);
+    font-size: 0.68rem;
+    color: var(--text-dim);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+  }
+
+  /* ── Highlight Box ── */
+  .highlight-box {
+    background: var(--accent-teal-dim);
+    border: 1px solid rgba(0,212,170,0.2);
+    border-radius: 10px;
+    padding: 14px;
+    margin: 14px 0;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+  .highlight-box.coral {
+    background: var(--accent-coral-dim);
+    border-color: rgba(255,107,107,0.2);
+  }
+  .highlight-box.gold {
+    background: var(--accent-gold-dim);
+    border-color: rgba(251,191,36,0.2);
+  }
+  .highlight-box .hl-icon { font-size: 18px; }
+  .highlight-box .hl-text { font-size: 0.88rem; line-height: 1.6; color: var(--text-secondary); }
+  .highlight-box .hl-text strong { color: var(--text-primary); }
+
+  /* ── Example Header ── */
+  .example-header {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 8px;
+    margin-bottom: 16px;
+    padding-bottom: 12px;
+    border-bottom: 1px solid var(--border);
+  }
+  .example-badge {
+    font-family: var(--font-mono);
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+    padding: 4px 10px;
+    border-radius: 20px;
+    white-space: nowrap;
+  }
+  .badge-teal { background: var(--accent-teal-dim); color: var(--accent-teal); }
+  .badge-coral { background: var(--accent-coral-dim); color: var(--accent-coral); }
+  .badge-gold { background: var(--accent-gold-dim); color: var(--accent-gold); }
+  .badge-violet { background: var(--accent-violet-dim); color: var(--accent-violet); }
+  .badge-sky { background: var(--accent-sky-dim); color: var(--accent-sky); }
+
+  .example-problem {
+    background: var(--bg-card);
+    border-radius: 10px;
+    padding: 14px 16px;
+    margin-bottom: 16px;
+    border-left: 3px solid var(--accent-gold);
+    font-size: 0.9rem;
+    line-height: 1.65;
+    color: var(--text-secondary);
+  }
+  .example-problem .icon-inline { margin-right: 4px; }
+
+  /* ── Steps ── */
+  .steps {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+  }
+
+  .step {
+    display: flex;
+    gap: 10px;
+    align-items: flex-start;
+    opacity: 0;
+    transform: translateY(10px);
+    transition: all 0.4s ease;
+  }
+  .step.visible {
+    opacity: 1;
+    transform: translateY(0);
+  }
+
+  .step-num {
+    flex-shrink: 0;
+    width: 28px; height: 28px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-family: var(--font-mono);
+    font-weight: 700;
+    font-size: 11px;
+    margin-top: 2px;
+  }
+  .step-num.teal { background: var(--accent-teal-dim); color: var(--accent-teal); }
+  .step-num.coral { background: var(--accent-coral-dim); color: var(--accent-coral); }
+  .step-num.gold { background: var(--accent-gold-dim); color: var(--accent-gold); }
+  .step-num.violet { background: var(--accent-violet-dim); color: var(--accent-violet); }
+  .step-num.sky { background: var(--accent-sky-dim); color: var(--accent-sky); }
+
+  .step-content {
+    flex: 1;
+    min-width: 0;
+    background: var(--bg-card);
+    border-radius: 10px;
+    padding: 12px 14px;
+    border: 1px solid var(--border);
+  }
+  .step-content h4 {
+    font-family: var(--font-display);
+    font-weight: 600;
+    font-size: 0.85rem;
+    margin-bottom: 4px;
+    color: var(--text-primary);
+  }
+  .step-content p {
+    font-size: 0.85rem;
+    line-height: 1.5;
+    margin: 0;
+  }
+  .step-content .calc {
+    font-family: var(--font-mono);
+    font-size: 0.78rem;
+    color: var(--accent-teal);
+    background: rgba(0,212,170,0.06);
+    padding: 8px 10px;
+    border-radius: 8px;
+    margin-top: 6px;
+    display: block;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    white-space: nowrap;
+    line-height: 1.8;
+  }
+  .step-content .result {
+    font-family: var(--font-mono);
+    font-size: 0.92rem;
+    font-weight: 700;
+    color: var(--accent-gold);
+    background: var(--accent-gold-dim);
+    padding: 8px 14px;
+    border-radius: 8px;
+    margin-top: 6px;
+    display: inline-block;
+  }
+
+  /* ── Show Steps Button ── */
+  .show-steps-btn {
+    background: linear-gradient(135deg, var(--accent-teal), #00b894);
+    color: var(--bg-deep);
+    border: none;
+    padding: 10px 20px;
+    border-radius: 10px;
+    font-family: var(--font-display);
+    font-weight: 600;
+    font-size: 0.85rem;
+    cursor: pointer;
+    transition: all 0.3s;
+    margin-bottom: 14px;
+    -webkit-appearance: none;
+  }
+  .show-steps-btn:active {
+    transform: scale(0.96);
+  }
+
+  /* ── Flow Diagram ── */
+  .flow {
+    display: flex;
+    flex-direction: column;
+    align-items: stretch;
+    gap: 8px;
+    margin: 14px 0;
+  }
+  .flow-step {
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 10px 14px;
+    font-family: var(--font-display);
+    font-size: 0.82rem;
+    font-weight: 500;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+  .flow-arrow {
+    color: var(--accent-teal);
+    font-size: 1rem;
+    text-align: center;
+  }
+
+  /* ── Cheat Sheet ── */
+  .cheat-grid {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 12px;
+    margin-top: 16px;
+  }
+  .cheat-item {
+    background: var(--bg-card);
+    border-radius: 12px;
+    padding: 16px;
+    border: 1px solid var(--border);
+  }
+  .cheat-item h4 {
+    font-family: var(--font-display);
+    font-weight: 600;
+    font-size: 0.9rem;
+    margin-bottom: 6px;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+  .cheat-formula {
+    font-family: var(--font-mono);
+    font-size: 0.88rem;
+    color: var(--accent-teal);
+    margin: 6px 0;
+    padding: 8px;
+    background: rgba(0,212,170,0.05);
+    border-radius: 8px;
+    text-align: center;
+    overflow-x: auto;
+    white-space: nowrap;
+  }
+
+  /* ── Animated Reveal ── */
+  .reveal {
+    opacity: 0;
+    transform: translateY(14px);
+    transition: all 0.5s ease;
+  }
+  .reveal.show {
+    opacity: 1;
+    transform: translateY(0);
+  }
+  .reveal-delay-1 { transition-delay: 0.1s; }
+  .reveal-delay-2 { transition-delay: 0.2s; }
+  .reveal-delay-3 { transition-delay: 0.3s; }
+  .reveal-delay-4 { transition-delay: 0.4s; }
+  .reveal-delay-5 { transition-delay: 0.5s; }
+  .reveal-delay-6 { transition-delay: 0.6s; }
+
+  @keyframes pulse-glow {
+    0%, 100% { box-shadow: 0 0 60px rgba(0,212,170,0.05); }
+    50% { box-shadow: 0 0 100px rgba(0,212,170,0.12); }
+  }
+
+
+  /* ═══════════════════════════════════════ */
+  /*  >= 480px  — Large phone               */
+  /* ═══════════════════════════════════════ */
+  @media (min-width: 480px) {
+    body { font-size: 16px; }
+    .slide { padding: 20px 20px calc(var(--nav-h) + 20px); }
+
+    h1 { font-size: 2rem; }
+    h2 { font-size: 1.35rem; }
+    p { font-size: 0.95rem; }
+
+    .formula { font-size: 1.05rem; }
+    .formula-box { padding: 22px 18px; }
+
+    .card { padding: 18px; }
+    .card-icon { font-size: 28px; }
+
+    .step-num { width: 32px; height: 32px; font-size: 12px; }
+    .step-content { padding: 14px 16px; }
+    .step-content h4 { font-size: 0.9rem; }
+    .step-content .calc { font-size: 0.82rem; }
+
+    .compare-value { font-size: 1.8rem; }
+    .compare-label { font-size: 0.72rem; }
+
+    .highlight-box { flex-direction: row; align-items: flex-start; gap: 10px; padding: 16px; }
+
+    .example-header { flex-direction: row; align-items: center; gap: 12px; }
+
+    .nav-controls { padding: 8px 16px; gap: 10px; bottom: 14px; }
+    .nav-btn { width: 38px; height: 38px; }
+    .slide-counter { font-size: 12px; }
+
+    .var-legend { grid-template-columns: 1fr 1fr; gap: 8px 16px; }
+  }
+
+
+  /* ═══════════════════════════════════════ */
+  /*  >= 768px  — Tablet                    */
+  /* ═══════════════════════════════════════ */
+  @media (min-width: 768px) {
+    :root { --nav-h: 70px; }
+    body { font-size: 17px; }
+    .slide { padding: 36px 36px calc(var(--nav-h) + 24px); align-items: center; }
+
+    h1 { font-size: 2.8rem; letter-spacing: -0.8px; }
+    h2 { font-size: 1.8rem; margin-bottom: 16px; }
+    h3 { font-size: 1.15rem; margin-bottom: 10px; }
+    p { font-size: 1.05rem; line-height: 1.7; }
+
+    .slide-tag { font-size: 11px; letter-spacing: 2.5px; margin-bottom: 10px; }
+
+    .title-slide .subtitle { font-size: 1.2rem; }
+    .title-meta { flex-direction: row; gap: 24px; }
+    .title-meta-item { font-size: 11px; }
+
+    .card-grid.cols-2 { grid-template-columns: 1fr 1fr; }
+    .card-grid.cols-3 { grid-template-columns: 1fr 1fr 1fr; }
+    .card-grid { gap: 16px; }
+    .card { padding: 22px; border-radius: 14px; }
+    .card-icon { font-size: 30px; margin-bottom: 12px; }
+    .card h3 { font-size: 1.05rem; }
+    .card p { font-size: 0.95rem; }
+
+    .formula { font-size: 1.3rem; letter-spacing: 0.5px; }
+    .formula-box { padding: 26px 28px; border-radius: 14px; }
+    .formula-label { font-size: 0.78rem; }
+
+    .two-cols { grid-template-columns: 1fr 1fr; gap: 30px; }
+
+    .example-header { gap: 14px; margin-bottom: 20px; padding-bottom: 14px; }
+    .example-badge { font-size: 11px; padding: 5px 12px; }
+    .example-problem { padding: 18px 20px; font-size: 1rem; border-radius: 12px; }
+
+    .step { gap: 14px; }
+    .step-num { width: 34px; height: 34px; font-size: 13px; }
+    .step-content { padding: 14px 18px; border-radius: 12px; }
+    .step-content h4 { font-size: 0.92rem; }
+    .step-content p { font-size: 0.92rem; }
+    .step-content .calc { font-size: 0.88rem; padding: 8px 12px; }
+    .step-content .result { font-size: 1rem; }
+
+    .compare-row { grid-template-columns: 1fr 1fr 1fr 1fr; gap: 14px; }
+    .compare-item { padding: 20px; border-radius: 12px; }
+    .compare-value { font-size: 2rem; }
+    .compare-label { font-size: 0.75rem; letter-spacing: 0.8px; }
+
+    .highlight-box { padding: 18px 20px; gap: 12px; border-radius: 12px; }
+    .highlight-box .hl-icon { font-size: 20px; }
+    .highlight-box .hl-text { font-size: 0.95rem; }
+
+    .cheat-grid { grid-template-columns: 1fr 1fr; gap: 16px; }
+    .cheat-item { padding: 20px; }
+    .cheat-item h4 { font-size: 0.95rem; }
+    .cheat-formula { font-size: 1rem; }
+
+    .data-table { font-size: 0.9rem; }
+    .data-table th { font-size: 0.78rem; padding: 12px 14px; }
+    .data-table td { padding: 12px 14px; }
+
+    .show-steps-btn { font-size: 0.9rem; padding: 10px 22px; }
+    .show-steps-btn:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 6px 20px rgba(0,212,170,0.3);
+    }
+
+    .nav-controls { padding: 10px 20px; gap: 14px; bottom: 20px; }
+    .nav-btn { width: 42px; height: 42px; font-size: 17px; }
+    .nav-btn:hover:not(:disabled) {
+      background: var(--accent-teal);
+      color: var(--bg-deep);
+      transform: scale(1.1);
+      box-shadow: 0 0 18px rgba(0,212,170,0.4);
+    }
+    .slide-dots { display: flex; gap: 6px; }
+    .slide-counter { font-size: 13px; min-width: 56px; }
+
+    .flow-step { font-size: 0.88rem; padding: 12px 18px; }
+
+    .pill { font-size: 0.75rem; padding: 4px 10px; }
+
+    .var-item { font-size: 0.92rem; }
+    .var-symbol { min-width: 36px; font-size: 0.9rem; }
+  }
+
+
+  /* ═══════════════════════════════════════ */
+  /*  >= 1024px — Desktop                   */
+  /* ═══════════════════════════════════════ */
+  @media (min-width: 1024px) {
+    :root { --nav-h: 76px; }
+    .slide { padding: 50px 60px calc(var(--nav-h) + 30px); }
+
+    h1 { font-size: 3.6rem; letter-spacing: -1px; }
+    h2 { font-size: 2.2rem; margin-bottom: 18px; }
+    h3 { font-size: 1.25rem; }
+    p { font-size: 1.1rem; }
+
+    .title-slide .subtitle { font-size: 1.3rem; margin-bottom: 32px; }
+    .title-meta { gap: 28px; margin-top: 26px; }
+    .title-meta-item { font-size: 12px; }
+    .title-decoration {
+      display: block;
+      position: absolute;
+      right: -20px;
+      top: 50%;
+      transform: translateY(-50%);
+      width: 260px;
+      height: 260px;
+      border-radius: 50%;
+      background: radial-gradient(circle, rgba(0,212,170,0.08) 0%, transparent 70%);
+      border: 1px solid rgba(0,212,170,0.1);
+      animation: pulse-glow 4s ease-in-out infinite;
+    }
+    .title-decoration::after {
+      content: '\1F3E2';
+      position: absolute;
+      top: 50%; left: 50%;
+      transform: translate(-50%, -50%);
+      font-size: 70px;
+      opacity: 0.6;
+    }
+
+    .card-grid.cols-3 { grid-template-columns: 1fr 1fr 1fr; }
+    .card-grid.cols-4 { grid-template-columns: 1fr 1fr 1fr 1fr; }
+    .card-grid { gap: 20px; }
+    .card { padding: 26px; border-radius: 16px; }
+    .card:hover {
+      border-color: rgba(0,212,170,0.3);
+      transform: translateY(-2px);
+      box-shadow: 0 8px 30px rgba(0,0,0,0.3);
+    }
+    .card-icon { font-size: 32px; margin-bottom: 14px; }
+
+    .formula { font-size: 1.6rem; letter-spacing: 1px; }
+    .formula-box { padding: 30px 36px; border-radius: 16px; }
+    .formula-label { font-size: 0.82rem; letter-spacing: 2px; margin-bottom: 10px; }
+
+    .var-legend { gap: 10px 24px; }
+    .var-item { font-size: 0.95rem; }
+    .var-symbol { min-width: 40px; }
+
+    .example-header { margin-bottom: 22px; padding-bottom: 16px; }
+    .example-problem { padding: 20px 24px; font-size: 1.05rem; }
+
+    .step { gap: 16px; }
+    .step-num { width: 36px; height: 36px; font-size: 14px; }
+    .step-content { padding: 16px 20px; }
+    .step-content h4 { font-size: 0.95rem; margin-bottom: 6px; }
+    .step-content p { font-size: 0.95rem; }
+    .step-content .calc { font-size: 0.92rem; }
+    .step-content .result { font-size: 1.1rem; }
+
+    .compare-item { padding: 22px; border-radius: 14px; }
+    .compare-item:hover { border-color: rgba(0,212,170,0.3); }
+    .compare-value { font-size: 2.3rem; }
+    .compare-label { font-size: 0.78rem; letter-spacing: 1px; }
+
+    .highlight-box { padding: 20px 24px; }
+    .highlight-box .hl-icon { font-size: 22px; }
+    .highlight-box .hl-text { font-size: 1rem; }
+
+    .cheat-grid { gap: 20px; }
+    .cheat-item { padding: 24px; border-radius: 14px; }
+    .cheat-item h4 { font-size: 1rem; }
+    .cheat-formula { font-size: 1.1rem; padding: 10px; }
+
+    .data-table { font-size: 0.95rem; }
+    .data-table th { font-size: 0.82rem; padding: 12px 16px; }
+    .data-table td { padding: 12px 16px; }
+    .data-table tr:hover td { background: rgba(255,255,255,0.02); }
+
+    .nav-controls { padding: 10px 24px; gap: 16px; bottom: 28px; }
+    .nav-btn { width: 44px; height: 44px; font-size: 18px; }
+    .slide-dot { width: 8px; height: 8px; }
+    .slide-dot:hover { background: var(--accent-teal); opacity: 0.7; }
+
+    .kbd-hint {
+      display: block;
+      position: fixed;
+      bottom: 90px;
+      left: 50%;
+      transform: translateX(-50%);
+      font-family: var(--font-mono);
+      font-size: 11px;
+      color: var(--text-dim);
+      z-index: 99;
+      opacity: 0.5;
+      white-space: nowrap;
+    }
+    kbd {
+      background: var(--bg-surface);
+      border: 1px solid var(--border);
+      border-radius: 4px;
+      padding: 2px 6px;
+      font-size: 11px;
+    }
+
+    .flow-step { font-size: 0.9rem; padding: 14px 20px; border-radius: 12px; }
+
+    .two-cols { gap: 40px; }
+
+    .show-steps-btn { font-size: 0.9rem; padding: 10px 24px; }
+  }
+
+
+  /* ═══════════════════════════════════════ */
+  /*  >= 1280px — Large desktop             */
+  /* ═══════════════════════════════════════ */
+  @media (min-width: 1280px) {
+    .slide { padding: 60px 80px calc(var(--nav-h) + 36px); }
+    h1 { font-size: 4.2rem; }
+    h2 { font-size: 2.4rem; margin-bottom: 20px; }
+    .formula { font-size: 1.8rem; line-height: 2.2; }
+    .title-decoration { width: 300px; height: 300px; right: -40px; }
+    .title-decoration::after { font-size: 80px; }
+  }
+
+
+  /* ═══════════════════════════════════════ */
+  /*  Landscape phone                      */
+  /* ═══════════════════════════════════════ */
+  @media (max-height: 480px) and (orientation: landscape) {
+    .slide { padding: 12px 24px calc(var(--nav-h) + 10px); align-items: flex-start; }
+    h1 { font-size: 1.6rem; }
+    h2 { font-size: 1.2rem; margin-bottom: 8px; }
+    .card-grid { gap: 8px; }
+    .nav-controls { bottom: 6px; padding: 4px 12px; }
+    .nav-btn { width: 32px; height: 32px; font-size: 14px; }
+    .title-decoration { display: none; }
+    .title-meta { flex-direction: row; }
+  }
+</style>
+</head>
+<body>
+
+<div class="progress-bar" id="progressBar"></div>
+
+<div class="slides-wrapper" id="slidesWrapper">
+
+<!-- ═══════ SLIDE 0: PORTADA ═══════ -->
+<div class="slide active" data-slide="0">
+  <div class="slide-inner title-slide">
+    <div class="slide-tag">Clase 11 · Estadística II</div>
+    <h1>Taller: Tamaño de Muestra<br>en el Mundo Real</h1>
+    <p class="subtitle">8 ejercicios con contexto empresarial — Porque en la oficina nadie te da <strong style="color:var(--accent-gold)">σ</strong> en bandeja</p>
+    <div class="title-meta">
+      <div class="title-meta-item"><span class="icon">📊</span> 8 EJERCICIOS</div>
+      <div class="title-meta-item"><span class="icon">🏢</span> CONTEXTO EMPRESA</div>
+      <div class="title-meta-item"><span class="icon">🧮</span> PASO A PASO</div>
+    </div>
+    <div class="title-decoration"></div>
+  </div>
+</div>
+
+<!-- ═══════ SLIDE 1: INTRO — La realidad vs el libro ═══════ -->
+<div class="slide" data-slide="1">
+  <div class="slide-inner">
+    <div class="slide-tag">Contexto</div>
+    <h2>En la empresa, los datos no vienen masticados</h2>
+
+    <div class="card-grid cols-3">
+      <div class="card card-accent-coral reveal reveal-delay-1">
+        <span class="card-icon">📕</span>
+        <h3>El libro dice...</h3>
+        <p>"Una muestra piloto de 30 datos arrojó s = 4.5. Calcule n." Datos limpios, sin contexto, sin presión.</p>
+      </div>
+      <div class="card card-accent-teal reveal reveal-delay-2">
+        <span class="card-icon">🏢</span>
+        <h3>La empresa dice...</h3>
+        <p>"Oye, necesito saber cuántos clientes encuestar para el informe del viernes. El jefe quiere 95% de confianza pero no quiere gastar mucho." Datos incompletos, presión de tiempo, restricción de presupuesto.</p>
+      </div>
+      <div class="card card-accent-gold reveal reveal-delay-3">
+        <span class="card-icon">🎯</span>
+        <h3>Tu trabajo...</h3>
+        <p>Traducir la necesidad del negocio a una fórmula estadística, pedir los datos que faltan, y calcular n de forma que sea defendible.</p>
+      </div>
+    </div>
+
+    <div class="highlight-box" style="margin-top:20px">
+      <span class="hl-icon">💡</span>
+      <span class="hl-text">En este taller vas a practicar exactamente eso: <strong>leer un caso real</strong>, extraer los datos estadísticos, <strong>elegir la fórmula correcta</strong> y calcular n.</span>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════ SLIDE 2: EJERCICIO 1 — RapidEats ═══════ -->
+<div class="slide" data-slide="2">
+  <div class="slide-inner">
+    <div class="example-header">
+      <span class="example-badge badge-teal">EJERCICIO 1</span>
+      <h2 style="margin:0">RapidEats — Tiempo promedio de entrega 🛵</h2>
+    </div>
+
+    <div class="example-problem">
+      <span class="icon-inline">📋</span> RapidEats es una startup de delivery en Pereira. El gerente de operaciones quiere estimar el <strong>tiempo promedio de entrega</strong> para incluirlo en la publicidad. Le pidió al equipo de datos que revisara los registros de la última semana como muestra piloto: analizaron <strong>30 pedidos</strong> y encontraron que el tiempo promedio fue 28.4 minutos con una desviación estándar de <strong>s = 7.3 minutos</strong>. El gerente quiere que el margen de error no supere los <strong>2 minutos</strong>, con <strong>95% de confianza</strong>. ¿Cuántos pedidos deben muestrear?
+    </div>
+
+    <button class="show-steps-btn" onclick="revealSteps(this)">Mostrar solución paso a paso</button>
+    <div class="steps">
+      <div class="step">
+        <div class="step-num teal">1</div>
+        <div class="step-content">
+          <h4>Extraer datos del problema</h4>
+          <p>s = 7.3 min, E = 2 min, Confianza 95% → Z = 1.960</p>
+          <p>Variable = <strong>media</strong> → población infinita (no nos dan N)</p>
+        </div>
+      </div>
+      <div class="step">
+        <div class="step-num teal">2</div>
+        <div class="step-content">
+          <h4>Elegir fórmula</h4>
+          <span class="calc">n = (Z · s / E)²</span>
+        </div>
+      </div>
+      <div class="step">
+        <div class="step-num teal">3</div>
+        <div class="step-content">
+          <h4>Sustituir valores</h4>
+          <span class="calc">n = (1.960 × 7.3 / 2)²</span>
+        </div>
+      </div>
+      <div class="step">
+        <div class="step-num gold">4</div>
+        <div class="step-content">
+          <h4>Resolver</h4>
+          <span class="calc">n = (14.308 / 2)² = (7.154)² = 51.18</span>
+        </div>
+      </div>
+      <div class="step">
+        <div class="step-num gold">5</div>
+        <div class="step-content">
+          <h4>Redondear hacia arriba</h4>
+          <span class="result">n = 52 pedidos</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="highlight-box" style="margin-top:16px">
+      <span class="hl-icon">🛵</span>
+      <span class="hl-text">Con solo <strong>52 pedidos</strong> más (además de los 30 de la piloto), RapidEats puede decir en su publicidad: <strong>"Entregamos en 28 ± 2 minutos"</strong> con 95% de confianza.</span>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════ SLIDE 3: EJERCICIO 2 — BancoFlex ═══════ -->
+<div class="slide" data-slide="3">
+  <div class="slide-inner">
+    <div class="example-header">
+      <span class="example-badge badge-coral">EJERCICIO 2</span>
+      <h2 style="margin:0">BancoFlex — Migración a app móvil 📱</h2>
+    </div>
+
+    <div class="example-problem">
+      <span class="icon-inline">📋</span> BancoFlex tiene <strong>12,000 clientes activos</strong> en su sucursal de Manizales. El área de transformación digital quiere estimar qué <strong>proporción de clientes</strong> estarían dispuestos a usar exclusivamente la app móvil (sin ir a oficina). Hicieron una encuesta piloto a 40 clientes: <strong>26 dijeron que sí (p̂ = 0.65)</strong>. Necesitan un error máximo de <strong>4%</strong> con <strong>95% de confianza</strong>. ¿A cuántos clientes deben encuestar?
+    </div>
+
+    <button class="show-steps-btn" onclick="revealSteps(this)">Mostrar solución paso a paso</button>
+    <div class="steps">
+      <div class="step">
+        <div class="step-num coral">1</div>
+        <div class="step-content">
+          <h4>Extraer datos</h4>
+          <p>p̂ = 0.65, q̂ = 0.35, E = 0.04, Z = 1.960, N = 12,000</p>
+        </div>
+      </div>
+      <div class="step">
+        <div class="step-num coral">2</div>
+        <div class="step-content">
+          <h4>Fórmula (proporción, sin corrección)</h4>
+          <span class="calc">n = Z² · p̂ · q̂ / E²</span>
+        </div>
+      </div>
+      <div class="step">
+        <div class="step-num coral">3</div>
+        <div class="step-content">
+          <h4>Sustituir y resolver</h4>
+          <span class="calc">n = (1.960)² × 0.65 × 0.35 / (0.04)²<br>n = 3.8416 × 0.2275 / 0.0016<br>n = 0.87446 / 0.0016 = 546.54 → 547</span>
+        </div>
+      </div>
+      <div class="step">
+        <div class="step-num gold">4</div>
+        <div class="step-content">
+          <h4>Verificar corrección finita</h4>
+          <span class="calc">547 / 12,000 = 0.0456 → 4.56% < 5% → NO necesita corrección</span>
+        </div>
+      </div>
+      <div class="step">
+        <div class="step-num gold">5</div>
+        <div class="step-content">
+          <h4>Resultado final</h4>
+          <span class="result">n = 547 clientes</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="highlight-box gold" style="margin-top:16px">
+      <span class="hl-icon">⚠️</span>
+      <span class="hl-text"><strong>¡Ojo!</strong> Aunque la población es finita (12,000), como n/N < 5%, la corrección no es necesaria. <strong>No siempre que N sea conocido hay que corregir.</strong></span>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════ SLIDE 4: EJERCICIO 3 — CaféArte ═══════ -->
+<div class="slide" data-slide="4">
+  <div class="slide-inner">
+    <div class="example-header">
+      <span class="example-badge badge-violet">EJERCICIO 3</span>
+      <h2 style="margin:0">CaféArte — Gasto promedio por cliente ☕</h2>
+    </div>
+
+    <div class="example-problem">
+      <span class="icon-inline">📋</span> CaféArte tiene 15 sucursales en el Eje Cafetero. La gerencia quiere estimar el <strong>gasto promedio por visita</strong> para rediseñar el menú. Tomaron datos del sistema POS de una semana (<strong>35 transacciones</strong> como piloto) y obtuvieron: promedio = $18,200 COP, desviación estándar <strong>s = $12,500 COP</strong>. La desviación es alta porque hay clientes que solo piden un tinto ($3,000) y otros que piden combos completos ($45,000). Quieren un error máximo de <strong>$2,000 COP</strong> con <strong>95% de confianza</strong>.
+    </div>
+
+    <button class="show-steps-btn" onclick="revealSteps(this)">Mostrar solución paso a paso</button>
+    <div class="steps">
+      <div class="step">
+        <div class="step-num violet">1</div>
+        <div class="step-content">
+          <h4>Extraer datos</h4>
+          <p>s = 12,500, E = 2,000, Z = 1.960, variable = media</p>
+        </div>
+      </div>
+      <div class="step">
+        <div class="step-num violet">2</div>
+        <div class="step-content">
+          <h4>Fórmula</h4>
+          <span class="calc">n = (Z · s / E)²</span>
+        </div>
+      </div>
+      <div class="step">
+        <div class="step-num violet">3</div>
+        <div class="step-content">
+          <h4>Sustituir y resolver</h4>
+          <span class="calc">n = (1.960 × 12,500 / 2,000)²<br>n = (24,500 / 2,000)² = (12.25)² = 150.06</span>
+        </div>
+      </div>
+      <div class="step">
+        <div class="step-num gold">4</div>
+        <div class="step-content">
+          <h4>Resultado</h4>
+          <span class="result">n = 151 transacciones</span>
+        </div>
+      </div>
+      <div class="step">
+        <div class="step-num gold">5</div>
+        <div class="step-content">
+          <h4>Observación importante</h4>
+          <p>La alta variabilidad (s grande) infla n. Si quisieran E = $1,000 →</p>
+          <span class="calc">n = (1.960 × 12,500 / 1,000)² = (24.5)² = 600.25 → n = 601</span>
+          <p style="margin-top:6px"><strong style="color:var(--accent-coral)">¡Cuadruplica!</strong> Reducir el error a la mitad cuadruplica la muestra.</p>
+        </div>
+      </div>
+    </div>
+
+    <div class="highlight-box coral" style="margin-top:16px">
+      <span class="hl-icon">💸</span>
+      <span class="hl-text">Cuando la desviación estándar es grande relativa al error, <strong>n se dispara</strong>. En la práctica, el negocio debe decidir: ¿acepto más error o invierto en más datos?</span>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════ SLIDE 5: EJERCICIO 4 — ShopNow ═══════ -->
+<div class="slide" data-slide="5">
+  <div class="slide-inner">
+    <div class="example-header">
+      <span class="example-badge badge-gold">EJERCICIO 4</span>
+      <h2 style="margin:0">ShopNow — Tasa de devolución 📦</h2>
+    </div>
+
+    <div class="example-problem">
+      <span class="icon-inline">📋</span> ShopNow es un e-commerce que acaba de lanzar una línea de ropa. El director financiero necesita estimar la <strong>tasa de devolución</strong> para calcular costos logísticos.<br><br>
+      <strong>Escenario A:</strong> No tienen datos previos (producto nuevo).<br>
+      <strong>Escenario B:</strong> Después de 2 semanas, tienen una muestra piloto de 60 ventas con 9 devoluciones (<strong>p̂ = 0.15</strong>).<br><br>
+      En ambos casos: error máximo <strong>3%</strong>, confianza <strong>95%</strong>.
+    </div>
+
+    <button class="show-steps-btn" onclick="revealSteps(this)">Mostrar solución paso a paso</button>
+    <div class="steps">
+      <div class="step">
+        <div class="step-num coral">A</div>
+        <div class="step-content">
+          <h4>Escenario A — Sin piloto (p̂ = 0.5)</h4>
+          <span class="calc">n = (1.960)² × 0.5 × 0.5 / (0.03)²<br>n = 3.8416 × 0.25 / 0.0009<br>n = 0.9604 / 0.0009 = 1,067.11</span>
+          <span class="result">n = 1,068 ventas</span>
+        </div>
+      </div>
+      <div class="step">
+        <div class="step-num teal">B</div>
+        <div class="step-content">
+          <h4>Escenario B — Con piloto (p̂ = 0.15, q̂ = 0.85)</h4>
+          <span class="calc">n = (1.960)² × 0.15 × 0.85 / (0.03)²<br>n = 3.8416 × 0.1275 / 0.0009<br>n = 0.48981 / 0.0009 = 544.22</span>
+          <span class="result">n = 545 ventas</span>
+        </div>
+      </div>
+      <div class="step">
+        <div class="step-num gold">!</div>
+        <div class="step-content">
+          <h4>Comparación</h4>
+          <p><strong style="color:var(--accent-teal)">¡La piloto ahorró 523 observaciones!</strong> (de 1,068 a 545)</p>
+        </div>
+      </div>
+    </div>
+
+    <div class="compare-row" style="margin-top:16px">
+      <div class="compare-item">
+        <div class="compare-label">Sin piloto</div>
+        <div class="compare-value" style="color:var(--accent-coral)">1,068</div>
+      </div>
+      <div class="compare-item">
+        <div class="compare-label">Con piloto</div>
+        <div class="compare-value" style="color:var(--accent-teal)">545</div>
+      </div>
+      <div class="compare-item">
+        <div class="compare-label">Ahorro</div>
+        <div class="compare-value" style="color:var(--accent-gold)">523</div>
+      </div>
+      <div class="compare-item">
+        <div class="compare-label">Ahorro %</div>
+        <div class="compare-value" style="color:var(--accent-violet)">49%</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════ SLIDE 6: EJERCICIO 5 — ConectaPlus ═══════ -->
+<div class="slide" data-slide="6">
+  <div class="slide-inner">
+    <div class="example-header">
+      <span class="example-badge badge-sky">EJERCICIO 5</span>
+      <h2 style="margin:0">ConectaPlus — Satisfacción del servicio 📡</h2>
+    </div>
+
+    <div class="example-problem">
+      <span class="icon-inline">📋</span> ConectaPlus tiene <strong>45,000 usuarios</strong> de internet en Armenia. El área de experiencia del cliente quiere estimar la <strong>proporción de usuarios satisfechos</strong>. Una muestra piloto de 50 usuarios reveló que <strong>34 están satisfechos (p̂ = 0.68)</strong>. Requieren error máximo de <strong>3%</strong> con <strong>99% de confianza</strong>.
+    </div>
+
+    <button class="show-steps-btn" onclick="revealSteps(this)">Mostrar solución paso a paso</button>
+    <div class="steps">
+      <div class="step">
+        <div class="step-num sky">1</div>
+        <div class="step-content">
+          <h4>Extraer datos</h4>
+          <p>p̂ = 0.68, q̂ = 0.32, E = 0.03, Z = 2.576, N = 45,000</p>
+        </div>
+      </div>
+      <div class="step">
+        <div class="step-num sky">2</div>
+        <div class="step-content">
+          <h4>Calcular sin corrección</h4>
+          <span class="calc">n = (2.576)² × 0.68 × 0.32 / (0.03)²<br>n = 6.6358 × 0.2176 / 0.0009<br>n = 1.44395 / 0.0009 = 1,604.39</span>
+          <span class="result">n = 1,605 usuarios</span>
+        </div>
+      </div>
+      <div class="step">
+        <div class="step-num gold">3</div>
+        <div class="step-content">
+          <h4>Verificar corrección finita</h4>
+          <span class="calc">1,605 / 45,000 = 0.0357 → 3.57% < 5% → NO necesita corrección</span>
+        </div>
+      </div>
+      <div class="step">
+        <div class="step-num gold">4</div>
+        <div class="step-content">
+          <h4>Resultado final</h4>
+          <span class="result">n = 1,605 usuarios</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="highlight-box" style="margin-top:16px">
+      <span class="hl-icon">📡</span>
+      <span class="hl-text">Aunque 45,000 parece finita, el n necesario (1,605) es solo <strong>3.57%</strong> de la población. La corrección finita prácticamente no cambia nada.</span>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════ SLIDE 7: EJERCICIO 6 — TextilPro ═══════ -->
+<div class="slide" data-slide="7">
+  <div class="slide-inner">
+    <div class="example-header">
+      <span class="example-badge badge-coral">EJERCICIO 6</span>
+      <h2 style="margin:0">TextilPro — Control de calidad por lote 🧵</h2>
+    </div>
+
+    <div class="example-problem">
+      <span class="icon-inline">📋</span> TextilPro produce lotes de <strong>3,500 metros de tela</strong>. El jefe de calidad necesita estimar la <strong>proporción de metros con defectos visibles</strong>. En una inspección piloto de 45 metros, encontró <strong>6 con defectos (p̂ = 0.133)</strong>. Necesita error máximo de <strong>2%</strong> con <strong>99% de confianza</strong> (es un cliente exigente de exportación).
+    </div>
+
+    <button class="show-steps-btn" onclick="revealSteps(this)">Mostrar solución paso a paso</button>
+    <div class="steps">
+      <div class="step">
+        <div class="step-num coral">1</div>
+        <div class="step-content">
+          <h4>Extraer datos</h4>
+          <p>N = 3,500, p̂ = 0.133, q̂ = 0.867, E = 0.02, Z = 2.576</p>
+        </div>
+      </div>
+      <div class="step">
+        <div class="step-num coral">2</div>
+        <div class="step-content">
+          <h4>Calcular sin corrección</h4>
+          <span class="calc">n = (2.576)² × 0.133 × 0.867 / (0.02)²<br>n = 6.6358 × 0.11531 / 0.0004<br>n = 0.76533 / 0.0004 = 1,913.32 → 1,913</span>
+        </div>
+      </div>
+      <div class="step">
+        <div class="step-num gold">3</div>
+        <div class="step-content">
+          <h4>Verificar corrección finita</h4>
+          <span class="calc">1,913 / 3,500 = 0.5466 → 54.7% > 5% → ¡SÍ necesita corrección!</span>
+        </div>
+      </div>
+      <div class="step">
+        <div class="step-num teal">4</div>
+        <div class="step-content">
+          <h4>Aplicar corrección por población finita</h4>
+          <span class="calc">n_aj = n / (1 + (n−1)/N)<br>n_aj = 1,913 / (1 + 1,912/3,500)<br>n_aj = 1,913 / (1 + 0.5463)<br>n_aj = 1,913 / 1.5463 = 1,237.22</span>
+          <span class="result">n = 1,238 metros</span>
+        </div>
+      </div>
+      <div class="step">
+        <div class="step-num teal">5</div>
+        <div class="step-content">
+          <h4>Ahorro</h4>
+          <p>Se ahorraron <strong style="color:var(--accent-teal)">675 inspecciones</strong> (de 1,913 a 1,238)</p>
+        </div>
+      </div>
+    </div>
+
+    <div class="highlight-box gold" style="margin-top:16px">
+      <span class="hl-icon">⚠️</span>
+      <span class="hl-text">Cuando n/N es muy alto (como <strong>54.7%</strong> aquí), la corrección hace una diferencia enorme. Sin ella, estarías inspeccionando <strong>675 metros de más</strong>.</span>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════ SLIDE 8: EJERCICIO 7 — Hospital Santa Clara ═══════ -->
+<div class="slide" data-slide="8">
+  <div class="slide-inner">
+    <div class="example-header">
+      <span class="example-badge badge-teal">EJERCICIO 7</span>
+      <h2 style="margin:0">Hospital Santa Clara — Tiempo de espera ⏱️</h2>
+    </div>
+
+    <div class="example-problem">
+      <span class="icon-inline">📋</span> El Hospital Santa Clara de Dosquebradas atiende en promedio <strong>N = 200 pacientes por día</strong> en urgencias. La directora quiere estimar el <strong>tiempo promedio de espera</strong> para un informe a la Secretaría de Salud. Con una muestra piloto de 25 pacientes un martes, obtuvieron un tiempo promedio de 47 min con <strong>s = 18 min</strong>. Quiere error máximo de <strong>5 minutos</strong> con <strong>95% de confianza</strong>.
+    </div>
+
+    <button class="show-steps-btn" onclick="revealSteps(this)">Mostrar solución paso a paso</button>
+    <div class="steps">
+      <div class="step">
+        <div class="step-num teal">1</div>
+        <div class="step-content">
+          <h4>Extraer datos</h4>
+          <p>N = 200, s = 18, E = 5, Z = 1.960, variable = media</p>
+        </div>
+      </div>
+      <div class="step">
+        <div class="step-num teal">2</div>
+        <div class="step-content">
+          <h4>Calcular sin corrección</h4>
+          <span class="calc">n = (Z · s / E)² = (1.960 × 18 / 5)²<br>n = (35.28 / 5)² = (7.056)² = 49.79 → 50</span>
+        </div>
+      </div>
+      <div class="step">
+        <div class="step-num gold">3</div>
+        <div class="step-content">
+          <h4>Verificar corrección finita</h4>
+          <span class="calc">50 / 200 = 0.25 → 25% > 5% → ¡SÍ necesita corrección!</span>
+        </div>
+      </div>
+      <div class="step">
+        <div class="step-num teal">4</div>
+        <div class="step-content">
+          <h4>Aplicar corrección</h4>
+          <span class="calc">n_aj = n / (1 + (n−1)/N)<br>n_aj = 50 / (1 + 49/200)<br>n_aj = 50 / (1 + 0.245)<br>n_aj = 50 / 1.245 = 40.16</span>
+          <span class="result">n = 41 pacientes</span>
+        </div>
+      </div>
+      <div class="step">
+        <div class="step-num gold">5</div>
+        <div class="step-content">
+          <h4>Ahorro</h4>
+          <p>Se ahorraron <strong style="color:var(--accent-teal)">9 encuestas</strong> (de 50 a 41). En un hospital donde cada minuto cuenta, ¡eso importa!</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════ SLIDE 9: EJERCICIO 8 — GlobalTech ═══════ -->
+<div class="slide" data-slide="9">
+  <div class="slide-inner">
+    <div class="example-header">
+      <span class="example-badge badge-gold">EJERCICIO 8</span>
+      <h2 style="margin:0">GlobalTech — ¿Cuánto cuesta la precisión? 💰</h2>
+    </div>
+
+    <div class="example-problem">
+      <span class="icon-inline">📋</span> El VP de GlobalTech quiere estimar la <strong>proporción de empleados satisfechos</strong> con el programa de bienestar. Muestra piloto de 35 empleados: <strong>24 satisfechos (p̂ = 0.686)</strong>. Pide analizar: ¿cuántos empleados necesitamos encuestar con diferentes combinaciones de <strong>confianza (90%, 95%, 99%)</strong> y <strong>error (5%, 3%, 1%)</strong>? Población grande (multinacional, +50,000 empleados).
+    </div>
+
+    <p style="margin-bottom:8px"><strong>Fórmula:</strong> <span style="font-family:var(--font-mono);color:var(--accent-teal)">n = Z² × p̂ × q̂ / E²</span> &nbsp; donde p̂ · q̂ = 0.686 × 0.314 = 0.21540</p>
+
+    <div class="table-wrapper">
+      <table class="data-table">
+        <thead>
+          <tr>
+            <th>Confianza</th>
+            <th>Z</th>
+            <th>E = 5%</th>
+            <th>E = 3%</th>
+            <th>E = 1%</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><strong>90%</strong></td>
+            <td class="mono">1.645</td>
+            <td class="mono">234</td>
+            <td class="mono">648</td>
+            <td class="mono">5,829</td>
+          </tr>
+          <tr>
+            <td><strong>95%</strong></td>
+            <td class="mono">1.960</td>
+            <td class="mono">332</td>
+            <td class="mono">920</td>
+            <td class="mono">8,276</td>
+          </tr>
+          <tr>
+            <td><strong>99%</strong></td>
+            <td class="mono">2.576</td>
+            <td class="mono">572</td>
+            <td class="mono">1,589</td>
+            <td class="mono">14,295</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <button class="show-steps-btn" onclick="revealSteps(this)">Ver cálculo detallado (ejemplo 99%/1%)</button>
+    <div class="steps">
+      <div class="step">
+        <div class="step-num gold">1</div>
+        <div class="step-content">
+          <h4>Caso más extremo: 99% confianza, 1% error</h4>
+          <span class="calc">n = (2.576)² × 0.686 × 0.314 / (0.01)²<br>n = 6.635776 × 0.21540 / 0.0001<br>n = 1.42941 / 0.0001 = 14,294.1</span>
+          <span class="result">n = 14,295 empleados</span>
+        </div>
+      </div>
+      <div class="step">
+        <div class="step-num gold">2</div>
+        <div class="step-content">
+          <h4>Caso más económico: 90% confianza, 5% error</h4>
+          <span class="calc">n = (1.645)² × 0.686 × 0.314 / (0.05)²<br>n = 2.706025 × 0.21540 / 0.0025<br>n = 0.58290 / 0.0025 = 233.16</span>
+          <span class="result">n = 234 empleados</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="highlight-box" style="margin-top:16px">
+      <span class="hl-icon">💰</span>
+      <span class="hl-text">Pasar de E=3% a E=1% casi <strong>multiplica n por 10</strong>. El VP debe decidir: ¿vale la pena encuestar a <strong>14,295</strong> empleados en vez de <strong>572</strong>?</span>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════ SLIDE 10: TRAMPAS COMUNES ═══════ -->
+<div class="slide" data-slide="10">
+  <div class="slide-inner">
+    <div class="slide-tag">Cuidado</div>
+    <h2>Errores que se cometen en la práctica ⚠️</h2>
+
+    <div class="card-grid cols-2">
+      <div class="card card-accent-coral reveal reveal-delay-1">
+        <span class="card-icon">🔴</span>
+        <h3>Confundir E en % vs decimal</h3>
+        <p>Si el error es 4%, en la fórmula va <strong>0.04</strong>, NO 4. Con E=4, n sale ridículamente pequeño. <strong style="color:var(--accent-coral)">Trampa #1 en parciales.</strong></p>
+      </div>
+      <div class="card card-accent-gold reveal reveal-delay-2">
+        <span class="card-icon">🟡</span>
+        <h3>Olvidar cuándo corregir por finita</h3>
+        <p>No toda población finita necesita corrección. <strong>Solo cuando n/N > 5%</strong>. Una ciudad de 500,000 personas casi nunca necesita corrección.</p>
+      </div>
+      <div class="card card-accent-violet reveal reveal-delay-3">
+        <span class="card-icon">🟣</span>
+        <h3>Usar p̂ = 0.5 teniendo piloto</h3>
+        <p>Si ya tienes una muestra piloto, <strong>¡úsala!</strong> p̂ = 0.5 es el caso conservador para cuando NO tienes datos. Usarlo con datos disponibles <strong>desperdicia recursos</strong>.</p>
+      </div>
+      <div class="card card-accent-teal reveal reveal-delay-4">
+        <span class="card-icon">🟢</span>
+        <h3>No redondear hacia arriba</h3>
+        <p>n = 384.02 NO es 384, es <strong>385</strong>. Siempre se redondea al entero superior. Redondear hacia abajo <strong>reduce la confianza real</strong> por debajo del nivel deseado.</p>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════ SLIDE 11: FLUJOGRAMA DE DECISIÓN ═══════ -->
+<div class="slide" data-slide="11">
+  <div class="slide-inner">
+    <div class="slide-tag">Herramienta</div>
+    <h2>¿Qué fórmula uso? — Decisión rápida 🗺️</h2>
+
+    <div class="flow">
+      <div class="flow-step reveal reveal-delay-1" style="border-color:var(--accent-sky);border-width:2px">
+        🤔 <strong>¿Qué quiero estimar?</strong>
+      </div>
+      <div class="flow-arrow">↓</div>
+
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
+        <div>
+          <div class="flow-step reveal reveal-delay-2" style="border-color:var(--accent-teal);border-width:2px">
+            📏 <strong>Un promedio (media μ)</strong>
+          </div>
+          <div class="flow-arrow">↓</div>
+          <div class="flow-step reveal reveal-delay-3" style="background:var(--accent-teal-dim);border-color:var(--accent-teal)">
+            <span style="font-family:var(--font-mono);color:var(--accent-teal);font-size:0.85em">n = (Z·s/E)²</span>
+          </div>
+        </div>
+        <div>
+          <div class="flow-step reveal reveal-delay-2" style="border-color:var(--accent-coral);border-width:2px">
+            📊 <strong>Un porcentaje (proporción p)</strong>
+          </div>
+          <div class="flow-arrow">↓</div>
+          <div class="flow-step reveal reveal-delay-3" style="border-color:var(--accent-gold)">
+            🧪 <strong>¿Tengo muestra piloto?</strong>
+          </div>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:8px">
+            <div class="flow-step reveal reveal-delay-4" style="font-size:0.78em;border-color:var(--accent-teal)">✅ Sí → Usar p̂ de la piloto</div>
+            <div class="flow-step reveal reveal-delay-4" style="font-size:0.78em;border-color:var(--accent-coral)">❌ No → Usar p̂ = 0.5</div>
+          </div>
+          <div class="flow-arrow">↓</div>
+          <div class="flow-step reveal reveal-delay-5" style="background:var(--accent-coral-dim);border-color:var(--accent-coral)">
+            <span style="font-family:var(--font-mono);color:var(--accent-coral);font-size:0.85em">n = Z²·p̂·q̂/E²</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="flow-arrow">↓</div>
+      <div class="flow-step reveal reveal-delay-5" style="border-color:var(--accent-gold);border-width:2px">
+        🔍 <strong>¿Conozco N y n/N > 5%?</strong>
+      </div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:8px">
+        <div class="flow-step reveal reveal-delay-6" style="border-color:var(--accent-teal)">
+          ✅ Sí → <span style="font-family:var(--font-mono);font-size:0.8em;color:var(--accent-gold)">n_aj = n/(1+(n−1)/N)</span>
+        </div>
+        <div class="flow-step reveal reveal-delay-6" style="border-color:var(--accent-coral)">
+          ❌ No → Usar n sin corregir
+        </div>
+      </div>
+
+      <div class="flow-arrow">↓</div>
+      <div class="flow-step reveal reveal-delay-6" style="background:var(--accent-gold-dim);border-color:var(--accent-gold);border-width:2px">
+        ⬆️ <strong>Redondear SIEMPRE hacia arriba</strong>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════ SLIDE 12: CIERRE ═══════ -->
+<div class="slide" data-slide="12">
+  <div class="slide-inner">
+    <div class="slide-tag">Cierre</div>
+    <h2>Lo que te llevas hoy 🎯</h2>
+
+    <div class="cheat-grid">
+      <div class="cheat-item reveal reveal-delay-1">
+        <h4>📖 De libro a empresa</h4>
+        <p>Aprendiste a traducir un problema de negocio real en parámetros estadísticos: identificar si es <strong>media o proporción</strong>, extraer s o p̂, definir E según el contexto.</p>
+      </div>
+      <div class="cheat-item reveal reveal-delay-2">
+        <h4>🧪 El poder de la piloto</h4>
+        <p>Una muestra piloto de <strong>30–50 datos</strong> puede ahorrarte cientos o miles de observaciones. Siempre pídela antes de calcular n a ciegas.</p>
+      </div>
+      <div class="cheat-item reveal reveal-delay-3">
+        <h4>📐 Corrección finita</h4>
+        <p>Solo cuando <strong>n/N > 5%</strong>. Aprendiste a verificar ANTES de aplicar, no aplicarla automáticamente.</p>
+      </div>
+      <div class="cheat-item reveal reveal-delay-4">
+        <h4>📈 Sensibilidad</h4>
+        <p>Menor error → n crece <strong>cuadráticamente</strong>. Mayor confianza → n crece. El negocio decide el trade-off entre precisión y costo.</p>
+      </div>
+    </div>
+
+    <div class="highlight-box" style="margin-top:24px">
+      <span class="hl-icon">🔥</span>
+      <span class="hl-text">La próxima vez que alguien en tu trabajo diga <strong>"encuestemos a 100 personas"</strong>, tú ya sabes preguntar: <strong>¿con qué confianza? ¿qué error aceptas? ¿tenemos datos previos?</strong> Eso te hace estadísticamente peligroso.</span>
+    </div>
+  </div>
+</div>
+
+</div><!-- /slides-wrapper -->
+
+<!-- ═══════ NAVIGATION ═══════ -->
+<div class="nav-controls">
+  <button class="nav-btn" id="prevBtn" onclick="changeSlide(-1)">&#8592;</button>
+  <div class="slide-dots" id="slideDots"></div>
+  <span class="slide-counter" id="slideCounter">1 / 13</span>
+  <button class="nav-btn" id="nextBtn" onclick="changeSlide(1)">&#8594;</button>
+</div>
+<div class="kbd-hint">Usa <kbd>&#8592;</kbd> <kbd>&#8594;</kbd> o <kbd>Space</kbd> para navegar</div>
+
+<script>
+  // ═══════ SLIDE ENGINE ═══════
+  const slides = document.querySelectorAll('.slide');
+  const totalSlides = slides.length;
+  let currentSlide = 0;
+  let isTransitioning = false;
+  const TRANSITION_MS = 480;
+
+  // Build dots
+  const dotsContainer = document.getElementById('slideDots');
+  for (let i = 0; i < totalSlides; i++) {
+    const dot = document.createElement('div');
+    dot.className = 'slide-dot' + (i === 0 ? ' active' : '');
+    dot.addEventListener('click', () => goToSlide(i));
+    dotsContainer.appendChild(dot);
+  }
+
+  function updateUI() {
+    const progress = (currentSlide / (totalSlides - 1)) * 100;
+    document.getElementById('progressBar').style.width = progress + '%';
+    document.getElementById('slideCounter').textContent = (currentSlide + 1) + ' / ' + totalSlides;
+    document.getElementById('prevBtn').disabled = currentSlide === 0;
+    document.getElementById('nextBtn').disabled = currentSlide === totalSlides - 1;
+
+    document.querySelectorAll('.slide-dot').forEach((dot, i) => {
+      dot.classList.toggle('active', i === currentSlide);
+    });
+
+    setTimeout(() => {
+      slides[currentSlide].querySelectorAll('.reveal').forEach(el => el.classList.add('show'));
+    }, 200);
+  }
+
+  function goToSlide(index) {
+    if (index < 0 || index >= totalSlides || index === currentSlide || isTransitioning) return;
+    isTransitioning = true;
+
+    const goingForward = index > currentSlide;
+    const oldSlide = slides[currentSlide];
+    const newSlide = slides[index];
+
+    // Exit old slide
+    oldSlide.classList.remove('active');
+    oldSlide.classList.add(goingForward ? 'exit-left' : 'exit-right');
+
+    // Prepare new slide at entry position without transition
+    newSlide.classList.remove('active', 'exit-left', 'exit-right');
+    newSlide.style.transition = 'none';
+    newSlide.style.transform = goingForward ? 'translateX(50px)' : 'translateX(-50px)';
+    newSlide.style.opacity = '0';
+    newSlide.style.visibility = 'visible';
+
+    // Force reflow then animate in
+    void newSlide.offsetHeight;
+    newSlide.style.transition = '';
+    newSlide.style.transform = '';
+    newSlide.style.opacity = '';
+    newSlide.classList.add('active');
+
+    // Reset scroll
+    newSlide.scrollTop = 0;
+
+    currentSlide = index;
+    updateUI();
+
+    // Cleanup after transition
+    setTimeout(() => {
+      oldSlide.classList.remove('exit-left', 'exit-right');
+      // Clear any leftover inline styles
+      newSlide.style.removeProperty('transition');
+      newSlide.style.removeProperty('transform');
+      newSlide.style.removeProperty('opacity');
+      newSlide.style.removeProperty('visibility');
+      isTransitioning = false;
+    }, TRANSITION_MS);
+  }
+
+  function changeSlide(delta) {
+    goToSlide(currentSlide + delta);
+  }
+
+  // Keyboard
+  document.addEventListener('keydown', (e) => {
+    if (e.key === 'ArrowRight' || (e.key === ' ' && !e.shiftKey)) {
+      e.preventDefault();
+      changeSlide(1);
+    } else if (e.key === 'ArrowLeft') {
+      e.preventDefault();
+      changeSlide(-1);
+    } else if (e.key === 'Home') {
+      e.preventDefault();
+      goToSlide(0);
+    } else if (e.key === 'End') {
+      e.preventDefault();
+      goToSlide(totalSlides - 1);
+    }
+  });
+
+  // Touch / swipe
+  let touchStartX = 0;
+  let touchStartY = 0;
+  document.addEventListener('touchstart', (e) => {
+    touchStartX = e.touches[0].clientX;
+    touchStartY = e.touches[0].clientY;
+  }, { passive: true });
+
+  document.addEventListener('touchend', (e) => {
+    const dx = touchStartX - e.changedTouches[0].clientX;
+    const dy = touchStartY - e.changedTouches[0].clientY;
+    if (Math.abs(dx) > 50 && Math.abs(dx) > Math.abs(dy) * 1.5) {
+      changeSlide(dx > 0 ? 1 : -1);
+    }
+  }, { passive: true });
+
+  // Step reveal
+  function revealSteps(btn) {
+    const stepsContainer = btn.nextElementSibling;
+    if (!stepsContainer) return;
+    const steps = stepsContainer.querySelectorAll('.step');
+    btn.style.display = 'none';
+    steps.forEach((step, i) => {
+      setTimeout(() => step.classList.add('visible'), i * 300);
+    });
+  }
+
+  // Init
+  updateUI();
+</script>
+</body>
+</html>
