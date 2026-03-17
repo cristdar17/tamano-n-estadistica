@@ -1,0 +1,1834 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>Clase 12 — Taller: Calcula n desde los Datos Crudos</title>
+<link href="https://fonts.googleapis.com/css2?family=Sora:wght@300;400;500;600;700;800&family=Source+Serif+4:ital,wght@0,300;0,400;0,600;0,700;1,400&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg-deep: #0b0e14;
+    --bg-card: #141922;
+    --bg-card-alt: #1a2030;
+    --bg-surface: #1e2636;
+    --accent-teal: #00d4aa;
+    --accent-teal-dim: rgba(0,212,170,0.15);
+    --accent-coral: #ff6b6b;
+    --accent-coral-dim: rgba(255,107,107,0.12);
+    --accent-gold: #fbbf24;
+    --accent-gold-dim: rgba(251,191,36,0.12);
+    --accent-violet: #a78bfa;
+    --accent-violet-dim: rgba(167,139,250,0.12);
+    --accent-sky: #38bdf8;
+    --accent-sky-dim: rgba(56,189,248,0.12);
+    --text-primary: #f0ece4;
+    --text-secondary: #9ca3af;
+    --text-dim: #6b7280;
+    --border: rgba(255,255,255,0.06);
+    --font-display: 'Sora', sans-serif;
+    --font-body: 'Source Serif 4', Georgia, serif;
+    --font-mono: 'JetBrains Mono', monospace;
+    --nav-h: 60px;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  html { scroll-behavior: smooth; -webkit-tap-highlight-color: transparent; }
+
+  body {
+    background: var(--bg-deep);
+    color: var(--text-primary);
+    font-family: var(--font-body);
+    overflow: hidden;
+    height: 100dvh;
+    width: 100vw;
+    font-size: 15px;
+    line-height: 1.6;
+  }
+
+  /* ═══════════════════════════════════════ */
+  /*  MOBILE-FIRST BASE (< 480px)           */
+  /* ═══════════════════════════════════════ */
+
+  .progress-bar {
+    position: fixed;
+    top: 0; left: 0;
+    height: 3px;
+    width: 0;
+    background: linear-gradient(90deg, var(--accent-teal), var(--accent-sky), var(--accent-violet));
+    z-index: 1000;
+    transition: width 0.5s cubic-bezier(0.22, 1, 0.36, 1);
+    box-shadow: 0 0 12px var(--accent-teal);
+  }
+
+  .nav-controls {
+    position: fixed;
+    bottom: 10px;
+    left: 50%;
+    transform: translateX(-50%);
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    z-index: 100;
+    background: rgba(20,25,34,0.92);
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+    padding: 6px 14px;
+    border-radius: 40px;
+    border: 1px solid var(--border);
+    max-width: calc(100vw - 20px);
+  }
+
+  .nav-btn {
+    background: var(--bg-surface);
+    border: 1px solid var(--border);
+    color: var(--text-primary);
+    width: 36px; height: 36px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    font-size: 15px;
+    transition: all 0.25s;
+    font-family: var(--font-display);
+    flex-shrink: 0;
+    -webkit-appearance: none;
+  }
+  .nav-btn:active:not(:disabled) {
+    background: var(--accent-teal);
+    color: var(--bg-deep);
+    transform: scale(0.92);
+  }
+  .nav-btn:disabled {
+    opacity: 0.25;
+    cursor: not-allowed;
+  }
+
+  .slide-counter {
+    font-family: var(--font-mono);
+    font-size: 11px;
+    color: var(--text-secondary);
+    min-width: 44px;
+    text-align: center;
+    flex-shrink: 0;
+  }
+
+  .slide-dots { display: none; }
+  .slide-dot {
+    width: 7px; height: 7px;
+    border-radius: 50%;
+    background: var(--text-dim);
+    cursor: pointer;
+    transition: all 0.3s;
+    flex-shrink: 0;
+  }
+  .slide-dot.active {
+    background: var(--accent-teal);
+    box-shadow: 0 0 8px rgba(0,212,170,0.5);
+    transform: scale(1.4);
+  }
+
+  .kbd-hint { display: none; }
+
+  .slides-wrapper {
+    width: 100vw;
+    height: 100dvh;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .slide {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    align-items: flex-start;
+    justify-content: center;
+    padding: 16px 14px calc(var(--nav-h) + 16px);
+    opacity: 0;
+    pointer-events: none;
+    visibility: hidden;
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
+    transform: translateX(50px);
+    transition:
+      opacity 0.45s cubic-bezier(0.22, 1, 0.36, 1),
+      transform 0.45s cubic-bezier(0.22, 1, 0.36, 1),
+      visibility 0s 0.45s;
+  }
+  .slide.active {
+    opacity: 1;
+    transform: translateX(0);
+    pointer-events: all;
+    visibility: visible;
+    transition:
+      opacity 0.45s cubic-bezier(0.22, 1, 0.36, 1),
+      transform 0.45s cubic-bezier(0.22, 1, 0.36, 1),
+      visibility 0s 0s;
+  }
+  .slide.exit-left {
+    opacity: 0;
+    transform: translateX(-50px);
+    visibility: hidden;
+  }
+  .slide.exit-right {
+    opacity: 0;
+    transform: translateX(50px);
+    visibility: hidden;
+  }
+
+  .slide-inner {
+    max-width: 1100px;
+    width: 100%;
+    padding-bottom: 20px;
+  }
+
+  /* ── Typography ── */
+  .slide-tag {
+    font-family: var(--font-mono);
+    font-size: 10px;
+    text-transform: uppercase;
+    letter-spacing: 2px;
+    color: var(--accent-teal);
+    margin-bottom: 8px;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+  .slide-tag::before {
+    content: '';
+    display: inline-block;
+    width: 14px; height: 1px;
+    background: var(--accent-teal);
+  }
+
+  h1 {
+    font-family: var(--font-display);
+    font-weight: 800;
+    font-size: 1.7rem;
+    line-height: 1.15;
+    letter-spacing: -0.5px;
+  }
+
+  h2 {
+    font-family: var(--font-display);
+    font-weight: 700;
+    font-size: 1.2rem;
+    line-height: 1.25;
+    margin-bottom: 12px;
+  }
+
+  h3 {
+    font-family: var(--font-display);
+    font-weight: 600;
+    font-size: 1rem;
+    margin-bottom: 8px;
+  }
+
+  p {
+    font-size: 0.92rem;
+    line-height: 1.65;
+    color: var(--text-secondary);
+  }
+
+  strong { color: var(--text-primary); }
+
+  /* ── Title Slide ── */
+  .title-slide h1 {
+    background: linear-gradient(135deg, var(--text-primary) 0%, var(--accent-teal) 50%, var(--accent-sky) 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    margin-bottom: 12px;
+  }
+  .title-slide .subtitle {
+    font-size: 1rem;
+    color: var(--text-secondary);
+    font-weight: 300;
+    margin-bottom: 24px;
+  }
+  .title-meta {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    margin-top: 20px;
+  }
+  .title-meta-item {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-family: var(--font-mono);
+    font-size: 10px;
+    color: var(--text-dim);
+    letter-spacing: 1px;
+  }
+  .title-meta-item .icon { font-size: 14px; }
+  .title-decoration { display: none; }
+
+  /* ── Cards ── */
+  .card-grid {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 12px;
+    margin-top: 16px;
+  }
+
+  .card {
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 16px;
+    transition: all 0.3s;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .card-icon {
+    font-size: 24px;
+    margin-bottom: 8px;
+    display: block;
+  }
+  .card h3 { color: var(--text-primary); font-size: 0.95rem; }
+  .card p { font-size: 0.88rem; }
+
+  .card-accent-teal { border-left: 3px solid var(--accent-teal); }
+  .card-accent-coral { border-left: 3px solid var(--accent-coral); }
+  .card-accent-gold { border-left: 3px solid var(--accent-gold); }
+  .card-accent-violet { border-left: 3px solid var(--accent-violet); }
+  .card-accent-sky { border-left: 3px solid var(--accent-sky); }
+
+  /* ── Formula Box ── */
+  .formula-box {
+    background: linear-gradient(135deg, var(--bg-card) 0%, var(--bg-card-alt) 100%);
+    border: 1px solid rgba(0,212,170,0.2);
+    border-radius: 12px;
+    padding: 18px 14px;
+    margin: 16px 0;
+    text-align: center;
+    position: relative;
+    overflow: hidden;
+  }
+  .formula-box::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 2px;
+    background: linear-gradient(90deg, transparent, var(--accent-teal), transparent);
+  }
+
+  .formula {
+    font-family: var(--font-mono);
+    font-size: 0.95rem;
+    font-weight: 600;
+    color: var(--accent-teal);
+    line-height: 2;
+    overflow-x: auto;
+    white-space: nowrap;
+    padding-bottom: 4px;
+  }
+
+  .formula-label {
+    font-family: var(--font-display);
+    font-size: 0.72rem;
+    color: var(--text-dim);
+    text-transform: uppercase;
+    letter-spacing: 1.5px;
+    margin-bottom: 8px;
+  }
+
+  /* ── Variable Legend ── */
+  .var-legend {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 8px;
+    margin-top: 14px;
+  }
+  .var-item {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 0.85rem;
+  }
+  .var-symbol {
+    font-family: var(--font-mono);
+    font-weight: 600;
+    color: var(--accent-gold);
+    min-width: 30px;
+    text-align: right;
+    font-size: 0.85rem;
+  }
+  .var-desc { color: var(--text-secondary); }
+
+  /* ── Data Table ── */
+  .table-wrapper {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    margin: 14px 0;
+    border-radius: 8px;
+  }
+  .data-table {
+    width: 100%;
+    min-width: 340px;
+    border-collapse: collapse;
+    font-size: 0.82rem;
+  }
+  .data-table th {
+    font-family: var(--font-display);
+    font-weight: 600;
+    font-size: 0.72rem;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    color: var(--text-dim);
+    padding: 10px 10px;
+    text-align: left;
+    border-bottom: 1px solid var(--border);
+    white-space: nowrap;
+  }
+  .data-table td {
+    padding: 10px;
+    border-bottom: 1px solid var(--border);
+    color: var(--text-secondary);
+    white-space: nowrap;
+  }
+  .data-table .mono {
+    font-family: var(--font-mono);
+    color: var(--accent-teal);
+    font-weight: 500;
+  }
+
+  /* ── Two Column Layout ── */
+  .two-cols {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 20px;
+    align-items: start;
+  }
+
+  /* ── Pills ── */
+  .pills {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    margin: 10px 0;
+  }
+  .pill {
+    font-family: var(--font-mono);
+    font-size: 0.7rem;
+    padding: 3px 8px;
+    border-radius: 20px;
+    border: 1px solid var(--border);
+    color: var(--text-secondary);
+  }
+
+  /* ── Comparison Grid ── */
+  .compare-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+    margin-top: 16px;
+  }
+  .compare-item {
+    background: var(--bg-card);
+    border-radius: 10px;
+    padding: 14px;
+    text-align: center;
+    border: 1px solid var(--border);
+  }
+  .compare-value {
+    font-family: var(--font-mono);
+    font-size: 1.6rem;
+    font-weight: 700;
+    color: var(--accent-teal);
+    margin: 4px 0;
+  }
+  .compare-label {
+    font-family: var(--font-display);
+    font-size: 0.68rem;
+    color: var(--text-dim);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+  }
+
+  /* ── Highlight Box ── */
+  .highlight-box {
+    background: var(--accent-teal-dim);
+    border: 1px solid rgba(0,212,170,0.2);
+    border-radius: 10px;
+    padding: 14px;
+    margin: 14px 0;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+  .highlight-box.coral {
+    background: var(--accent-coral-dim);
+    border-color: rgba(255,107,107,0.2);
+  }
+  .highlight-box.gold {
+    background: var(--accent-gold-dim);
+    border-color: rgba(251,191,36,0.2);
+  }
+  .highlight-box .hl-icon { font-size: 18px; }
+  .highlight-box .hl-text { font-size: 0.88rem; line-height: 1.6; color: var(--text-secondary); }
+  .highlight-box .hl-text strong { color: var(--text-primary); }
+
+  /* ── Example Header ── */
+  .example-header {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 8px;
+    margin-bottom: 16px;
+    padding-bottom: 12px;
+    border-bottom: 1px solid var(--border);
+  }
+  .example-badge {
+    font-family: var(--font-mono);
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+    padding: 4px 10px;
+    border-radius: 20px;
+    white-space: nowrap;
+  }
+  .badge-teal { background: var(--accent-teal-dim); color: var(--accent-teal); }
+  .badge-coral { background: var(--accent-coral-dim); color: var(--accent-coral); }
+  .badge-gold { background: var(--accent-gold-dim); color: var(--accent-gold); }
+  .badge-violet { background: var(--accent-violet-dim); color: var(--accent-violet); }
+  .badge-sky { background: var(--accent-sky-dim); color: var(--accent-sky); }
+
+  .example-problem {
+    background: var(--bg-card);
+    border-radius: 10px;
+    padding: 14px 16px;
+    margin-bottom: 16px;
+    border-left: 3px solid var(--accent-gold);
+    font-size: 0.9rem;
+    line-height: 1.65;
+    color: var(--text-secondary);
+  }
+  .example-problem .icon-inline { margin-right: 4px; }
+
+  /* ── Raw Data Grid ── */
+  .raw-data-section {
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 14px;
+    margin: 12px 0;
+  }
+  .raw-data-label {
+    font-family: var(--font-display);
+    font-size: 0.78rem;
+    font-weight: 600;
+    color: var(--text-dim);
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    margin-bottom: 10px;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+  .raw-data-grid {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+  }
+  .raw-data-item {
+    font-family: var(--font-mono);
+    font-size: 0.82rem;
+    font-weight: 500;
+    color: var(--accent-teal);
+    background: rgba(0,212,170,0.08);
+    border: 1px solid rgba(0,212,170,0.15);
+    border-radius: 8px;
+    padding: 6px 10px;
+    min-width: 42px;
+    text-align: center;
+  }
+  .raw-data-item.yes {
+    color: var(--accent-teal);
+    background: rgba(0,212,170,0.12);
+    border-color: rgba(0,212,170,0.2);
+  }
+  .raw-data-item.no {
+    color: var(--accent-coral);
+    background: rgba(255,107,107,0.08);
+    border-color: rgba(255,107,107,0.15);
+  }
+  .raw-data-count {
+    font-family: var(--font-mono);
+    font-size: 0.78rem;
+    color: var(--text-dim);
+    margin-top: 8px;
+  }
+
+  /* ── Params Box ── */
+  .params-box {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin: 10px 0;
+  }
+  .param-tag {
+    font-family: var(--font-mono);
+    font-size: 0.78rem;
+    font-weight: 600;
+    padding: 5px 12px;
+    border-radius: 8px;
+    background: var(--bg-card-alt);
+    border: 1px solid var(--border);
+    color: var(--accent-gold);
+  }
+
+  /* ── Answer Box ── */
+  .answer-box {
+    display: none;
+    margin-top: 12px;
+    animation: fadeInUp 0.4s ease;
+  }
+  .answer-box.visible {
+    display: block;
+  }
+  .answer-result {
+    font-family: var(--font-mono);
+    font-size: 1.4rem;
+    font-weight: 700;
+    color: var(--accent-teal);
+    background: var(--accent-teal-dim);
+    border: 1px solid rgba(0,212,170,0.2);
+    border-radius: 12px;
+    padding: 14px 24px;
+    display: inline-block;
+    margin-bottom: 8px;
+  }
+  .answer-detail {
+    font-family: var(--font-mono);
+    font-size: 0.78rem;
+    color: var(--text-secondary);
+    line-height: 1.7;
+    margin: 6px 0;
+  }
+  .answer-note {
+    font-family: var(--font-mono);
+    font-size: 0.72rem;
+    color: var(--text-dim);
+    margin-top: 4px;
+  }
+  .answer-warning {
+    font-family: var(--font-mono);
+    font-size: 0.78rem;
+    color: var(--accent-gold);
+    margin-top: 6px;
+  }
+
+  @keyframes fadeInUp {
+    from { opacity: 0; transform: translateY(10px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  /* ── Show Steps Button ── */
+  .show-steps-btn {
+    background: linear-gradient(135deg, var(--accent-teal), #00b894);
+    color: var(--bg-deep);
+    border: none;
+    padding: 10px 20px;
+    border-radius: 10px;
+    font-family: var(--font-display);
+    font-weight: 600;
+    font-size: 0.85rem;
+    cursor: pointer;
+    transition: all 0.3s;
+    margin-bottom: 14px;
+    -webkit-appearance: none;
+  }
+  .show-steps-btn:active {
+    transform: scale(0.96);
+  }
+
+  /* ── Steps ── */
+  .steps {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+  }
+  .step {
+    display: flex;
+    gap: 10px;
+    align-items: flex-start;
+    opacity: 0;
+    transform: translateY(10px);
+    transition: all 0.4s ease;
+  }
+  .step.visible {
+    opacity: 1;
+    transform: translateY(0);
+  }
+  .step-num {
+    flex-shrink: 0;
+    width: 28px; height: 28px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-family: var(--font-mono);
+    font-weight: 700;
+    font-size: 11px;
+    margin-top: 2px;
+  }
+  .step-num.teal { background: var(--accent-teal-dim); color: var(--accent-teal); }
+  .step-num.coral { background: var(--accent-coral-dim); color: var(--accent-coral); }
+  .step-num.gold { background: var(--accent-gold-dim); color: var(--accent-gold); }
+  .step-num.violet { background: var(--accent-violet-dim); color: var(--accent-violet); }
+  .step-num.sky { background: var(--accent-sky-dim); color: var(--accent-sky); }
+
+  .step-content {
+    flex: 1;
+    min-width: 0;
+    background: var(--bg-card);
+    border-radius: 10px;
+    padding: 12px 14px;
+    border: 1px solid var(--border);
+  }
+  .step-content h4 {
+    font-family: var(--font-display);
+    font-weight: 600;
+    font-size: 0.85rem;
+    margin-bottom: 4px;
+    color: var(--text-primary);
+  }
+  .step-content p {
+    font-size: 0.85rem;
+    line-height: 1.5;
+    margin: 0;
+  }
+  .step-content .calc {
+    font-family: var(--font-mono);
+    font-size: 0.78rem;
+    color: var(--accent-teal);
+    background: rgba(0,212,170,0.06);
+    padding: 8px 10px;
+    border-radius: 8px;
+    margin-top: 6px;
+    display: block;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    white-space: nowrap;
+    line-height: 1.8;
+  }
+
+  /* ── Cheat Sheet ── */
+  .cheat-grid {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 12px;
+    margin-top: 16px;
+  }
+  .cheat-item {
+    background: var(--bg-card);
+    border-radius: 12px;
+    padding: 16px;
+    border: 1px solid var(--border);
+  }
+  .cheat-item h4 {
+    font-family: var(--font-display);
+    font-weight: 600;
+    font-size: 0.9rem;
+    margin-bottom: 6px;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+
+  /* ── Animated Reveal ── */
+  .reveal {
+    opacity: 0;
+    transform: translateY(14px);
+    transition: all 0.5s ease;
+  }
+  .reveal.show {
+    opacity: 1;
+    transform: translateY(0);
+  }
+  .reveal-delay-1 { transition-delay: 0.1s; }
+  .reveal-delay-2 { transition-delay: 0.2s; }
+  .reveal-delay-3 { transition-delay: 0.3s; }
+  .reveal-delay-4 { transition-delay: 0.4s; }
+  .reveal-delay-5 { transition-delay: 0.5s; }
+  .reveal-delay-6 { transition-delay: 0.6s; }
+
+  @keyframes pulse-glow {
+    0%, 100% { box-shadow: 0 0 60px rgba(0,212,170,0.05); }
+    50% { box-shadow: 0 0 100px rgba(0,212,170,0.12); }
+  }
+
+
+  /* ═══════════════════════════════════════ */
+  /*  >= 480px  — Large phone               */
+  /* ═══════════════════════════════════════ */
+  @media (min-width: 480px) {
+    body { font-size: 16px; }
+    .slide { padding: 20px 20px calc(var(--nav-h) + 20px); }
+
+    h1 { font-size: 2rem; }
+    h2 { font-size: 1.35rem; }
+    p { font-size: 0.95rem; }
+
+    .formula { font-size: 1.05rem; }
+    .formula-box { padding: 22px 18px; }
+
+    .card { padding: 18px; }
+    .card-icon { font-size: 28px; }
+
+    .step-num { width: 32px; height: 32px; font-size: 12px; }
+    .step-content { padding: 14px 16px; }
+    .step-content h4 { font-size: 0.9rem; }
+    .step-content .calc { font-size: 0.82rem; }
+
+    .compare-value { font-size: 1.8rem; }
+    .compare-label { font-size: 0.72rem; }
+
+    .highlight-box { flex-direction: row; align-items: flex-start; gap: 10px; padding: 16px; }
+
+    .example-header { flex-direction: row; align-items: center; gap: 12px; }
+
+    .nav-controls { padding: 8px 16px; gap: 10px; bottom: 14px; }
+    .nav-btn { width: 38px; height: 38px; }
+    .slide-counter { font-size: 12px; }
+
+    .var-legend { grid-template-columns: 1fr 1fr; gap: 8px 16px; }
+
+    .raw-data-item { font-size: 0.85rem; padding: 6px 12px; }
+    .answer-result { font-size: 1.6rem; padding: 16px 28px; }
+  }
+
+
+  /* ═══════════════════════════════════════ */
+  /*  >= 768px  — Tablet                    */
+  /* ═══════════════════════════════════════ */
+  @media (min-width: 768px) {
+    :root { --nav-h: 70px; }
+    body { font-size: 17px; }
+    .slide { padding: 36px 36px calc(var(--nav-h) + 24px); align-items: center; }
+
+    h1 { font-size: 2.8rem; letter-spacing: -0.8px; }
+    h2 { font-size: 1.8rem; margin-bottom: 16px; }
+    h3 { font-size: 1.15rem; margin-bottom: 10px; }
+    p { font-size: 1.05rem; line-height: 1.7; }
+
+    .slide-tag { font-size: 11px; letter-spacing: 2.5px; margin-bottom: 10px; }
+
+    .title-slide .subtitle { font-size: 1.2rem; }
+    .title-meta { flex-direction: row; gap: 24px; }
+    .title-meta-item { font-size: 11px; }
+
+    .card-grid.cols-2 { grid-template-columns: 1fr 1fr; }
+    .card-grid.cols-3 { grid-template-columns: 1fr 1fr 1fr; }
+    .card-grid { gap: 16px; }
+    .card { padding: 22px; border-radius: 14px; }
+    .card-icon { font-size: 30px; margin-bottom: 12px; }
+    .card h3 { font-size: 1.05rem; }
+    .card p { font-size: 0.95rem; }
+
+    .formula { font-size: 1.3rem; letter-spacing: 0.5px; }
+    .formula-box { padding: 26px 28px; border-radius: 14px; }
+    .formula-label { font-size: 0.78rem; }
+
+    .two-cols { grid-template-columns: 1fr 1fr; gap: 30px; }
+
+    .example-header { gap: 14px; margin-bottom: 20px; padding-bottom: 14px; }
+    .example-badge { font-size: 11px; padding: 5px 12px; }
+    .example-problem { padding: 18px 20px; font-size: 1rem; border-radius: 12px; }
+
+    .step { gap: 14px; }
+    .step-num { width: 34px; height: 34px; font-size: 13px; }
+    .step-content { padding: 14px 18px; border-radius: 12px; }
+    .step-content h4 { font-size: 0.92rem; }
+    .step-content p { font-size: 0.92rem; }
+    .step-content .calc { font-size: 0.88rem; padding: 8px 12px; }
+
+    .compare-row { grid-template-columns: 1fr 1fr 1fr 1fr; gap: 14px; }
+    .compare-item { padding: 20px; border-radius: 12px; }
+    .compare-value { font-size: 2rem; }
+    .compare-label { font-size: 0.75rem; letter-spacing: 0.8px; }
+
+    .highlight-box { padding: 18px 20px; gap: 12px; border-radius: 12px; }
+    .highlight-box .hl-icon { font-size: 20px; }
+    .highlight-box .hl-text { font-size: 0.95rem; }
+
+    .cheat-grid { grid-template-columns: 1fr 1fr; gap: 16px; }
+    .cheat-item { padding: 20px; }
+    .cheat-item h4 { font-size: 0.95rem; }
+
+    .data-table { font-size: 0.9rem; }
+    .data-table th { font-size: 0.78rem; padding: 12px 14px; }
+    .data-table td { padding: 12px 14px; }
+
+    .show-steps-btn { font-size: 0.9rem; padding: 10px 22px; }
+    .show-steps-btn:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 6px 20px rgba(0,212,170,0.3);
+    }
+
+    .nav-controls { padding: 10px 20px; gap: 14px; bottom: 20px; }
+    .nav-btn { width: 42px; height: 42px; font-size: 17px; }
+    .nav-btn:hover:not(:disabled) {
+      background: var(--accent-teal);
+      color: var(--bg-deep);
+      transform: scale(1.1);
+      box-shadow: 0 0 18px rgba(0,212,170,0.4);
+    }
+    .slide-dots { display: flex; gap: 6px; }
+    .slide-counter { font-size: 13px; min-width: 56px; }
+
+    .pill { font-size: 0.75rem; padding: 4px 10px; }
+
+    .var-item { font-size: 0.92rem; }
+    .var-symbol { min-width: 36px; font-size: 0.9rem; }
+
+    .raw-data-section { padding: 18px; }
+    .raw-data-item { font-size: 0.88rem; padding: 7px 14px; }
+    .raw-data-label { font-size: 0.82rem; }
+    .answer-result { font-size: 1.8rem; padding: 16px 32px; }
+    .answer-note { font-size: 0.78rem; }
+    .param-tag { font-size: 0.82rem; }
+  }
+
+
+  /* ═══════════════════════════════════════ */
+  /*  >= 1024px — Desktop                   */
+  /* ═══════════════════════════════════════ */
+  @media (min-width: 1024px) {
+    :root { --nav-h: 76px; }
+    .slide { padding: 50px 60px calc(var(--nav-h) + 30px); }
+
+    h1 { font-size: 3.6rem; letter-spacing: -1px; }
+    h2 { font-size: 2.2rem; margin-bottom: 18px; }
+    h3 { font-size: 1.25rem; }
+    p { font-size: 1.1rem; }
+
+    .title-slide .subtitle { font-size: 1.3rem; margin-bottom: 32px; }
+    .title-meta { gap: 28px; margin-top: 26px; }
+    .title-meta-item { font-size: 12px; }
+    .title-decoration {
+      display: block;
+      position: absolute;
+      right: -20px;
+      top: 50%;
+      transform: translateY(-50%);
+      width: 260px;
+      height: 260px;
+      border-radius: 50%;
+      background: radial-gradient(circle, rgba(0,212,170,0.08) 0%, transparent 70%);
+      border: 1px solid rgba(0,212,170,0.1);
+      animation: pulse-glow 4s ease-in-out infinite;
+    }
+    .title-decoration::after {
+      content: '\1F9EA';
+      position: absolute;
+      top: 50%; left: 50%;
+      transform: translate(-50%, -50%);
+      font-size: 70px;
+      opacity: 0.6;
+    }
+
+    .card-grid.cols-3 { grid-template-columns: 1fr 1fr 1fr; }
+    .card-grid.cols-4 { grid-template-columns: 1fr 1fr 1fr 1fr; }
+    .card-grid { gap: 20px; }
+    .card { padding: 26px; border-radius: 16px; }
+    .card:hover {
+      border-color: rgba(0,212,170,0.3);
+      transform: translateY(-2px);
+      box-shadow: 0 8px 30px rgba(0,0,0,0.3);
+    }
+    .card-icon { font-size: 32px; margin-bottom: 14px; }
+
+    .formula { font-size: 1.6rem; letter-spacing: 1px; }
+    .formula-box { padding: 30px 36px; border-radius: 16px; }
+    .formula-label { font-size: 0.82rem; letter-spacing: 2px; margin-bottom: 10px; }
+
+    .var-legend { gap: 10px 24px; }
+    .var-item { font-size: 0.95rem; }
+    .var-symbol { min-width: 40px; }
+
+    .example-header { margin-bottom: 22px; padding-bottom: 16px; }
+    .example-problem { padding: 20px 24px; font-size: 1.05rem; }
+
+    .step { gap: 16px; }
+    .step-num { width: 36px; height: 36px; font-size: 14px; }
+    .step-content { padding: 16px 20px; }
+    .step-content h4 { font-size: 0.95rem; margin-bottom: 6px; }
+    .step-content p { font-size: 0.95rem; }
+    .step-content .calc { font-size: 0.92rem; }
+
+    .compare-item { padding: 22px; border-radius: 14px; }
+    .compare-item:hover { border-color: rgba(0,212,170,0.3); }
+    .compare-value { font-size: 2.3rem; }
+    .compare-label { font-size: 0.78rem; letter-spacing: 1px; }
+
+    .highlight-box { padding: 20px 24px; }
+    .highlight-box .hl-icon { font-size: 22px; }
+    .highlight-box .hl-text { font-size: 1rem; }
+
+    .cheat-grid { gap: 20px; }
+    .cheat-item { padding: 24px; border-radius: 14px; }
+    .cheat-item h4 { font-size: 1rem; }
+
+    .data-table { font-size: 0.95rem; }
+    .data-table th { font-size: 0.82rem; padding: 12px 16px; }
+    .data-table td { padding: 12px 16px; }
+    .data-table tr:hover td { background: rgba(255,255,255,0.02); }
+
+    .nav-controls { padding: 10px 24px; gap: 16px; bottom: 28px; }
+    .nav-btn { width: 44px; height: 44px; font-size: 18px; }
+    .slide-dot { width: 8px; height: 8px; }
+    .slide-dot:hover { background: var(--accent-teal); opacity: 0.7; }
+
+    .kbd-hint {
+      display: block;
+      position: fixed;
+      bottom: 90px;
+      left: 50%;
+      transform: translateX(-50%);
+      font-family: var(--font-mono);
+      font-size: 11px;
+      color: var(--text-dim);
+      z-index: 99;
+      opacity: 0.5;
+      white-space: nowrap;
+    }
+    kbd {
+      background: var(--bg-surface);
+      border: 1px solid var(--border);
+      border-radius: 4px;
+      padding: 2px 6px;
+      font-size: 11px;
+    }
+
+    .two-cols { gap: 40px; }
+
+    .show-steps-btn { font-size: 0.9rem; padding: 10px 24px; }
+
+    .raw-data-section { padding: 22px; border-radius: 14px; }
+    .raw-data-item { font-size: 0.9rem; padding: 8px 16px; min-width: 50px; }
+    .answer-result { font-size: 1.9rem; padding: 18px 32px; }
+    .answer-note { font-size: 0.82rem; }
+  }
+
+
+  /* ═══════════════════════════════════════ */
+  /*  >= 1280px — Large desktop             */
+  /* ═══════════════════════════════════════ */
+  @media (min-width: 1280px) {
+    .slide { padding: 60px 80px calc(var(--nav-h) + 36px); }
+    h1 { font-size: 4.2rem; }
+    h2 { font-size: 2.4rem; margin-bottom: 20px; }
+    .formula { font-size: 1.8rem; line-height: 2.2; }
+    .title-decoration { width: 300px; height: 300px; right: -40px; }
+    .title-decoration::after { font-size: 80px; }
+  }
+
+
+  /* ═══════════════════════════════════════ */
+  /*  Landscape phone                      */
+  /* ═══════════════════════════════════════ */
+  @media (max-height: 480px) and (orientation: landscape) {
+    .slide { padding: 12px 24px calc(var(--nav-h) + 10px); align-items: flex-start; }
+    h1 { font-size: 1.6rem; }
+    h2 { font-size: 1.2rem; margin-bottom: 8px; }
+    .card-grid { gap: 8px; }
+    .nav-controls { bottom: 6px; padding: 4px 12px; }
+    .nav-btn { width: 32px; height: 32px; font-size: 14px; }
+    .title-decoration { display: none; }
+    .title-meta { flex-direction: row; }
+  }
+</style>
+</head>
+<body>
+
+<div class="progress-bar" id="progressBar"></div>
+
+<div class="slides-wrapper" id="slidesWrapper">
+
+<!-- ═══════ SLIDE 0: PORTADA ═══════ -->
+<div class="slide active" data-slide="0">
+  <div class="slide-inner title-slide">
+    <div class="slide-tag">Clase 12 &middot; Estad&iacute;stica II</div>
+    <h1>Taller: Calcula n<br>desde los Datos Crudos</h1>
+    <p class="subtitle">8 ejercicios donde <strong style="color:var(--accent-gold)">T&Uacute;</strong> calculas la variabilidad &mdash; Nadie te da s ni p&#770; en bandeja</p>
+    <div class="title-meta">
+      <div class="title-meta-item"><span class="icon">&#x1F9EA;</span> DATOS CRUDOS</div>
+      <div class="title-meta-item"><span class="icon">&#x1F9EE;</span> CALCULA s Y p&#770;</div>
+      <div class="title-meta-item"><span class="icon">&#x1F3AF;</span> 8 EJERCICIOS</div>
+    </div>
+    <div class="title-decoration"></div>
+  </div>
+</div>
+
+<!-- ═══════ SLIDE 1: INSTRUCCIONES ═══════ -->
+<div class="slide" data-slide="1">
+  <div class="slide-inner">
+    <div class="slide-tag">Instrucciones</div>
+    <h2>Ahora es en serio: los datos vienen en bruto &#x1F4AA;</h2>
+
+    <div class="card-grid cols-3">
+      <div class="card card-accent-teal reveal reveal-delay-1">
+        <span class="card-icon">&#x1F4CA;</span>
+        <h3>1. Lee los datos crudos</h3>
+        <p>Cada ejercicio te da los <strong>datos reales</strong> de la muestra piloto. N&uacute;meros o respuestas S&iacute;/No tal como salieron.</p>
+      </div>
+      <div class="card card-accent-gold reveal reveal-delay-2">
+        <span class="card-icon">&#x1F9EE;</span>
+        <h3>2. Calcula la variabilidad</h3>
+        <p>Para medias: calcula <strong>x&#772;</strong> y <strong>s</strong> (desviaci&oacute;n est&aacute;ndar). Para proporciones: cuenta &eacute;xitos y calcula <strong>p&#770;</strong>.</p>
+      </div>
+      <div class="card card-accent-coral reveal reveal-delay-3">
+        <span class="card-icon">&#x1F4D0;</span>
+        <h3>3. Aplica la f&oacute;rmula de n</h3>
+        <p>Con tu s o p&#770; calculado, aplica la f&oacute;rmula correcta. Verifica con el bot&oacute;n de respuesta.</p>
+      </div>
+    </div>
+
+    <div class="formula-box" style="margin-top:20px">
+      <div class="formula-label">Recordatorio de f&oacute;rmulas</div>
+      <div class="formula">Media: n = (Z &middot; s / E)&sup2; &nbsp;&nbsp;&nbsp;|&nbsp;&nbsp;&nbsp; Proporci&oacute;n: n = Z&sup2; &middot; p&#770; &middot; q&#770; / E&sup2;</div>
+    </div>
+
+    <div class="highlight-box gold" style="margin-top:14px">
+      <span class="hl-icon">&#x26A0;&#xFE0F;</span>
+      <span class="hl-text"><strong>Recuerda:</strong> s = &radic;[&Sigma;(x<sub>i</sub> &minus; x&#772;)&sup2; / (n&minus;1)] &mdash; Y si n/N &gt; 5%, aplica correcci&oacute;n finita: n<sub>aj</sub> = n / (1 + (n&minus;1)/N)</span>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════ SLIDE 2: EJERCICIO 1 — CafeOrigen ═══════ -->
+<div class="slide" data-slide="2">
+  <div class="slide-inner">
+    <div class="example-header">
+      <span class="example-badge badge-teal">EJERCICIO 1</span>
+      <h2 style="margin:0">Caf&eacute;Origen &mdash; Tiempo de preparaci&oacute;n &#x2615;</h2>
+    </div>
+
+    <div class="example-problem">
+      <span class="icon-inline">&#x1F4CB;</span>
+      Caf&eacute;Origen es una cadena de caf&eacute; especial en Pereira. El gerente quiere estimar el <strong>tiempo promedio de preparaci&oacute;n</strong> de un caf&eacute; especial para optimizar turnos. Tom&oacute; una <strong>muestra piloto de 15 pedidos</strong> y registr&oacute; los tiempos en segundos. Quiere un error m&aacute;ximo de <strong>3 segundos</strong> con <strong>95% de confianza</strong>.
+    </div>
+
+    <div class="raw-data-section">
+      <div class="raw-data-label">&#x23F1;&#xFE0F; Datos piloto (tiempo en segundos):</div>
+      <div class="raw-data-grid">
+        <span class="raw-data-item">85</span>
+        <span class="raw-data-item">92</span>
+        <span class="raw-data-item">78</span>
+        <span class="raw-data-item">95</span>
+        <span class="raw-data-item">88</span>
+        <span class="raw-data-item">72</span>
+        <span class="raw-data-item">98</span>
+        <span class="raw-data-item">83</span>
+        <span class="raw-data-item">90</span>
+        <span class="raw-data-item">76</span>
+        <span class="raw-data-item">94</span>
+        <span class="raw-data-item">80</span>
+        <span class="raw-data-item">87</span>
+        <span class="raw-data-item">96</span>
+        <span class="raw-data-item">82</span>
+      </div>
+      <div class="raw-data-count">n<sub>piloto</sub> = 15 datos</div>
+    </div>
+
+    <div class="params-box">
+      <span class="param-tag">E = 3 seg</span>
+      <span class="param-tag">Confianza = 95%</span>
+      <span class="param-tag">Z = 1.960</span>
+    </div>
+
+    <div class="pills">
+      <span class="pill">Media &mu;</span>
+      <span class="pill">Poblaci&oacute;n infinita</span>
+      <span class="pill">Calcular s</span>
+    </div>
+
+    <button class="show-steps-btn" onclick="revealAnswer(this)">&#x1F441;&#xFE0F; Ver respuesta</button>
+    <div class="answer-box">
+      <div class="answer-result">n = 27 pedidos</div>
+      <div class="answer-detail">x&#772; = 86.4 seg &nbsp;|&nbsp; s &asymp; 7.86 seg</div>
+      <div class="answer-note">F&oacute;rmula: n = (Z &middot; s / E)&sup2;</div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════ SLIDE 3: EJERCICIO 2 — MegaGym ═══════ -->
+<div class="slide" data-slide="3">
+  <div class="slide-inner">
+    <div class="example-header">
+      <span class="example-badge badge-coral">EJERCICIO 2</span>
+      <h2 style="margin:0">MegaGym &mdash; Frecuencia de asistencia &#x1F3CB;&#xFE0F;</h2>
+    </div>
+
+    <div class="example-problem">
+      <span class="icon-inline">&#x1F4CB;</span>
+      MegaGym quiere estimar la <strong>proporci&oacute;n de clientes que asisten 3 o m&aacute;s veces por semana</strong> para decidir si amplia horarios. Encuestaron a <strong>30 clientes</strong> al azar. Cada uno respondi&oacute; S&iacute; (&ge;3 veces) o No (&lt;3 veces). Quieren error m&aacute;ximo de <strong>5%</strong> con <strong>95% de confianza</strong>. Poblaci&oacute;n grande (miles de afiliados).
+    </div>
+
+    <div class="raw-data-section">
+      <div class="raw-data-label">&#x1F4CB; Respuestas de la encuesta piloto:</div>
+      <div class="raw-data-grid">
+        <span class="raw-data-item yes">S&iacute;</span>
+        <span class="raw-data-item no">No</span>
+        <span class="raw-data-item yes">S&iacute;</span>
+        <span class="raw-data-item yes">S&iacute;</span>
+        <span class="raw-data-item no">No</span>
+        <span class="raw-data-item yes">S&iacute;</span>
+        <span class="raw-data-item no">No</span>
+        <span class="raw-data-item no">No</span>
+        <span class="raw-data-item yes">S&iacute;</span>
+        <span class="raw-data-item yes">S&iacute;</span>
+        <span class="raw-data-item no">No</span>
+        <span class="raw-data-item yes">S&iacute;</span>
+        <span class="raw-data-item yes">S&iacute;</span>
+        <span class="raw-data-item no">No</span>
+        <span class="raw-data-item yes">S&iacute;</span>
+        <span class="raw-data-item no">No</span>
+        <span class="raw-data-item yes">S&iacute;</span>
+        <span class="raw-data-item yes">S&iacute;</span>
+        <span class="raw-data-item no">No</span>
+        <span class="raw-data-item no">No</span>
+        <span class="raw-data-item yes">S&iacute;</span>
+        <span class="raw-data-item no">No</span>
+        <span class="raw-data-item yes">S&iacute;</span>
+        <span class="raw-data-item yes">S&iacute;</span>
+        <span class="raw-data-item no">No</span>
+        <span class="raw-data-item yes">S&iacute;</span>
+        <span class="raw-data-item no">No</span>
+        <span class="raw-data-item yes">S&iacute;</span>
+        <span class="raw-data-item yes">S&iacute;</span>
+        <span class="raw-data-item no">No</span>
+      </div>
+      <div class="raw-data-count">n<sub>piloto</sub> = 30 respuestas &mdash; Cuenta los S&iacute; y calcula p&#770;</div>
+    </div>
+
+    <div class="params-box">
+      <span class="param-tag">E = 0.05 (5%)</span>
+      <span class="param-tag">Confianza = 95%</span>
+      <span class="param-tag">Z = 1.960</span>
+    </div>
+
+    <div class="pills">
+      <span class="pill">Proporci&oacute;n p</span>
+      <span class="pill">Poblaci&oacute;n infinita</span>
+      <span class="pill">Calcular p&#770;</span>
+    </div>
+
+    <button class="show-steps-btn" onclick="revealAnswer(this)" style="background:linear-gradient(135deg, var(--accent-coral), #e55a5a);">&#x1F441;&#xFE0F; Ver respuesta</button>
+    <div class="answer-box">
+      <div class="answer-result" style="color:var(--accent-coral); background:var(--accent-coral-dim); border-color:rgba(255,107,107,0.2);">n = 378 clientes</div>
+      <div class="answer-detail">S&iacute; = 17 &nbsp;|&nbsp; p&#770; = 17/30 = 0.567 &nbsp;|&nbsp; q&#770; = 0.433</div>
+      <div class="answer-note">F&oacute;rmula: n = Z&sup2; &middot; p&#770; &middot; q&#770; / E&sup2;</div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════ SLIDE 4: EJERCICIO 3 — DataCenter ═══════ -->
+<div class="slide" data-slide="4">
+  <div class="slide-inner">
+    <div class="example-header">
+      <span class="example-badge badge-violet">EJERCICIO 3</span>
+      <h2 style="margin:0">CloudNet &mdash; Latencia de servidores &#x1F5A5;&#xFE0F;</h2>
+    </div>
+
+    <div class="example-problem">
+      <span class="icon-inline">&#x1F4CB;</span>
+      CloudNet opera <strong>N = 400 servidores</strong> en su data center de Bogot&aacute;. El equipo de infraestructura necesita estimar la <strong>latencia promedio</strong> para un reporte de SLA. Midieron la latencia de <strong>20 servidores</strong> seleccionados al azar (en milisegundos). Quieren error m&aacute;ximo de <strong>1.5 ms</strong> con <strong>95% de confianza</strong>.
+    </div>
+
+    <div class="raw-data-section">
+      <div class="raw-data-label">&#x23F1;&#xFE0F; Datos piloto (latencia en ms):</div>
+      <div class="raw-data-grid">
+        <span class="raw-data-item">12</span>
+        <span class="raw-data-item">18</span>
+        <span class="raw-data-item">15</span>
+        <span class="raw-data-item">22</span>
+        <span class="raw-data-item">10</span>
+        <span class="raw-data-item">19</span>
+        <span class="raw-data-item">14</span>
+        <span class="raw-data-item">25</span>
+        <span class="raw-data-item">11</span>
+        <span class="raw-data-item">17</span>
+        <span class="raw-data-item">16</span>
+        <span class="raw-data-item">20</span>
+        <span class="raw-data-item">13</span>
+        <span class="raw-data-item">23</span>
+        <span class="raw-data-item">15</span>
+        <span class="raw-data-item">18</span>
+        <span class="raw-data-item">21</span>
+        <span class="raw-data-item">12</span>
+        <span class="raw-data-item">19</span>
+        <span class="raw-data-item">16</span>
+      </div>
+      <div class="raw-data-count">n<sub>piloto</sub> = 20 datos &nbsp;|&nbsp; N = 400 servidores</div>
+    </div>
+
+    <div class="params-box">
+      <span class="param-tag">E = 1.5 ms</span>
+      <span class="param-tag">Confianza = 95%</span>
+      <span class="param-tag">Z = 1.960</span>
+      <span class="param-tag">N = 400</span>
+    </div>
+
+    <div class="pills">
+      <span class="pill">Media &mu;</span>
+      <span class="pill">Poblaci&oacute;n finita</span>
+      <span class="pill">Calcular s</span>
+      <span class="pill">Verificar n/N</span>
+    </div>
+
+    <button class="show-steps-btn" onclick="revealAnswer(this)" style="background:linear-gradient(135deg, var(--accent-violet), #8b5cf6);">&#x1F441;&#xFE0F; Ver respuesta</button>
+    <div class="answer-box">
+      <div class="answer-result" style="color:var(--accent-violet); background:var(--accent-violet-dim); border-color:rgba(167,139,250,0.2);">n = 28 servidores (con correcci&oacute;n finita)</div>
+      <div class="answer-detail">x&#772; = 16.8 ms &nbsp;|&nbsp; s &asymp; 4.16 ms &nbsp;|&nbsp; n sin corregir = 30<br>n/N = 30/400 = 7.5% &gt; 5% &rarr; S&iacute; corregir &rarr; n<sub>aj</sub> = 28</div>
+      <div class="answer-note">F&oacute;rmula: n = (Z &middot; s / E)&sup2;, luego n<sub>aj</sub> = n / (1 + (n&minus;1)/N)</div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════ SLIDE 5: EJERCICIO 4 — EcoTienda ═══════ -->
+<div class="slide" data-slide="5">
+  <div class="slide-inner">
+    <div class="example-header">
+      <span class="example-badge badge-gold">EJERCICIO 4</span>
+      <h2 style="margin:0">EcoTienda &mdash; Bolsas reutilizables &#x267B;&#xFE0F;</h2>
+    </div>
+
+    <div class="example-problem">
+      <span class="icon-inline">&#x1F4CB;</span>
+      EcoTienda tiene <strong>N = 1,500 clientes mensuales</strong> en su tienda de Manizales. Quieren estimar la <strong>proporci&oacute;n de clientes que traen bolsa reutilizable</strong> para un informe de sostenibilidad. Observaron a <strong>40 clientes</strong> al azar y registraron si tra&iacute;an bolsa (S&iacute;) o no (No). Requieren error m&aacute;ximo de <strong>4%</strong> con <strong>99% de confianza</strong>.
+    </div>
+
+    <div class="raw-data-section">
+      <div class="raw-data-label">&#x267B;&#xFE0F; Observaciones piloto:</div>
+      <div class="raw-data-grid">
+        <span class="raw-data-item no">No</span>
+        <span class="raw-data-item yes">S&iacute;</span>
+        <span class="raw-data-item no">No</span>
+        <span class="raw-data-item no">No</span>
+        <span class="raw-data-item yes">S&iacute;</span>
+        <span class="raw-data-item no">No</span>
+        <span class="raw-data-item yes">S&iacute;</span>
+        <span class="raw-data-item yes">S&iacute;</span>
+        <span class="raw-data-item no">No</span>
+        <span class="raw-data-item no">No</span>
+        <span class="raw-data-item yes">S&iacute;</span>
+        <span class="raw-data-item no">No</span>
+        <span class="raw-data-item no">No</span>
+        <span class="raw-data-item yes">S&iacute;</span>
+        <span class="raw-data-item no">No</span>
+        <span class="raw-data-item no">No</span>
+        <span class="raw-data-item no">No</span>
+        <span class="raw-data-item yes">S&iacute;</span>
+        <span class="raw-data-item no">No</span>
+        <span class="raw-data-item yes">S&iacute;</span>
+        <span class="raw-data-item no">No</span>
+        <span class="raw-data-item no">No</span>
+        <span class="raw-data-item yes">S&iacute;</span>
+        <span class="raw-data-item no">No</span>
+        <span class="raw-data-item yes">S&iacute;</span>
+        <span class="raw-data-item no">No</span>
+        <span class="raw-data-item no">No</span>
+        <span class="raw-data-item yes">S&iacute;</span>
+        <span class="raw-data-item no">No</span>
+        <span class="raw-data-item no">No</span>
+        <span class="raw-data-item no">No</span>
+        <span class="raw-data-item yes">S&iacute;</span>
+        <span class="raw-data-item no">No</span>
+        <span class="raw-data-item no">No</span>
+        <span class="raw-data-item yes">S&iacute;</span>
+        <span class="raw-data-item no">No</span>
+        <span class="raw-data-item yes">S&iacute;</span>
+        <span class="raw-data-item no">No</span>
+        <span class="raw-data-item no">No</span>
+        <span class="raw-data-item yes">S&iacute;</span>
+      </div>
+      <div class="raw-data-count">n<sub>piloto</sub> = 40 observaciones &nbsp;|&nbsp; N = 1,500 clientes &mdash; Cuenta los S&iacute;</div>
+    </div>
+
+    <div class="params-box">
+      <span class="param-tag">E = 0.04 (4%)</span>
+      <span class="param-tag">Confianza = 99%</span>
+      <span class="param-tag">Z = 2.576</span>
+      <span class="param-tag">N = 1,500</span>
+    </div>
+
+    <div class="pills">
+      <span class="pill">Proporci&oacute;n p</span>
+      <span class="pill">Poblaci&oacute;n finita</span>
+      <span class="pill">Calcular p&#770;</span>
+      <span class="pill">Verificar n/N</span>
+    </div>
+
+    <button class="show-steps-btn" onclick="revealAnswer(this)" style="background:linear-gradient(135deg, var(--accent-gold), #f59e0b);">&#x1F441;&#xFE0F; Ver respuesta</button>
+    <div class="answer-box">
+      <div class="answer-result" style="color:var(--accent-gold); background:var(--accent-gold-dim); border-color:rgba(251,191,36,0.2);">n = 591 clientes (con correcci&oacute;n finita)</div>
+      <div class="answer-detail">S&iacute; = 15 &nbsp;|&nbsp; p&#770; = 15/40 = 0.375 &nbsp;|&nbsp; q&#770; = 0.625<br>n sin corregir = 973 &nbsp;|&nbsp; n/N = 973/1,500 = 64.9% &gt; 5% &rarr; S&iacute; corregir &rarr; n<sub>aj</sub> = 591</div>
+      <div class="answer-note">F&oacute;rmula: n = Z&sup2; &middot; p&#770; &middot; q&#770; / E&sup2;, luego n<sub>aj</sub> = n / (1 + (n&minus;1)/N)</div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════ SLIDE 6: EJERCICIO 5 — AutoRepair ═══════ -->
+<div class="slide" data-slide="6">
+  <div class="slide-inner">
+    <div class="example-header">
+      <span class="example-badge badge-sky">EJERCICIO 5</span>
+      <h2 style="margin:0">AutoRepair &mdash; Costo de reparaciones &#x1F527;</h2>
+    </div>
+
+    <div class="example-problem">
+      <span class="icon-inline">&#x1F4CB;</span>
+      AutoRepair es un taller de mec&aacute;nica en Armenia. El due&ntilde;o quiere estimar el <strong>costo promedio de reparaci&oacute;n</strong> para ajustar sus p&oacute;lizas de garant&iacute;a. Revis&oacute; <strong>18 facturas recientes</strong> como muestra piloto (costos en miles de pesos COP). Quiere error m&aacute;ximo de <strong>$30,000 COP</strong> con <strong>99% de confianza</strong>. Poblaci&oacute;n grande (atiende +2,000 carros/a&ntilde;o).
+    </div>
+
+    <div class="raw-data-section">
+      <div class="raw-data-label">&#x1F4B0; Datos piloto (costo en miles COP):</div>
+      <div class="raw-data-grid">
+        <span class="raw-data-item">250</span>
+        <span class="raw-data-item">180</span>
+        <span class="raw-data-item">420</span>
+        <span class="raw-data-item">310</span>
+        <span class="raw-data-item">150</span>
+        <span class="raw-data-item">380</span>
+        <span class="raw-data-item">290</span>
+        <span class="raw-data-item">520</span>
+        <span class="raw-data-item">200</span>
+        <span class="raw-data-item">340</span>
+        <span class="raw-data-item">270</span>
+        <span class="raw-data-item">450</span>
+        <span class="raw-data-item">190</span>
+        <span class="raw-data-item">360</span>
+        <span class="raw-data-item">230</span>
+        <span class="raw-data-item">400</span>
+        <span class="raw-data-item">280</span>
+        <span class="raw-data-item">470</span>
+      </div>
+      <div class="raw-data-count">n<sub>piloto</sub> = 18 facturas &mdash; Los valores est&aacute;n en miles (ej: 250 = $250,000)</div>
+    </div>
+
+    <div class="params-box">
+      <span class="param-tag">E = 30 (miles)</span>
+      <span class="param-tag">Confianza = 99%</span>
+      <span class="param-tag">Z = 2.576</span>
+    </div>
+
+    <div class="pills">
+      <span class="pill">Media &mu;</span>
+      <span class="pill">Poblaci&oacute;n infinita</span>
+      <span class="pill">Calcular s</span>
+      <span class="pill">Alta variabilidad</span>
+    </div>
+
+    <button class="show-steps-btn" onclick="revealAnswer(this)" style="background:linear-gradient(135deg, var(--accent-sky), #0ea5e9);">&#x1F441;&#xFE0F; Ver respuesta</button>
+    <div class="answer-box">
+      <div class="answer-result" style="color:var(--accent-sky); background:var(--accent-sky-dim); border-color:rgba(56,189,248,0.2);">n = 87 facturas</div>
+      <div class="answer-detail">x&#772; &asymp; 316.1 (miles) &nbsp;|&nbsp; s &asymp; 108.2 (miles)</div>
+      <div class="answer-note">F&oacute;rmula: n = (Z &middot; s / E)&sup2;</div>
+      <div class="answer-warning">&#x26A0;&#xFE0F; La alta variabilidad (s grande) infla el tama&ntilde;o de muestra</div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════ SLIDE 7: EJERCICIO 6 — UniVerde ═══════ -->
+<div class="slide" data-slide="7">
+  <div class="slide-inner">
+    <div class="example-header">
+      <span class="example-badge badge-teal">EJERCICIO 6</span>
+      <h2 style="margin:0">UniVerde &mdash; Proporci&oacute;n que recicla &#x267B;&#xFE0F;</h2>
+    </div>
+
+    <div class="example-problem">
+      <span class="icon-inline">&#x1F4CB;</span>
+      La Universidad Verde quiere estimar la <strong>proporci&oacute;n de estudiantes que reciclan activamente</strong> para su informe de sostenibilidad. Encuestaron a <strong>50 estudiantes</strong> al azar en el campus. La universidad tiene miles de estudiantes (poblaci&oacute;n grande). Quieren error m&aacute;ximo de <strong>5%</strong> con <strong>90% de confianza</strong>.
+    </div>
+
+    <div class="raw-data-section">
+      <div class="raw-data-label">&#x267B;&#xFE0F; Respuestas de la encuesta (&iquest;Reciclas activamente?):</div>
+      <div class="raw-data-grid">
+        <span class="raw-data-item yes">S&iacute;</span>
+        <span class="raw-data-item no">No</span>
+        <span class="raw-data-item yes">S&iacute;</span>
+        <span class="raw-data-item yes">S&iacute;</span>
+        <span class="raw-data-item no">No</span>
+        <span class="raw-data-item yes">S&iacute;</span>
+        <span class="raw-data-item yes">S&iacute;</span>
+        <span class="raw-data-item no">No</span>
+        <span class="raw-data-item yes">S&iacute;</span>
+        <span class="raw-data-item yes">S&iacute;</span>
+        <span class="raw-data-item no">No</span>
+        <span class="raw-data-item yes">S&iacute;</span>
+        <span class="raw-data-item no">No</span>
+        <span class="raw-data-item yes">S&iacute;</span>
+        <span class="raw-data-item yes">S&iacute;</span>
+        <span class="raw-data-item yes">S&iacute;</span>
+        <span class="raw-data-item no">No</span>
+        <span class="raw-data-item yes">S&iacute;</span>
+        <span class="raw-data-item yes">S&iacute;</span>
+        <span class="raw-data-item no">No</span>
+        <span class="raw-data-item yes">S&iacute;</span>
+        <span class="raw-data-item yes">S&iacute;</span>
+        <span class="raw-data-item no">No</span>
+        <span class="raw-data-item yes">S&iacute;</span>
+        <span class="raw-data-item no">No</span>
+        <span class="raw-data-item yes">S&iacute;</span>
+        <span class="raw-data-item yes">S&iacute;</span>
+        <span class="raw-data-item yes">S&iacute;</span>
+        <span class="raw-data-item no">No</span>
+        <span class="raw-data-item yes">S&iacute;</span>
+        <span class="raw-data-item no">No</span>
+        <span class="raw-data-item yes">S&iacute;</span>
+        <span class="raw-data-item yes">S&iacute;</span>
+        <span class="raw-data-item yes">S&iacute;</span>
+        <span class="raw-data-item no">No</span>
+        <span class="raw-data-item yes">S&iacute;</span>
+        <span class="raw-data-item no">No</span>
+        <span class="raw-data-item yes">S&iacute;</span>
+        <span class="raw-data-item yes">S&iacute;</span>
+        <span class="raw-data-item yes">S&iacute;</span>
+        <span class="raw-data-item no">No</span>
+        <span class="raw-data-item yes">S&iacute;</span>
+        <span class="raw-data-item yes">S&iacute;</span>
+        <span class="raw-data-item no">No</span>
+        <span class="raw-data-item yes">S&iacute;</span>
+        <span class="raw-data-item yes">S&iacute;</span>
+        <span class="raw-data-item no">No</span>
+        <span class="raw-data-item yes">S&iacute;</span>
+        <span class="raw-data-item yes">S&iacute;</span>
+        <span class="raw-data-item yes">S&iacute;</span>
+      </div>
+      <div class="raw-data-count">n<sub>piloto</sub> = 50 respuestas &mdash; Cuenta los S&iacute;</div>
+    </div>
+
+    <div class="params-box">
+      <span class="param-tag">E = 0.05 (5%)</span>
+      <span class="param-tag">Confianza = 90%</span>
+      <span class="param-tag">Z = 1.645</span>
+    </div>
+
+    <div class="pills">
+      <span class="pill">Proporci&oacute;n p</span>
+      <span class="pill">Poblaci&oacute;n infinita</span>
+      <span class="pill">Calcular p&#770;</span>
+      <span class="pill">90% confianza</span>
+    </div>
+
+    <button class="show-steps-btn" onclick="revealAnswer(this)">&#x1F441;&#xFE0F; Ver respuesta</button>
+    <div class="answer-box">
+      <div class="answer-result">n = 236 estudiantes</div>
+      <div class="answer-detail">S&iacute; = 34 &nbsp;|&nbsp; p&#770; = 34/50 = 0.68 &nbsp;|&nbsp; q&#770; = 0.32</div>
+      <div class="answer-note">F&oacute;rmula: n = Z&sup2; &middot; p&#770; &middot; q&#770; / E&sup2;</div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════ SLIDE 8: EJERCICIO 7 — ClinicaDental ═══════ -->
+<div class="slide" data-slide="8">
+  <div class="slide-inner">
+    <div class="example-header">
+      <span class="example-badge badge-coral">EJERCICIO 7</span>
+      <h2 style="margin:0">Cl&iacute;nicaDental &mdash; Tiempo de consulta &#x1FA7B;</h2>
+    </div>
+
+    <div class="example-problem">
+      <span class="icon-inline">&#x1F4CB;</span>
+      Una cl&iacute;nica dental en Dosquebradas atiende <strong>N = 180 pacientes por semana</strong>. La directora quiere estimar el <strong>tiempo promedio de consulta</strong> para reorganizar la agenda. Tom&oacute; los tiempos de <strong>20 consultas</strong> de la semana pasada (en minutos). Quiere error m&aacute;ximo de <strong>2 minutos</strong> con <strong>95% de confianza</strong>.
+    </div>
+
+    <div class="raw-data-section">
+      <div class="raw-data-label">&#x23F1;&#xFE0F; Datos piloto (tiempo en minutos):</div>
+      <div class="raw-data-grid">
+        <span class="raw-data-item">25</span>
+        <span class="raw-data-item">35</span>
+        <span class="raw-data-item">20</span>
+        <span class="raw-data-item">40</span>
+        <span class="raw-data-item">30</span>
+        <span class="raw-data-item">22</span>
+        <span class="raw-data-item">38</span>
+        <span class="raw-data-item">28</span>
+        <span class="raw-data-item">33</span>
+        <span class="raw-data-item">18</span>
+        <span class="raw-data-item">42</span>
+        <span class="raw-data-item">27</span>
+        <span class="raw-data-item">32</span>
+        <span class="raw-data-item">24</span>
+        <span class="raw-data-item">36</span>
+        <span class="raw-data-item">21</span>
+        <span class="raw-data-item">37</span>
+        <span class="raw-data-item">29</span>
+        <span class="raw-data-item">34</span>
+        <span class="raw-data-item">26</span>
+      </div>
+      <div class="raw-data-count">n<sub>piloto</sub> = 20 datos &nbsp;|&nbsp; N = 180 pacientes/semana</div>
+    </div>
+
+    <div class="params-box">
+      <span class="param-tag">E = 2 min</span>
+      <span class="param-tag">Confianza = 95%</span>
+      <span class="param-tag">Z = 1.960</span>
+      <span class="param-tag">N = 180</span>
+    </div>
+
+    <div class="pills">
+      <span class="pill">Media &mu;</span>
+      <span class="pill">Poblaci&oacute;n finita</span>
+      <span class="pill">Calcular s</span>
+      <span class="pill">Verificar n/N</span>
+    </div>
+
+    <button class="show-steps-btn" onclick="revealAnswer(this)" style="background:linear-gradient(135deg, var(--accent-coral), #e55a5a);">&#x1F441;&#xFE0F; Ver respuesta</button>
+    <div class="answer-box">
+      <div class="answer-result" style="color:var(--accent-coral); background:var(--accent-coral-dim); border-color:rgba(255,107,107,0.2);">n = 38 pacientes (con correcci&oacute;n finita)</div>
+      <div class="answer-detail">x&#772; = 29.85 min &nbsp;|&nbsp; s &asymp; 6.98 min &nbsp;|&nbsp; n sin corregir = 47<br>n/N = 47/180 = 26.1% &gt; 5% &rarr; S&iacute; corregir &rarr; n<sub>aj</sub> = 38</div>
+      <div class="answer-note">F&oacute;rmula: n = (Z &middot; s / E)&sup2;, luego n<sub>aj</sub> = n / (1 + (n&minus;1)/N)</div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════ SLIDE 9: EJERCICIO 8 — AppMovil ═══════ -->
+<div class="slide" data-slide="9">
+  <div class="slide-inner">
+    <div class="example-header">
+      <span class="example-badge badge-gold">EJERCICIO 8</span>
+      <h2 style="margin:0">ClickApp &mdash; Tasa de registro completo &#x1F4F1;</h2>
+    </div>
+
+    <div class="example-problem">
+      <span class="icon-inline">&#x1F4CB;</span>
+      ClickApp recibe <strong>N = 800 usuarios nuevos por mes</strong>. El equipo de producto quiere estimar la <strong>proporci&oacute;n de usuarios que completan el registro</strong> (sin abandonar a mitad de camino). Rastrearon a <strong>35 usuarios nuevos</strong> durante una semana. Quieren error m&aacute;ximo de <strong>5%</strong> con <strong>95% de confianza</strong>.
+    </div>
+
+    <div class="raw-data-section">
+      <div class="raw-data-label">&#x1F4F1; Resultado de cada usuario (Complet&oacute; / Abandon&oacute;):</div>
+      <div class="raw-data-grid">
+        <span class="raw-data-item yes">&#x2705;</span>
+        <span class="raw-data-item yes">&#x2705;</span>
+        <span class="raw-data-item no">&#x274C;</span>
+        <span class="raw-data-item yes">&#x2705;</span>
+        <span class="raw-data-item no">&#x274C;</span>
+        <span class="raw-data-item yes">&#x2705;</span>
+        <span class="raw-data-item yes">&#x2705;</span>
+        <span class="raw-data-item yes">&#x2705;</span>
+        <span class="raw-data-item no">&#x274C;</span>
+        <span class="raw-data-item yes">&#x2705;</span>
+        <span class="raw-data-item yes">&#x2705;</span>
+        <span class="raw-data-item no">&#x274C;</span>
+        <span class="raw-data-item yes">&#x2705;</span>
+        <span class="raw-data-item yes">&#x2705;</span>
+        <span class="raw-data-item yes">&#x2705;</span>
+        <span class="raw-data-item no">&#x274C;</span>
+        <span class="raw-data-item yes">&#x2705;</span>
+        <span class="raw-data-item no">&#x274C;</span>
+        <span class="raw-data-item yes">&#x2705;</span>
+        <span class="raw-data-item yes">&#x2705;</span>
+        <span class="raw-data-item yes">&#x2705;</span>
+        <span class="raw-data-item yes">&#x2705;</span>
+        <span class="raw-data-item no">&#x274C;</span>
+        <span class="raw-data-item yes">&#x2705;</span>
+        <span class="raw-data-item yes">&#x2705;</span>
+        <span class="raw-data-item no">&#x274C;</span>
+        <span class="raw-data-item yes">&#x2705;</span>
+        <span class="raw-data-item yes">&#x2705;</span>
+        <span class="raw-data-item yes">&#x2705;</span>
+        <span class="raw-data-item no">&#x274C;</span>
+        <span class="raw-data-item yes">&#x2705;</span>
+        <span class="raw-data-item yes">&#x2705;</span>
+        <span class="raw-data-item no">&#x274C;</span>
+        <span class="raw-data-item yes">&#x2705;</span>
+        <span class="raw-data-item yes">&#x2705;</span>
+      </div>
+      <div class="raw-data-count">n<sub>piloto</sub> = 35 usuarios &nbsp;|&nbsp; N = 800 usuarios/mes &mdash; &#x2705; = Complet&oacute;, &#x274C; = Abandon&oacute;</div>
+    </div>
+
+    <div class="params-box">
+      <span class="param-tag">E = 0.05 (5%)</span>
+      <span class="param-tag">Confianza = 95%</span>
+      <span class="param-tag">Z = 1.960</span>
+      <span class="param-tag">N = 800</span>
+    </div>
+
+    <div class="pills">
+      <span class="pill">Proporci&oacute;n p</span>
+      <span class="pill">Poblaci&oacute;n finita</span>
+      <span class="pill">Calcular p&#770;</span>
+      <span class="pill">Verificar n/N</span>
+    </div>
+
+    <button class="show-steps-btn" onclick="revealAnswer(this)" style="background:linear-gradient(135deg, var(--accent-gold), #f59e0b);">&#x1F441;&#xFE0F; Ver respuesta</button>
+    <div class="answer-box">
+      <div class="answer-result" style="color:var(--accent-gold); background:var(--accent-gold-dim); border-color:rgba(251,191,36,0.2);">n = 226 usuarios (con correcci&oacute;n finita)</div>
+      <div class="answer-detail">&#x2705; = 25 &nbsp;|&nbsp; p&#770; = 25/35 &asymp; 0.714 &nbsp;|&nbsp; q&#770; &asymp; 0.286<br>n sin corregir = 314 &nbsp;|&nbsp; n/N = 314/800 = 39.3% &gt; 5% &rarr; S&iacute; corregir &rarr; n<sub>aj</sub> = 226</div>
+      <div class="answer-note">F&oacute;rmula: n = Z&sup2; &middot; p&#770; &middot; q&#770; / E&sup2;, luego n<sub>aj</sub> = n / (1 + (n&minus;1)/N)</div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════ SLIDE 10: RESUMEN ═══════ -->
+<div class="slide" data-slide="10">
+  <div class="slide-inner">
+    <div class="slide-tag">Cierre</div>
+    <h2>Lo que practicaste hoy &#x1F3AF;</h2>
+
+    <div class="cheat-grid">
+      <div class="cheat-item reveal reveal-delay-1">
+        <h4>&#x1F9EE; Calcular s desde datos crudos</h4>
+        <p>Ya no dependes de que alguien te diga s = tal. Sabes tomar datos, calcular x&#772;, obtener las desviaciones, elevar al cuadrado, sumar, dividir por n&minus;1 y sacar ra&iacute;z.</p>
+      </div>
+      <div class="cheat-item reveal reveal-delay-2">
+        <h4>&#x1F4CA; Calcular p&#770; contando</h4>
+        <p>Para proporciones, lo &uacute;nico que necesitas es <strong>contar &eacute;xitos</strong> y dividir entre el total. Sin eso, no puedes calcular n.</p>
+      </div>
+      <div class="cheat-item reveal reveal-delay-3">
+        <h4>&#x1F50D; Detectar cu&aacute;ndo corregir</h4>
+        <p>Calculaste n, verificaste n/N, y solo corregiste <strong>cuando super&oacute; el 5%</strong>. Esa verificaci&oacute;n ya es autom&aacute;tica en tu proceso.</p>
+      </div>
+      <div class="cheat-item reveal reveal-delay-4">
+        <h4>&#x1F3E2; Flujo completo de la vida real</h4>
+        <p>Datos crudos &rarr; calcular variabilidad &rarr; elegir f&oacute;rmula &rarr; sustituir &rarr; verificar finita &rarr; redondear. As&iacute; se hace en una empresa.</p>
+      </div>
+    </div>
+
+    <div class="highlight-box" style="margin-top:24px">
+      <span class="hl-icon">&#x1F525;</span>
+      <span class="hl-text">La diferencia entre un estudiante que solo aplica f&oacute;rmulas y uno que <strong>sabe obtener los datos para la f&oacute;rmula</strong> es la diferencia entre alguien que sigue instrucciones y alguien que <strong>resuelve problemas</strong>. Hoy diste ese salto.</span>
+    </div>
+  </div>
+</div>
+
+</div><!-- /slides-wrapper -->
+
+<!-- ═══════ NAVIGATION ═══════ -->
+<div class="nav-controls">
+  <button class="nav-btn" id="prevBtn" onclick="changeSlide(-1)">&#8592;</button>
+  <div class="slide-dots" id="slideDots"></div>
+  <span class="slide-counter" id="slideCounter">1 / 11</span>
+  <button class="nav-btn" id="nextBtn" onclick="changeSlide(1)">&#8594;</button>
+</div>
+<div class="kbd-hint">Usa <kbd>&#8592;</kbd> <kbd>&#8594;</kbd> o <kbd>Space</kbd> para navegar</div>
+
+<script>
+  // ═══════ SLIDE ENGINE ═══════
+  const slides = document.querySelectorAll('.slide');
+  const totalSlides = slides.length;
+  let currentSlide = 0;
+  let isTransitioning = false;
+  const TRANSITION_MS = 480;
+
+  // Build dots
+  const dotsContainer = document.getElementById('slideDots');
+  for (let i = 0; i < totalSlides; i++) {
+    const dot = document.createElement('div');
+    dot.className = 'slide-dot' + (i === 0 ? ' active' : '');
+    dot.addEventListener('click', () => goToSlide(i));
+    dotsContainer.appendChild(dot);
+  }
+
+  function updateUI() {
+    const progress = (currentSlide / (totalSlides - 1)) * 100;
+    document.getElementById('progressBar').style.width = progress + '%';
+    document.getElementById('slideCounter').textContent = (currentSlide + 1) + ' / ' + totalSlides;
+    document.getElementById('prevBtn').disabled = currentSlide === 0;
+    document.getElementById('nextBtn').disabled = currentSlide === totalSlides - 1;
+
+    document.querySelectorAll('.slide-dot').forEach((dot, i) => {
+      dot.classList.toggle('active', i === currentSlide);
+    });
+
+    setTimeout(() => {
+      slides[currentSlide].querySelectorAll('.reveal').forEach(el => el.classList.add('show'));
+    }, 200);
+  }
+
+  function goToSlide(index) {
+    if (index < 0 || index >= totalSlides || index === currentSlide || isTransitioning) return;
+    isTransitioning = true;
+
+    const goingForward = index > currentSlide;
+    const oldSlide = slides[currentSlide];
+    const newSlide = slides[index];
+
+    oldSlide.classList.remove('active');
+    oldSlide.classList.add(goingForward ? 'exit-left' : 'exit-right');
+
+    newSlide.classList.remove('active', 'exit-left', 'exit-right');
+    newSlide.style.transition = 'none';
+    newSlide.style.transform = goingForward ? 'translateX(50px)' : 'translateX(-50px)';
+    newSlide.style.opacity = '0';
+    newSlide.style.visibility = 'visible';
+
+    void newSlide.offsetHeight;
+    newSlide.style.transition = '';
+    newSlide.style.transform = '';
+    newSlide.style.opacity = '';
+    newSlide.classList.add('active');
+
+    newSlide.scrollTop = 0;
+
+    currentSlide = index;
+    updateUI();
+
+    setTimeout(() => {
+      oldSlide.classList.remove('exit-left', 'exit-right');
+      newSlide.style.removeProperty('transition');
+      newSlide.style.removeProperty('transform');
+      newSlide.style.removeProperty('opacity');
+      newSlide.style.removeProperty('visibility');
+      isTransitioning = false;
+    }, TRANSITION_MS);
+  }
+
+  function changeSlide(delta) {
+    goToSlide(currentSlide + delta);
+  }
+
+  // Keyboard
+  document.addEventListener('keydown', (e) => {
+    if (e.key === 'ArrowRight' || (e.key === ' ' && !e.shiftKey)) {
+      e.preventDefault();
+      changeSlide(1);
+    } else if (e.key === 'ArrowLeft') {
+      e.preventDefault();
+      changeSlide(-1);
+    } else if (e.key === 'Home') {
+      e.preventDefault();
+      goToSlide(0);
+    } else if (e.key === 'End') {
+      e.preventDefault();
+      goToSlide(totalSlides - 1);
+    }
+  });
+
+  // Touch / swipe
+  let touchStartX = 0;
+  let touchStartY = 0;
+  document.addEventListener('touchstart', (e) => {
+    touchStartX = e.touches[0].clientX;
+    touchStartY = e.touches[0].clientY;
+  }, { passive: true });
+
+  document.addEventListener('touchend', (e) => {
+    const dx = touchStartX - e.changedTouches[0].clientX;
+    const dy = touchStartY - e.changedTouches[0].clientY;
+    if (Math.abs(dx) > 50 && Math.abs(dx) > Math.abs(dy) * 1.5) {
+      changeSlide(dx > 0 ? 1 : -1);
+    }
+  }, { passive: true });
+
+  // Answer reveal
+  function revealAnswer(btn) {
+    const answerBox = btn.nextElementSibling;
+    if (!answerBox) return;
+    btn.style.display = 'none';
+    answerBox.classList.add('visible');
+  }
+
+  // Init
+  updateUI();
+</script>
+</body>
+</html>
