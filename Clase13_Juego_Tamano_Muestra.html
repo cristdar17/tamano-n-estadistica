@@ -1,0 +1,1350 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>El Consultor Estadistico - Clase 13</title>
+<style>
+:root {
+  --navy: #0a1628;
+  --navy-light: #111d35;
+  --navy-mid: #162444;
+  --electric: #00d4ff;
+  --electric-dim: #00a8cc;
+  --gold: #ffd700;
+  --gold-dim: #c4a600;
+  --success: #00e676;
+  --error: #ff5252;
+  --warning: #ffab40;
+  --glass-bg: rgba(255,255,255,0.06);
+  --glass-border: rgba(255,255,255,0.12);
+  --glass-bg2: rgba(255,255,255,0.1);
+  --text: #e8edf5;
+  --text-dim: #8899b3;
+  --quant-color: #4fc3f7;
+  --qual-color: #81c784;
+  --font-main: 'Segoe UI', system-ui, -apple-system, sans-serif;
+  --radius: 16px;
+  --radius-sm: 10px;
+}
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+html { font-size: 16px; }
+body {
+  font-family: var(--font-main);
+  background: var(--navy);
+  color: var(--text);
+  min-height: 100vh;
+  overflow-x: hidden;
+  line-height: 1.6;
+}
+/* ===== SCROLLBAR ===== */
+::-webkit-scrollbar { width: 8px; }
+::-webkit-scrollbar-track { background: var(--navy); }
+::-webkit-scrollbar-thumb { background: var(--navy-mid); border-radius: 4px; }
+::-webkit-scrollbar-thumb:hover { background: var(--electric-dim); }
+/* ===== FLOATING SHAPES BG ===== */
+.bg-shapes {
+  position: fixed; inset: 0; pointer-events: none; z-index: 0; overflow: hidden;
+}
+.bg-shapes .shape {
+  position: absolute; border-radius: 50%; opacity: 0.04;
+  animation: floatShape 20s ease-in-out infinite alternate;
+}
+.bg-shapes .shape:nth-child(1) { width: 400px; height: 400px; background: var(--electric); top: -100px; left: -100px; animation-duration: 25s; }
+.bg-shapes .shape:nth-child(2) { width: 300px; height: 300px; background: var(--gold); bottom: -80px; right: -80px; animation-duration: 30s; animation-delay: -5s; }
+.bg-shapes .shape:nth-child(3) { width: 200px; height: 200px; background: var(--electric); top: 50%; left: 60%; animation-duration: 22s; animation-delay: -10s; border-radius: 30%; }
+.bg-shapes .shape:nth-child(4) { width: 150px; height: 150px; background: var(--success); top: 20%; right: 10%; animation-duration: 28s; animation-delay: -3s; }
+.bg-shapes .shape:nth-child(5) { width: 250px; height: 250px; background: var(--gold); bottom: 30%; left: 5%; animation-duration: 35s; animation-delay: -8s; border-radius: 40%; }
+@keyframes floatShape {
+  0% { transform: translate(0, 0) rotate(0deg) scale(1); }
+  33% { transform: translate(30px, -40px) rotate(60deg) scale(1.1); }
+  66% { transform: translate(-20px, 30px) rotate(120deg) scale(0.95); }
+  100% { transform: translate(10px, -20px) rotate(180deg) scale(1.05); }
+}
+/* ===== SCREENS ===== */
+.screen {
+  display: none; position: relative; z-index: 1; min-height: 100vh;
+  padding: 2rem; max-width: 1200px; margin: 0 auto;
+  animation: fadeInScreen 0.6s ease;
+}
+.screen.active { display: block; }
+@keyframes fadeInScreen {
+  from { opacity: 0; transform: translateY(30px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+/* ===== GLASS CARD ===== */
+.glass {
+  background: var(--glass-bg);
+  backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px);
+  border: 1px solid var(--glass-border);
+  border-radius: var(--radius);
+  padding: 2rem;
+}
+.glass-sm {
+  background: var(--glass-bg);
+  backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px);
+  border: 1px solid var(--glass-border);
+  border-radius: var(--radius-sm);
+  padding: 1.2rem;
+}
+/* ===== BUTTONS ===== */
+.btn {
+  display: inline-flex; align-items: center; gap: 0.5rem;
+  padding: 0.85rem 2rem; border: none; border-radius: 50px;
+  font-family: var(--font-main); font-size: 1rem; font-weight: 600;
+  cursor: pointer; transition: all 0.3s ease; text-decoration: none;
+  position: relative; overflow: hidden;
+}
+.btn::after {
+  content: ''; position: absolute; inset: 0;
+  background: linear-gradient(120deg, transparent 30%, rgba(255,255,255,0.15) 50%, transparent 70%);
+  transform: translateX(-100%); transition: transform 0.5s;
+}
+.btn:hover::after { transform: translateX(100%); }
+.btn-primary {
+  background: linear-gradient(135deg, var(--electric), var(--electric-dim));
+  color: var(--navy); box-shadow: 0 4px 20px rgba(0,212,255,0.3);
+}
+.btn-primary:hover { box-shadow: 0 6px 30px rgba(0,212,255,0.5); transform: translateY(-2px); }
+.btn-gold {
+  background: linear-gradient(135deg, var(--gold), var(--gold-dim));
+  color: var(--navy); box-shadow: 0 4px 20px rgba(255,215,0,0.3);
+}
+.btn-gold:hover { box-shadow: 0 6px 30px rgba(255,215,0,0.5); transform: translateY(-2px); }
+.btn-outline {
+  background: transparent; border: 2px solid var(--electric);
+  color: var(--electric);
+}
+.btn-outline:hover { background: rgba(0,212,255,0.1); }
+.btn-success {
+  background: linear-gradient(135deg, var(--success), #00c853);
+  color: var(--navy); box-shadow: 0 4px 20px rgba(0,230,118,0.3);
+}
+.btn-sm { padding: 0.5rem 1.2rem; font-size: 0.9rem; }
+.btn:disabled { opacity: 0.4; cursor: not-allowed; transform: none !important; }
+/* ===== INPUTS ===== */
+.input-field {
+  width: 100%; padding: 0.85rem 1.2rem;
+  background: rgba(255,255,255,0.07); border: 2px solid var(--glass-border);
+  border-radius: var(--radius-sm); color: var(--text);
+  font-family: var(--font-main); font-size: 1rem;
+  transition: border-color 0.3s, box-shadow 0.3s;
+  outline: none;
+}
+.input-field:focus {
+  border-color: var(--electric);
+  box-shadow: 0 0 0 3px rgba(0,212,255,0.15);
+}
+.input-field::placeholder { color: var(--text-dim); }
+/* ===== WELCOME SCREEN ===== */
+#welcome { text-align: center; display: flex; flex-direction: column; align-items: center; justify-content: center; }
+#welcome .logo-area { margin-bottom: 1.5rem; cursor: pointer; user-select: none; }
+#welcome .logo-area svg { filter: drop-shadow(0 0 30px rgba(0,212,255,0.3)); }
+#welcome h1 {
+  font-size: 3rem; font-weight: 800;
+  background: linear-gradient(135deg, var(--electric), var(--gold));
+  -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+  background-clip: text; margin-bottom: 0.5rem;
+}
+#welcome .subtitle { font-size: 1.3rem; color: var(--text-dim); margin-bottom: 2.5rem; }
+.welcome-form { max-width: 450px; width: 100%; margin: 0 auto; }
+.welcome-form .field { margin-bottom: 1.2rem; text-align: left; }
+.welcome-form label { display: block; font-weight: 600; margin-bottom: 0.4rem; font-size: 0.95rem; color: var(--text-dim); }
+/* ===== FORMULA CARDS ===== */
+.formula-cards { display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem; margin: 2rem 0; }
+.formula-card {
+  perspective: 1000px; cursor: pointer; height: 220px;
+}
+.formula-card-inner {
+  position: relative; width: 100%; height: 100%;
+  transition: transform 0.6s; transform-style: preserve-3d;
+}
+.formula-card.flipped .formula-card-inner { transform: rotateY(180deg); }
+.formula-card-front, .formula-card-back {
+  position: absolute; inset: 0; backface-visibility: hidden;
+  border-radius: var(--radius); padding: 1.5rem;
+  display: flex; flex-direction: column; justify-content: center; align-items: center;
+}
+.formula-card-front {
+  background: linear-gradient(135deg, var(--navy-mid), var(--navy-light));
+  border: 2px solid var(--glass-border);
+}
+.formula-card-back {
+  transform: rotateY(180deg);
+  border: 2px solid;
+  font-size: 0.85rem; text-align: left; line-height: 1.8;
+}
+.formula-card.quant .formula-card-back {
+  background: linear-gradient(135deg, rgba(79,195,247,0.15), rgba(79,195,247,0.05));
+  border-color: var(--quant-color);
+}
+.formula-card.qual .formula-card-back {
+  background: linear-gradient(135deg, rgba(129,199,132,0.15), rgba(129,199,132,0.05));
+  border-color: var(--qual-color);
+}
+.formula-card-front h3 { font-size: 1.1rem; margin-top: 0.8rem; }
+.formula-card-front .click-hint { font-size: 0.8rem; color: var(--text-dim); margin-top: 0.5rem; }
+.formula-card-back .formula-line { font-family: 'Courier New', monospace; font-size: 1rem; font-weight: 700; }
+/* ===== GAME SCREEN ===== */
+.game-header {
+  display: flex; justify-content: space-between; align-items: center;
+  margin-bottom: 1.5rem; flex-wrap: wrap; gap: 1rem;
+}
+.game-header-left { display: flex; align-items: center; gap: 1rem; }
+.score-display {
+  font-size: 1.4rem; font-weight: 800;
+  background: linear-gradient(135deg, var(--gold), var(--gold-dim));
+  -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+.progress-bar-container {
+  flex: 1; min-width: 200px; max-width: 400px;
+  background: rgba(255,255,255,0.08); border-radius: 50px; height: 12px;
+  overflow: hidden; position: relative;
+}
+.progress-bar-fill {
+  height: 100%; border-radius: 50px;
+  background: linear-gradient(90deg, var(--electric), var(--gold));
+  transition: width 0.8s cubic-bezier(0.4,0,0.2,1);
+  position: relative;
+}
+.progress-bar-fill::after {
+  content: ''; position: absolute; right: 0; top: 0; bottom: 0; width: 20px;
+  background: linear-gradient(90deg, transparent, rgba(255,255,255,0.4));
+  border-radius: 50px;
+}
+.case-counter { font-size: 0.95rem; color: var(--text-dim); font-weight: 600; }
+/* ===== SCENARIO CARD ===== */
+.scenario-card {
+  margin-bottom: 1.5rem; position: relative; overflow: hidden;
+}
+.scenario-card::before {
+  content: ''; position: absolute; top: 0; left: 0; right: 0; height: 4px;
+  border-radius: var(--radius) var(--radius) 0 0;
+}
+.scenario-header {
+  display: flex; align-items: center; gap: 1.2rem; margin-bottom: 1.2rem;
+  padding-bottom: 1.2rem; border-bottom: 1px solid var(--glass-border);
+}
+.scenario-icon {
+  width: 56px; height: 56px; border-radius: 14px;
+  display: flex; align-items: center; justify-content: center; flex-shrink: 0;
+}
+.scenario-icon svg { width: 32px; height: 32px; }
+.company-name { font-size: 1.3rem; font-weight: 800; }
+.company-sector { font-size: 0.85rem; color: var(--text-dim); margin-top: 2px; }
+.scenario-narrative {
+  font-size: 1.05rem; line-height: 1.7; color: var(--text);
+  margin-bottom: 1.5rem;
+}
+.scenario-params {
+  display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+  gap: 0.8rem; margin-bottom: 1.5rem;
+}
+.param-chip {
+  background: rgba(255,255,255,0.06); border: 1px solid var(--glass-border);
+  border-radius: var(--radius-sm); padding: 0.7rem 1rem; text-align: center;
+}
+.param-chip .param-label { font-size: 0.75rem; color: var(--text-dim); text-transform: uppercase; letter-spacing: 1px; }
+.param-chip .param-value { font-size: 1.15rem; font-weight: 700; margin-top: 0.2rem; }
+/* ===== STEP CALCULATOR ===== */
+.step-calculator { margin-top: 1rem; }
+.calc-step {
+  margin-bottom: 1rem; padding: 1rem 1.2rem;
+  background: rgba(255,255,255,0.04); border: 1px solid var(--glass-border);
+  border-radius: var(--radius-sm); transition: all 0.3s;
+}
+.calc-step.active { border-color: var(--electric); box-shadow: 0 0 0 2px rgba(0,212,255,0.1); }
+.calc-step.correct { border-color: var(--success); background: rgba(0,230,118,0.06); }
+.calc-step.wrong { border-color: var(--error); background: rgba(255,82,82,0.06); }
+.calc-step.locked { opacity: 0.4; pointer-events: none; }
+.calc-step-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.6rem; }
+.calc-step-num {
+  font-size: 0.75rem; font-weight: 700; text-transform: uppercase;
+  letter-spacing: 1px; color: var(--electric);
+}
+.calc-step-label { font-weight: 600; font-size: 0.95rem; }
+.calc-step-formula { font-family: 'Courier New', monospace; font-size: 0.85rem; color: var(--text-dim); margin-bottom: 0.8rem; }
+.calc-step-input {
+  display: flex; gap: 0.8rem; align-items: center;
+}
+.calc-step-input input {
+  flex: 1; max-width: 200px;
+}
+.step-feedback { font-size: 0.85rem; font-weight: 600; margin-top: 0.5rem; }
+.step-feedback.ok { color: var(--success); }
+.step-feedback.nope { color: var(--error); }
+/* ===== HINT SYSTEM ===== */
+.hint-area { margin-top: 1.2rem; display: flex; align-items: center; gap: 1rem; flex-wrap: wrap; }
+.hint-btn {
+  animation: pulse 2s ease-in-out infinite;
+}
+@keyframes pulse {
+  0%, 100% { box-shadow: 0 0 0 0 rgba(255,171,64,0.4); }
+  50% { box-shadow: 0 0 0 10px rgba(255,171,64,0); }
+}
+.hint-count { font-size: 0.85rem; color: var(--text-dim); }
+.hint-text {
+  width: 100%; margin-top: 0.8rem; padding: 1rem;
+  background: rgba(255,171,64,0.08); border: 1px solid rgba(255,171,64,0.25);
+  border-radius: var(--radius-sm); font-size: 0.95rem;
+  animation: fadeInScreen 0.3s ease;
+}
+/* ===== FORMULA SIDEBAR ===== */
+.formula-sidebar {
+  position: fixed; top: 0; right: 0; width: 360px; height: 100vh;
+  background: var(--navy-light); border-left: 1px solid var(--glass-border);
+  z-index: 100; transform: translateX(100%); transition: transform 0.4s cubic-bezier(0.4,0,0.2,1);
+  overflow-y: auto; padding: 2rem;
+}
+.formula-sidebar.open { transform: translateX(0); }
+.formula-sidebar h3 { font-size: 1.2rem; margin-bottom: 1.5rem; }
+.sidebar-section { margin-bottom: 1.5rem; }
+.sidebar-section h4 {
+  font-size: 0.9rem; font-weight: 700; text-transform: uppercase;
+  letter-spacing: 1px; margin-bottom: 0.8rem; padding-bottom: 0.5rem;
+  border-bottom: 2px solid;
+}
+.sidebar-section.quant h4 { color: var(--quant-color); border-color: var(--quant-color); }
+.sidebar-section.qual h4 { color: var(--qual-color); border-color: var(--qual-color); }
+.sidebar-formula {
+  font-family: 'Courier New', monospace; font-size: 0.95rem;
+  padding: 0.8rem; background: rgba(255,255,255,0.04);
+  border-radius: 8px; margin-bottom: 0.6rem; line-height: 1.6;
+}
+.z-table { width: 100%; border-collapse: collapse; margin-top: 0.8rem; }
+.z-table th, .z-table td {
+  padding: 0.5rem 0.8rem; text-align: center;
+  border: 1px solid var(--glass-border); font-size: 0.9rem;
+}
+.z-table th { background: rgba(0,212,255,0.1); font-weight: 700; }
+.sidebar-close {
+  position: absolute; top: 1rem; right: 1rem; background: none; border: none;
+  color: var(--text); font-size: 1.5rem; cursor: pointer; padding: 0.5rem;
+}
+.sidebar-overlay {
+  display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.5);
+  z-index: 99; cursor: pointer;
+}
+.sidebar-overlay.open { display: block; }
+.formula-toggle-btn {
+  position: fixed; top: 50%; right: 0; transform: translateY(-50%);
+  z-index: 50; background: var(--navy-mid); border: 1px solid var(--glass-border);
+  border-right: none; color: var(--electric); padding: 1rem 0.6rem;
+  border-radius: var(--radius-sm) 0 0 var(--radius-sm); cursor: pointer;
+  writing-mode: vertical-lr; font-size: 0.8rem; font-weight: 700;
+  letter-spacing: 1px; transition: all 0.3s;
+}
+.formula-toggle-btn:hover { background: rgba(0,212,255,0.1); padding-right: 1rem; }
+/* ===== TIMER ===== */
+.timer-display {
+  display: flex; align-items: center; gap: 0.5rem;
+  font-size: 0.95rem; color: var(--text-dim); font-weight: 600;
+  font-variant-numeric: tabular-nums;
+}
+/* ===== CONFETTI ===== */
+.confetti-container { position: fixed; inset: 0; pointer-events: none; z-index: 200; }
+.confetti-piece {
+  position: absolute; width: 10px; height: 10px;
+  top: -10px; animation: confettiFall 3s ease-in forwards;
+}
+@keyframes confettiFall {
+  0% { transform: translateY(0) rotate(0deg); opacity: 1; }
+  100% { transform: translateY(110vh) rotate(720deg); opacity: 0; }
+}
+/* ===== SHAKE ===== */
+@keyframes shake {
+  0%, 100% { transform: translateX(0); }
+  20% { transform: translateX(-8px); }
+  40% { transform: translateX(8px); }
+  60% { transform: translateX(-5px); }
+  80% { transform: translateX(5px); }
+}
+.shake { animation: shake 0.5s ease; }
+/* ===== TYPEWRITER ===== */
+.typewriter { overflow: hidden; border-right: 2px solid var(--electric); white-space: normal; }
+/* ===== RESULTS SCREEN ===== */
+.results-hero { text-align: center; margin-bottom: 2.5rem; }
+.results-hero h1 { font-size: 2.5rem; margin-bottom: 0.5rem; }
+.results-score-big {
+  font-size: 5rem; font-weight: 900;
+  background: linear-gradient(135deg, var(--gold), var(--electric));
+  -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+.results-rank {
+  font-size: 1.4rem; font-weight: 700; margin-top: 0.5rem;
+  padding: 0.5rem 2rem; border-radius: 50px; display: inline-block;
+}
+.results-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 1rem; margin: 2rem 0; }
+.result-case-card {
+  padding: 1rem 1.2rem; border-radius: var(--radius-sm);
+  background: var(--glass-bg); border: 1px solid var(--glass-border);
+  display: flex; justify-content: space-between; align-items: center;
+}
+.result-case-card .case-name { font-weight: 700; font-size: 0.95rem; }
+.result-case-card .case-type { font-size: 0.75rem; color: var(--text-dim); margin-top: 2px; }
+.result-case-card .case-score { font-size: 1.3rem; font-weight: 800; }
+.result-case-card .case-score.perfect { color: var(--gold); }
+.result-case-card .case-score.good { color: var(--success); }
+.result-case-card .case-score.ok { color: var(--electric); }
+.result-case-card .case-score.low { color: var(--error); }
+.learnings-card { margin-top: 2rem; }
+.learnings-card h3 { margin-bottom: 1rem; font-size: 1.2rem; }
+.learnings-card ul { list-style: none; }
+.learnings-card li { padding: 0.5rem 0; padding-left: 1.5rem; position: relative; font-size: 0.95rem; }
+.learnings-card li::before {
+  content: ''; position: absolute; left: 0; top: 0.85rem;
+  width: 8px; height: 8px; border-radius: 50%; background: var(--electric);
+}
+/* ===== PROFESSOR MODE ===== */
+.prof-mode-banner {
+  display: none; position: fixed; top: 0; left: 0; right: 0;
+  background: linear-gradient(90deg, var(--error), #ff1744);
+  color: white; text-align: center; padding: 0.5rem; font-weight: 700;
+  font-size: 0.9rem; z-index: 300; letter-spacing: 1px;
+}
+.prof-mode-banner.active { display: block; }
+.prof-answers {
+  display: none; margin-top: 1rem; padding: 1rem;
+  background: rgba(255,82,82,0.1); border: 2px solid var(--error);
+  border-radius: var(--radius-sm);
+}
+.prof-answers.active { display: block; }
+/* ===== SOUND TOGGLE ===== */
+.sound-toggle {
+  position: fixed; bottom: 1.5rem; right: 1.5rem; z-index: 50;
+  width: 48px; height: 48px; border-radius: 50%;
+  background: var(--navy-mid); border: 1px solid var(--glass-border);
+  color: var(--text); cursor: pointer; display: flex;
+  align-items: center; justify-content: center; font-size: 1.3rem;
+  transition: all 0.3s;
+}
+.sound-toggle:hover { background: rgba(0,212,255,0.15); border-color: var(--electric); }
+/* ===== RESPONSIVE ===== */
+@media (max-width: 768px) {
+  .screen { padding: 1rem; }
+  #welcome h1 { font-size: 2rem; }
+  .formula-cards { grid-template-columns: 1fr; }
+  .formula-sidebar { width: 100%; }
+  .scenario-params { grid-template-columns: 1fr 1fr; }
+  .results-score-big { font-size: 3.5rem; }
+  .game-header { flex-direction: column; align-items: flex-start; }
+}
+/* ===== CASE TRANSITION ===== */
+.case-enter { animation: caseSlideIn 0.6s cubic-bezier(0.4,0,0.2,1); }
+@keyframes caseSlideIn {
+  from { opacity: 0; transform: translateX(60px); }
+  to { opacity: 1; transform: translateX(0); }
+}
+/* ===== SCORE ANIM ===== */
+@keyframes countUp {
+  from { transform: scale(1.3); } to { transform: scale(1); }
+}
+.score-pop { animation: countUp 0.3s ease; }
+/* ===== TOOLTIP ===== */
+.tooltip-wrap { position: relative; display: inline-block; }
+.tooltip-wrap .tooltip-text {
+  visibility: hidden; opacity: 0; position: absolute; bottom: 130%;
+  left: 50%; transform: translateX(-50%);
+  background: var(--navy); border: 1px solid var(--glass-border);
+  padding: 0.5rem 0.8rem; border-radius: 8px; font-size: 0.8rem;
+  white-space: nowrap; z-index: 10; transition: all 0.2s; color: var(--text);
+  pointer-events: none;
+}
+.tooltip-wrap:hover .tooltip-text { visibility: visible; opacity: 1; }
+/* ===== VARIABLE TYPE SELECTOR ===== */
+.type-selector { display: flex; gap: 1rem; margin-bottom: 1.5rem; }
+.type-option {
+  flex: 1; padding: 1rem; border-radius: var(--radius-sm);
+  border: 2px solid var(--glass-border); cursor: pointer;
+  text-align: center; transition: all 0.3s; background: rgba(255,255,255,0.03);
+}
+.type-option:hover { border-color: rgba(255,255,255,0.25); background: rgba(255,255,255,0.06); }
+.type-option.selected-quant { border-color: var(--quant-color); background: rgba(79,195,247,0.1); }
+.type-option.selected-qual { border-color: var(--qual-color); background: rgba(129,199,132,0.1); }
+.type-option .type-icon { font-size: 1.8rem; margin-bottom: 0.3rem; }
+.type-option .type-label { font-weight: 700; font-size: 0.95rem; }
+.type-option .type-desc { font-size: 0.8rem; color: var(--text-dim); margin-top: 0.2rem; }
+/* ===== INTER-CASE SCREEN ===== */
+.intercase {
+  display: none; position: fixed; inset: 0; z-index: 150;
+  background: var(--navy); flex-direction: column;
+  align-items: center; justify-content: center; text-align: center;
+}
+.intercase.active { display: flex; }
+.intercase h2 { font-size: 2rem; margin-bottom: 0.5rem; }
+.intercase .case-preview { font-size: 1.1rem; color: var(--text-dim); }
+.intercase .countdown { font-size: 4rem; font-weight: 900; color: var(--electric); margin: 1.5rem 0; }
+</style>
+</head>
+<body>
+
+<div class="bg-shapes">
+  <div class="shape"></div><div class="shape"></div><div class="shape"></div>
+  <div class="shape"></div><div class="shape"></div>
+</div>
+
+<div class="prof-mode-banner" id="profBanner">MODO PROFESOR ACTIVADO - Respuestas visibles</div>
+
+<!-- ======== WELCOME SCREEN ======== -->
+<div class="screen active" id="welcome">
+  <div class="logo-area" id="logoClick">
+    <svg width="120" height="120" viewBox="0 0 120 120" fill="none">
+      <circle cx="60" cy="60" r="56" stroke="url(#lg1)" stroke-width="3" fill="rgba(0,212,255,0.05)"/>
+      <defs><linearGradient id="lg1" x1="0" y1="0" x2="120" y2="120"><stop stop-color="#00d4ff"/><stop offset="1" stop-color="#ffd700"/></linearGradient></defs>
+      <!-- Briefcase -->
+      <rect x="32" y="48" width="56" height="38" rx="6" stroke="#00d4ff" stroke-width="2.5" fill="rgba(0,212,255,0.08)"/>
+      <path d="M46 48V40a6 6 0 016-6h16a6 6 0 016 6v8" stroke="#00d4ff" stroke-width="2.5" fill="none"/>
+      <line x1="32" y1="62" x2="88" y2="62" stroke="#00d4ff" stroke-width="2" opacity="0.5"/>
+      <circle cx="60" cy="62" r="5" fill="#ffd700"/>
+      <!-- Chart bars -->
+      <rect x="42" y="70" width="6" height="10" rx="1" fill="#00d4ff" opacity="0.6"/>
+      <rect x="52" y="66" width="6" height="14" rx="1" fill="#00d4ff" opacity="0.8"/>
+      <rect x="62" y="63" width="6" height="17" rx="1" fill="#ffd700" opacity="0.8"/>
+      <rect x="72" y="68" width="6" height="12" rx="1" fill="#00d4ff" opacity="0.6"/>
+    </svg>
+  </div>
+  <h1>El Consultor Estadistico</h1>
+  <p class="subtitle">Calcula el tamano de muestra para poblaciones finitas como un profesional</p>
+
+  <div class="formula-cards">
+    <div class="formula-card quant" onclick="this.classList.toggle('flipped')">
+      <div class="formula-card-inner">
+        <div class="formula-card-front">
+          <svg width="48" height="48" viewBox="0 0 48 48" fill="none"><rect x="6" y="8" width="36" height="32" rx="4" stroke="#4fc3f7" stroke-width="2" fill="rgba(79,195,247,0.1)"/><path d="M14 30V22M22 30V18M30 30V14M38 30V20" stroke="#4fc3f7" stroke-width="2.5" stroke-linecap="round"/></svg>
+          <h3 style="color:var(--quant-color)">Variable Cuantitativa</h3>
+          <span class="click-hint">Clic para ver formula</span>
+        </div>
+        <div class="formula-card-back">
+          <div class="formula-line">n&#8320; = (Z&#178; x &#963;&#178;) / e&#178;</div>
+          <div class="formula-line" style="margin-top:0.5rem">n = n&#8320; / (1 + n&#8320;/N)</div>
+          <div style="margin-top:0.8rem; font-size:0.8rem; color:var(--text-dim)">
+            Z = valor Z de confianza<br>
+            &#963; = desviacion estandar<br>
+            e = margen de error<br>
+            N = tamano de poblacion
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="formula-card qual" onclick="this.classList.toggle('flipped')">
+      <div class="formula-card-inner">
+        <div class="formula-card-front">
+          <svg width="48" height="48" viewBox="0 0 48 48" fill="none"><circle cx="24" cy="24" r="18" stroke="#81c784" stroke-width="2" fill="rgba(129,199,132,0.1)"/><path d="M24 6a18 18 0 010 36" fill="rgba(129,199,132,0.3)"/><circle cx="24" cy="24" r="6" fill="#81c784" opacity="0.5"/></svg>
+          <h3 style="color:var(--qual-color)">Variable Cualitativa</h3>
+          <span class="click-hint">Clic para ver formula</span>
+        </div>
+        <div class="formula-card-back">
+          <div class="formula-line">n&#8320; = (Z&#178; x p x q) / e&#178;</div>
+          <div class="formula-line" style="margin-top:0.5rem">n = n&#8320; / (1 + n&#8320;/N)</div>
+          <div style="margin-top:0.8rem; font-size:0.8rem; color:var(--text-dim)">
+            Z = valor Z de confianza<br>
+            p = proporcion estimada<br>
+            q = 1 - p<br>
+            e = margen de error<br>
+            N = tamano de poblacion
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="welcome-form glass" style="margin-top:1rem">
+    <div class="field">
+      <label>Tu Nombre</label>
+      <input type="text" class="input-field" id="playerName" placeholder="Ej: Maria Lopez" maxlength="40">
+    </div>
+    <div class="field">
+      <label>Nombre de tu Firma Consultora</label>
+      <input type="text" class="input-field" id="firmName" placeholder="Ej: DataVision Consulting" maxlength="50">
+    </div>
+    <button class="btn btn-primary" style="width:100%; margin-top:1rem; justify-content:center" onclick="startGame()">
+      <svg width="20" height="20" viewBox="0 0 20 20" fill="none"><path d="M7 4l9 6-9 6V4z" fill="currentColor"/></svg>
+      Iniciar Consultoria
+    </button>
+  </div>
+</div>
+
+<!-- ======== GAME SCREEN ======== -->
+<div class="screen" id="gameScreen">
+  <div class="game-header">
+    <div class="game-header-left">
+      <span class="case-counter" id="caseCounter">Caso 1 / 10</span>
+      <div class="progress-bar-container">
+        <div class="progress-bar-fill" id="progressBar" style="width:0%"></div>
+      </div>
+    </div>
+    <div style="display:flex;align-items:center;gap:1.5rem">
+      <div class="timer-display" id="timerDisplay">
+        <svg width="18" height="18" viewBox="0 0 18 18" fill="none"><circle cx="9" cy="10" r="7" stroke="currentColor" stroke-width="1.5"/><line x1="9" y1="10" x2="9" y2="6" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/><line x1="9" y1="10" x2="12" y2="10" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/><line x1="7" y1="2" x2="11" y2="2" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
+        <span id="timerText">00:00</span>
+      </div>
+      <div class="score-display" id="scoreDisplay">0 pts</div>
+    </div>
+  </div>
+
+  <div id="scenarioArea"></div>
+</div>
+
+<!-- ======== RESULTS SCREEN ======== -->
+<div class="screen" id="resultsScreen">
+  <div class="results-hero">
+    <svg width="80" height="80" viewBox="0 0 80 80" fill="none" id="trophySvg">
+      <path d="M25 20h30v10c0 12-7 22-15 26-8-4-15-14-15-26V20z" fill="url(#tg)" stroke="#ffd700" stroke-width="2"/>
+      <rect x="33" y="56" width="14" height="6" rx="2" fill="#ffd700"/>
+      <rect x="28" y="62" width="24" height="5" rx="2" fill="#c4a600"/>
+      <path d="M25 24H16c0 10 5 16 12 18" stroke="#ffd700" stroke-width="2" fill="none"/>
+      <path d="M55 24h9c0 10-5 16-12 18" stroke="#ffd700" stroke-width="2" fill="none"/>
+      <circle cx="40" cy="36" r="6" fill="rgba(255,255,255,0.2)" stroke="#fff" stroke-width="1"/>
+      <defs><linearGradient id="tg" x1="25" y1="20" x2="55" y2="56"><stop stop-color="#ffd700"/><stop offset="1" stop-color="#ff9800"/></linearGradient></defs>
+    </svg>
+    <h1>Reporte Final del Consultor</h1>
+    <p style="color:var(--text-dim);font-size:1.1rem" id="resultsPlayerInfo"></p>
+    <div class="results-score-big" id="finalScore">0</div>
+    <p style="color:var(--text-dim);margin-top:-0.5rem">de 1,000 puntos posibles</p>
+    <div class="results-rank" id="rankBadge"></div>
+  </div>
+
+  <div class="results-grid" id="resultsGrid"></div>
+
+  <div class="learnings-card glass">
+    <h3>Aprendizajes Clave</h3>
+    <ul>
+      <li>Para <strong>variables cuantitativas</strong>, se usa la desviacion estandar (&#963;) en la formula del tamano de muestra.</li>
+      <li>Para <strong>variables cualitativas</strong>, se usan las proporciones p y q = 1-p.</li>
+      <li>La <strong>correccion por poblacion finita</strong> (n = n&#8320; / (1 + n&#8320;/N)) siempre reduce el tamano de muestra requerido.</li>
+      <li>A mayor <strong>nivel de confianza</strong> (Z mayor), se necesita una muestra mas grande.</li>
+      <li>A menor <strong>margen de error</strong> (e), se necesita una muestra mas grande.</li>
+      <li>Cuando N es muy grande, la correccion finita tiene poco efecto y n se acerca a n&#8320;.</li>
+    </ul>
+  </div>
+
+  <div style="text-align:center; margin-top:2rem; display:flex; gap:1rem; justify-content:center; flex-wrap:wrap">
+    <button class="btn btn-primary" onclick="retryMissed()">Reintentar Casos Fallidos</button>
+    <button class="btn btn-gold" onclick="restartGame()">Jugar de Nuevo</button>
+  </div>
+</div>
+
+<!-- ======== FORMULA SIDEBAR ======== -->
+<div class="sidebar-overlay" id="sidebarOverlay" onclick="closeSidebar()"></div>
+<div class="formula-sidebar" id="formulaSidebar">
+  <button class="sidebar-close" onclick="closeSidebar()">&times;</button>
+  <h3>Referencia de Formulas</h3>
+  <div class="sidebar-section quant">
+    <h4>Cuantitativa (Medias)</h4>
+    <div class="sidebar-formula">
+      n&#8320; = (Z&#178; &times; &#963;&#178;) / e&#178;<br>
+      n = n&#8320; / (1 + n&#8320;/N)
+    </div>
+    <div style="font-size:0.85rem; color:var(--text-dim); line-height:1.7">
+      <div class="tooltip-wrap">Z<span class="tooltip-text">Valor Z segun nivel de confianza</span></div> = Valor critico Z<br>
+      <div class="tooltip-wrap">&#963;<span class="tooltip-text">Desviacion estandar poblacional conocida o estimada</span></div> = Desviacion estandar<br>
+      <div class="tooltip-wrap">e<span class="tooltip-text">Error maximo aceptable (mismas unidades que &#963;)</span></div> = Margen de error<br>
+      <div class="tooltip-wrap">N<span class="tooltip-text">Tamano total de la poblacion</span></div> = Tamano de poblacion
+    </div>
+  </div>
+  <div class="sidebar-section qual">
+    <h4>Cualitativa (Proporciones)</h4>
+    <div class="sidebar-formula">
+      n&#8320; = (Z&#178; &times; p &times; q) / e&#178;<br>
+      n = n&#8320; / (1 + n&#8320;/N)
+    </div>
+    <div style="font-size:0.85rem; color:var(--text-dim); line-height:1.7">
+      <div class="tooltip-wrap">p<span class="tooltip-text">Proporcion estimada del evento de interes</span></div> = Proporcion estimada<br>
+      <div class="tooltip-wrap">q<span class="tooltip-text">Complemento: q = 1 - p</span></div> = 1 - p<br>
+      e, Z, N = igual que cuantitativa
+    </div>
+  </div>
+  <div class="sidebar-section">
+    <h4 style="color:var(--electric); border-color:var(--electric)">Tabla Z Rapida</h4>
+    <table class="z-table">
+      <tr><th>Confianza</th><th>Z</th></tr>
+      <tr><td>90%</td><td>1.645</td></tr>
+      <tr><td>95%</td><td>1.96</td></tr>
+      <tr><td>99%</td><td>2.576</td></tr>
+    </table>
+  </div>
+</div>
+<button class="formula-toggle-btn" id="formulaToggle" onclick="toggleSidebar()" style="display:none">
+  F<br>O<br>R<br>M<br>U<br>L<br>A<br>S
+</button>
+
+<!-- ======== SOUND TOGGLE ======== -->
+<button class="sound-toggle" id="soundToggle" onclick="toggleSound()" title="Sonido">
+  <span id="soundIcon">&#128264;</span>
+</button>
+
+<!-- ======== CONFETTI CONTAINER ======== -->
+<div class="confetti-container" id="confettiContainer"></div>
+
+<script>
+// ===== GAME STATE =====
+const state = {
+  playerName: '',
+  firmName: '',
+  currentCase: 0,
+  totalScore: 0,
+  caseScores: [],
+  caseDetails: [],
+  hintsUsed: [],
+  soundOn: true,
+  profMode: false,
+  logoClicks: 0,
+  timerInterval: null,
+  timerSeconds: 0,
+  retryMode: false,
+  retryCases: [],
+};
+
+// ===== AUDIO =====
+const AudioCtx = window.AudioContext || window.webkitAudioContext;
+let audioCtx = null;
+function getAudioCtx() {
+  if (!audioCtx) audioCtx = new AudioCtx();
+  return audioCtx;
+}
+function playTone(freq, duration, type='sine', vol=0.15) {
+  if (!state.soundOn) return;
+  try {
+    const ctx = getAudioCtx();
+    const osc = ctx.createOscillator();
+    const gain = ctx.createGain();
+    osc.type = type;
+    osc.frequency.value = freq;
+    gain.gain.value = vol;
+    gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + duration);
+    osc.connect(gain);
+    gain.connect(ctx.destination);
+    osc.start();
+    osc.stop(ctx.currentTime + duration);
+  } catch(e) {}
+}
+function playCorrect() { playTone(523, 0.1); setTimeout(()=>playTone(659, 0.1), 100); setTimeout(()=>playTone(784, 0.2), 200); }
+function playWrong() { playTone(200, 0.3, 'sawtooth', 0.1); }
+function playComplete() { [523,659,784,1047].forEach((f,i)=>setTimeout(()=>playTone(f,0.15),i*120)); }
+
+function toggleSound() {
+  state.soundOn = !state.soundOn;
+  document.getElementById('soundIcon').innerHTML = state.soundOn ? '&#128264;' : '&#128263;';
+}
+
+// ===== PROFESSOR MODE =====
+document.getElementById('logoClick').addEventListener('click', () => {
+  state.logoClicks++;
+  if (state.logoClicks >= 5 && !state.profMode) {
+    state.profMode = true;
+    document.getElementById('profBanner').classList.add('active');
+    playTone(880, 0.3);
+  }
+});
+
+// ===== SCENARIOS =====
+const SCENARIOS = [
+  {
+    id: 1, company: 'TechNova Corp', sector: 'Tecnologia - Infraestructura Cloud',
+    type: 'quant', color: '#4fc3f7', icon: 'server',
+    narrative: 'Eres contratado por TechNova Corp, una empresa lider en servicios cloud. Su CEO, preocupado por la experiencia del usuario, necesita estimar el <strong>tiempo promedio de respuesta (en milisegundos)</strong> de su aplicacion principal desplegada en sus servidores. El equipo de ingenieria ha determinado que la desviacion estandar historica es de 120 ms. El CEO necesita una estimacion con margen de error de 15 ms y 95% de confianza.',
+    params: { N: 4500, sigma: 120, e: 15, conf: 95, Z: 1.96 },
+    hints: [
+      'Identifica el tipo: se habla de "tiempo promedio" (media), por lo tanto es variable cuantitativa.',
+      'Formula para n0: n0 = (1.96^2 x 120^2) / 15^2. Calcula numerador y denominador por separado.',
+      'n0 = (3.8416 x 14400) / 225 = 55319.04 / 225 = 245.86. Luego aplica correccion finita.'
+    ]
+  },
+  {
+    id: 2, company: 'AgroVerde S.A.', sector: 'Agroindustria - Logistica',
+    type: 'quant', color: '#66bb6a', icon: 'truck',
+    narrative: 'AgroVerde S.A. opera una flota de transporte refrigerado en el Eje Cafetero. Su CFO quiere estimar el <strong>costo promedio mensual de combustible por camion</strong> para optimizar el presupuesto operativo. Datos historicos muestran una desviacion estandar de $450 USD. Se requiere precision de $60 USD con 99% de confianza.',
+    params: { N: 380, sigma: 450, e: 60, conf: 99, Z: 2.576 },
+    hints: [
+      'Se busca estimar un "costo promedio" (media monetaria), entonces es variable cuantitativa.',
+      'Con 99% de confianza, Z = 2.576. n0 = (2.576^2 x 450^2) / 60^2.',
+      'n0 = (6.635 x 202500) / 3600 = 1343587.5 / 3600 = 373.22. Correccion: n = 373.22 / (1 + 373.22/380).'
+    ]
+  },
+  {
+    id: 3, company: 'Hospital Central', sector: 'Salud - Gestion Hospitalaria',
+    type: 'quant', color: '#ef5350', icon: 'hospital',
+    narrative: 'El director del Hospital Central necesita un estudio sobre los <strong>tiempos promedio de espera de los pacientes</strong> en el area de urgencias. Se registran aproximadamente 12,000 pacientes al ano. La desviacion estandar historica es de 18 minutos. Se requiere un margen de error de 3 minutos con 95% de confianza para presentar resultados al Ministerio de Salud.',
+    params: { N: 12000, sigma: 18, e: 3, conf: 95, Z: 1.96 },
+    hints: [
+      'El "tiempo promedio de espera" es una variable cuantitativa continua.',
+      'n0 = (1.96^2 x 18^2) / 3^2 = (3.8416 x 324) / 9.',
+      'n0 = 1244.68 / 9 = 138.30. Correccion: n = 138.30 / (1 + 138.30/12000).'
+    ]
+  },
+  {
+    id: 4, company: 'EduPremium', sector: 'Educacion Superior - Calidad Academica',
+    type: 'quant', color: '#ab47bc', icon: 'university',
+    narrative: 'La rectora de EduPremium desea estimar el <strong>puntaje promedio SABER PRO</strong> de sus graduados para el informe de acreditacion institucional. La universidad tiene 2,800 graduados recientes. Estudios previos muestran una desviacion estandar de 42 puntos. Se necesita un error maximo de 5 puntos con 99% de confianza.',
+    params: { N: 2800, sigma: 42, e: 5, conf: 99, Z: 2.576 },
+    hints: [
+      'El "puntaje promedio" es claramente una variable cuantitativa.',
+      'Z = 2.576 (99%). n0 = (2.576^2 x 42^2) / 5^2 = (6.635 x 1764) / 25.',
+      'n0 = 11704.14 / 25 = 468.17. Correccion: n = 468.17 / (1 + 468.17/2800).'
+    ]
+  },
+  {
+    id: 5, company: 'RetailMax', sector: 'Retail - Operaciones Comerciales',
+    type: 'quant', color: '#ff7043', icon: 'store',
+    narrative: 'RetailMax, cadena de tiendas de conveniencia, necesita estimar las <strong>ventas diarias promedio por tienda</strong> para calibrar su modelo de inventario. Operan 650 tiendas a nivel nacional. La desviacion estandar historica de ventas diarias es de $3,200 USD. El VP de Operaciones acepta un error de $400 con 95% de confianza.',
+    params: { N: 650, sigma: 3200, e: 400, conf: 95, Z: 1.96 },
+    hints: [
+      'Las "ventas diarias promedio" son una media numerica: variable cuantitativa.',
+      'n0 = (1.96^2 x 3200^2) / 400^2 = (3.8416 x 10240000) / 160000.',
+      'n0 = 39337984 / 160000 = 245.86. Correccion: n = 245.86 / (1 + 245.86/650).'
+    ]
+  },
+  {
+    id: 6, company: 'BancoDigital', sector: 'Fintech - Banca Movil',
+    type: 'qual', color: '#42a5f5', icon: 'phone',
+    narrative: 'BancoDigital, con 85,000 usuarios activos, enfrenta reportes de fallas en su app movil. El CTO necesita estimar la <strong>proporcion de usuarios que experimentan caidas de la aplicacion</strong>. Un muestreo piloto sugirio que aproximadamente el 12% de los usuarios reportan este problema. Se requiere un margen de error del 3% con 95% de confianza.',
+    params: { N: 85000, p: 0.12, e: 0.03, conf: 95, Z: 1.96 },
+    hints: [
+      'Se busca una "proporcion" (porcentaje de usuarios con fallas): variable cualitativa/binaria.',
+      'q = 1 - 0.12 = 0.88. n0 = (1.96^2 x 0.12 x 0.88) / 0.03^2.',
+      'n0 = (3.8416 x 0.1056) / 0.0009 = 0.4057 / 0.0009 = 450.74. Correccion: n = 450.74 / (1 + 450.74/85000).'
+    ]
+  },
+  {
+    id: 7, company: 'FarmaVida', sector: 'Farmaceutica - Control de Calidad',
+    type: 'qual', color: '#26c6da', icon: 'pill',
+    narrative: 'FarmaVida produce un lote de 5,200 unidades de un medicamento critico. La directora de calidad necesita verificar la <strong>tasa de defectos</strong> del lote. Historicamente, la tasa de defectos es del 5%. Por regulacion, el estudio debe tener un margen de error maximo del 2% con 99% de confianza.',
+    params: { N: 5200, p: 0.05, e: 0.02, conf: 99, Z: 2.576 },
+    hints: [
+      'La "tasa de defectos" es una proporcion: variable cualitativa (defectuoso o no).',
+      'q = 1 - 0.05 = 0.95. n0 = (2.576^2 x 0.05 x 0.95) / 0.02^2.',
+      'n0 = (6.635 x 0.0475) / 0.0004 = 0.3152 / 0.0004 = 787.89. Correccion: n = 787.89 / (1 + 787.89/5200).'
+    ]
+  },
+  {
+    id: 8, company: 'AeroLine', sector: 'Aviacion - Experiencia del Cliente',
+    type: 'qual', color: '#5c6bc0', icon: 'airplane',
+    narrative: 'AeroLine, con 32,000 pasajeros mensuales, quiere medir la <strong>proporcion de pasajeros satisfechos</strong> con el servicio a bordo para una campana de mejora. Encuestas previas muestran que el 78% de los pasajeros reportan estar satisfechos. Se necesita un error del 4% con 95% de confianza.',
+    params: { N: 32000, p: 0.78, e: 0.04, conf: 95, Z: 1.96 },
+    hints: [
+      'La "proporcion de pasajeros satisfechos" es una variable cualitativa (satisfecho o no).',
+      'q = 1 - 0.78 = 0.22. n0 = (1.96^2 x 0.78 x 0.22) / 0.04^2.',
+      'n0 = (3.8416 x 0.1716) / 0.0016 = 0.6592 / 0.0016 = 412.01. Correccion: n = 412.01 / (1 + 412.01/32000).'
+    ]
+  },
+  {
+    id: 9, company: 'ConstruPlan', sector: 'Construccion - Seguridad Industrial',
+    type: 'qual', color: '#ffa726', icon: 'hardhat',
+    narrative: 'ConstruPlan, con 1,200 trabajadores en obra, contrata tu firma para estimar la <strong>proporcion de trabajadores que usan correctamente los elementos de proteccion personal (EPP)</strong>. Un estudio rapido sugiere que el 65% los usa correctamente. El director de seguridad requiere un error maximo del 5% con 99% de confianza.',
+    params: { N: 1200, p: 0.65, e: 0.05, conf: 99, Z: 2.576 },
+    hints: [
+      'La "proporcion que usa EPP correctamente" es una variable cualitativa (usa bien o no).',
+      'q = 1 - 0.65 = 0.35. n0 = (2.576^2 x 0.65 x 0.35) / 0.05^2.',
+      'n0 = (6.635 x 0.2275) / 0.0025 = 1.5095 / 0.0025 = 603.79. Correccion: n = 603.79 / (1 + 603.79/1200).'
+    ]
+  },
+  {
+    id: 10, company: 'StartupHub', sector: 'Capital de Riesgo - Analisis de Portafolio',
+    type: 'qual', color: '#ec407a', icon: 'rocket',
+    narrative: 'StartupHub, un fondo de inversion con un portafolio de 420 startups, necesita estimar la <strong>proporcion de startups que logran un ROI superior al 15%</strong>. Datos preliminares sugieren que el 30% lo logra. El inversionista principal necesita esta estimacion con error del 5% y 95% de confianza para decidir la estrategia del proximo trimestre.',
+    params: { N: 420, p: 0.30, e: 0.05, conf: 95, Z: 1.96 },
+    hints: [
+      'La "proporcion que logra ROI > 15%" es una variable cualitativa (lo logra o no).',
+      'q = 1 - 0.30 = 0.70. n0 = (1.96^2 x 0.30 x 0.70) / 0.05^2.',
+      'n0 = (3.8416 x 0.21) / 0.0025 = 0.8067 / 0.0025 = 322.69. Correccion: n = 322.69 / (1 + 322.69/420).'
+    ]
+  }
+];
+
+// ===== SVG ICONS =====
+const ICONS = {
+  server: '<svg viewBox="0 0 32 32" fill="none"><rect x="4" y="4" width="24" height="8" rx="2" stroke="currentColor" stroke-width="1.5"/><rect x="4" y="14" width="24" height="8" rx="2" stroke="currentColor" stroke-width="1.5"/><circle cx="8" cy="8" r="1.5" fill="currentColor"/><circle cx="8" cy="18" r="1.5" fill="currentColor"/><line x1="12" y1="8" x2="24" y2="8" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/><line x1="12" y1="18" x2="24" y2="18" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/><path d="M12 24h8M16 22v4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>',
+  truck: '<svg viewBox="0 0 32 32" fill="none"><rect x="2" y="10" width="18" height="12" rx="2" stroke="currentColor" stroke-width="1.5"/><path d="M20 14h6l4 5v3h-10v-8z" stroke="currentColor" stroke-width="1.5" fill="none"/><circle cx="8" cy="24" r="2.5" stroke="currentColor" stroke-width="1.5"/><circle cx="24" cy="24" r="2.5" stroke="currentColor" stroke-width="1.5"/></svg>',
+  hospital: '<svg viewBox="0 0 32 32" fill="none"><rect x="6" y="8" width="20" height="20" rx="2" stroke="currentColor" stroke-width="1.5"/><path d="M6 14h20" stroke="currentColor" stroke-width="1.5"/><rect x="13" y="3" width="6" height="7" rx="1" stroke="currentColor" stroke-width="1.5"/><path d="M16 16v6M13 19h6" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>',
+  university: '<svg viewBox="0 0 32 32" fill="none"><path d="M16 4L2 12l14 8 14-8L16 4z" stroke="currentColor" stroke-width="1.5" fill="none"/><path d="M6 14v8l10 6 10-6v-8" stroke="currentColor" stroke-width="1.5" fill="none"/><line x1="28" y1="12" x2="28" y2="24" stroke="currentColor" stroke-width="1.5"/></svg>',
+  store: '<svg viewBox="0 0 32 32" fill="none"><path d="M4 14h24v14H4z" stroke="currentColor" stroke-width="1.5"/><path d="M4 14L6 6h20l2 8" stroke="currentColor" stroke-width="1.5" fill="none"/><path d="M4 14c0 2 2 3 3.5 3s3.5-1 3.5-3" stroke="currentColor" stroke-width="1.5"/><path d="M11 14c0 2 2 3 3.5 3s3.5-1 3.5-3" stroke="currentColor" stroke-width="1.5"/><path d="M18 14c0 2 2 3 3.5 3s3.5-1 3.5-3" stroke="currentColor" stroke-width="1.5"/><rect x="12" y="21" width="8" height="7" rx="1" stroke="currentColor" stroke-width="1.5"/></svg>',
+  phone: '<svg viewBox="0 0 32 32" fill="none"><rect x="9" y="3" width="14" height="26" rx="3" stroke="currentColor" stroke-width="1.5"/><line x1="9" y1="7" x2="23" y2="7" stroke="currentColor" stroke-width="1"/><line x1="9" y1="24" x2="23" y2="24" stroke="currentColor" stroke-width="1"/><circle cx="16" cy="27" r="1.5" fill="currentColor"/><rect x="12" y="10" width="8" height="4" rx="1" stroke="currentColor" stroke-width="1" opacity="0.5"/></svg>',
+  pill: '<svg viewBox="0 0 32 32" fill="none"><rect x="6" y="12" width="20" height="8" rx="4" stroke="currentColor" stroke-width="1.5" transform="rotate(-30 16 16)"/><line x1="16" y1="10" x2="16" y2="22" stroke="currentColor" stroke-width="1.5" transform="rotate(-30 16 16)"/><circle cx="10" cy="6" r="2" stroke="currentColor" stroke-width="1" opacity="0.4"/><circle cx="24" cy="8" r="1.5" stroke="currentColor" stroke-width="1" opacity="0.4"/></svg>',
+  airplane: '<svg viewBox="0 0 32 32" fill="none"><path d="M16 4L12 16l-8 2 8 2 4 10 4-10 8-2-8-2L16 4z" stroke="currentColor" stroke-width="1.5" fill="none"/><circle cx="16" cy="16" r="2" fill="currentColor" opacity="0.5"/></svg>',
+  hardhat: '<svg viewBox="0 0 32 32" fill="none"><path d="M6 18c0-5.5 4.5-10 10-10s10 4.5 10 10" stroke="currentColor" stroke-width="2"/><rect x="4" y="18" width="24" height="4" rx="2" stroke="currentColor" stroke-width="1.5"/><path d="M16 8V5" stroke="currentColor" stroke-width="2" stroke-linecap="round"/><rect x="4" y="22" width="24" height="3" rx="1" stroke="currentColor" stroke-width="1.5"/></svg>',
+  rocket: '<svg viewBox="0 0 32 32" fill="none"><path d="M16 3c-4 6-5 14-5 18h10c0-4-1-12-5-18z" stroke="currentColor" stroke-width="1.5" fill="none"/><path d="M11 21c-3-1-5 0-6 3l6-1" stroke="currentColor" stroke-width="1.5" fill="none"/><path d="M21 21c3-1 5 0 6 3l-6-1" stroke="currentColor" stroke-width="1.5" fill="none"/><circle cx="16" cy="14" r="2.5" stroke="currentColor" stroke-width="1.5"/><path d="M13 25l3 4 3-4" stroke="currentColor" stroke-width="1.5" fill="none"/></svg>'
+};
+
+// ===== CALCULATIONS =====
+function calcExpected(sc) {
+  const Z = sc.params.Z;
+  const N = sc.params.N;
+  if (sc.type === 'quant') {
+    const sigma = sc.params.sigma;
+    const e = sc.params.e;
+    const n0 = (Z * Z * sigma * sigma) / (e * e);
+    const n = n0 / (1 + n0 / N);
+    return { n0: n0, n: Math.ceil(n) };
+  } else {
+    const p = sc.params.p;
+    const q = 1 - p;
+    const e = sc.params.e;
+    const n0 = (Z * Z * p * q) / (e * e);
+    const n = n0 / (1 + n0 / N);
+    return { n0: n0, n: Math.ceil(n) };
+  }
+}
+
+// ===== START GAME =====
+function startGame() {
+  const name = document.getElementById('playerName').value.trim();
+  const firm = document.getElementById('firmName').value.trim();
+  if (!name) { document.getElementById('playerName').focus(); playWrong(); return; }
+  state.playerName = name;
+  state.firmName = firm || 'Consultora Independiente';
+  state.currentCase = 0;
+  state.totalScore = 0;
+  state.caseScores = new Array(10).fill(0);
+  state.caseDetails = new Array(10).fill(null);
+  state.hintsUsed = new Array(10).fill(0);
+  state.retryMode = false;
+  state.retryCases = [];
+  showScreen('gameScreen');
+  document.getElementById('formulaToggle').style.display = 'block';
+  loadCase(0);
+  playTone(440, 0.1); setTimeout(()=>playTone(660, 0.15), 100);
+}
+
+function showScreen(id) {
+  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+}
+
+// ===== TIMER =====
+function startTimer() {
+  state.timerSeconds = 0;
+  clearInterval(state.timerInterval);
+  updateTimerDisplay();
+  state.timerInterval = setInterval(() => {
+    state.timerSeconds++;
+    updateTimerDisplay();
+  }, 1000);
+}
+function stopTimer() { clearInterval(state.timerInterval); }
+function updateTimerDisplay() {
+  const m = Math.floor(state.timerSeconds / 60).toString().padStart(2, '0');
+  const s = (state.timerSeconds % 60).toString().padStart(2, '0');
+  document.getElementById('timerText').textContent = m + ':' + s;
+}
+
+// ===== LOAD CASE =====
+function loadCase(idx) {
+  const caseList = state.retryMode ? state.retryCases : [...Array(10).keys()];
+  const scIdx = caseList[idx];
+  const sc = SCENARIOS[scIdx];
+  const total = caseList.length;
+  state.currentCase = idx;
+
+  document.getElementById('caseCounter').textContent = 'Caso ' + (idx + 1) + ' / ' + total;
+  document.getElementById('progressBar').style.width = ((idx) / total * 100) + '%';
+  document.getElementById('scoreDisplay').textContent = state.totalScore + ' pts';
+
+  startTimer();
+
+  const expected = calcExpected(sc);
+  const isQual = sc.type === 'qual';
+
+  let paramsHTML = '';
+  paramsHTML += '<div class="param-chip"><div class="param-label">Poblacion (N)</div><div class="param-value">' + sc.params.N.toLocaleString() + '</div></div>';
+  if (isQual) {
+    paramsHTML += '<div class="param-chip"><div class="param-label">Proporcion (p)</div><div class="param-value">' + sc.params.p + '</div></div>';
+    paramsHTML += '<div class="param-chip"><div class="param-label">q = 1-p</div><div class="param-value">' + (1 - sc.params.p).toFixed(2) + '</div></div>';
+  } else {
+    paramsHTML += '<div class="param-chip"><div class="param-label">Desv. Est. (&#963;)</div><div class="param-value">' + sc.params.sigma.toLocaleString() + '</div></div>';
+  }
+  paramsHTML += '<div class="param-chip"><div class="param-label">Error (e)</div><div class="param-value">' + sc.params.e + '</div></div>';
+  paramsHTML += '<div class="param-chip"><div class="param-label">Confianza</div><div class="param-value">' + sc.params.conf + '%</div></div>';
+  paramsHTML += '<div class="param-chip"><div class="param-label">Z</div><div class="param-value">' + sc.params.Z + '</div></div>';
+
+  let stepFormulaText, stepFormulaCalc;
+  if (isQual) {
+    stepFormulaText = 'n\u2080 = (Z\u00B2 \u00D7 p \u00D7 q) / e\u00B2';
+    stepFormulaCalc = 'n\u2080 = (' + sc.params.Z + '\u00B2 \u00D7 ' + sc.params.p + ' \u00D7 ' + (1-sc.params.p).toFixed(2) + ') / ' + sc.params.e + '\u00B2';
+  } else {
+    stepFormulaText = 'n\u2080 = (Z\u00B2 \u00D7 \u03C3\u00B2) / e\u00B2';
+    stepFormulaCalc = 'n\u2080 = (' + sc.params.Z + '\u00B2 \u00D7 ' + sc.params.sigma + '\u00B2) / ' + sc.params.e + '\u00B2';
+  }
+
+  const profAnswers = state.profMode ? `
+    <div class="prof-answers active">
+      <strong>RESPUESTAS (Modo Profesor):</strong><br>
+      Tipo: ${isQual ? 'Cualitativa' : 'Cuantitativa'}<br>
+      n\u2080 = ${expected.n0.toFixed(2)}<br>
+      n = ${expected.n} (redondeando con Math.ceil)
+    </div>` : '';
+
+  const html = `
+    <div class="scenario-card glass case-enter">
+      <div style="position:absolute;top:0;left:0;right:0;height:4px;background:${sc.color};border-radius:var(--radius) var(--radius) 0 0"></div>
+      <div class="scenario-header">
+        <div class="scenario-icon" style="background:${sc.color}20;color:${sc.color}">
+          ${ICONS[sc.icon]}
+        </div>
+        <div>
+          <div class="company-name" style="color:${sc.color}">${sc.company}</div>
+          <div class="company-sector">${sc.sector}</div>
+        </div>
+      </div>
+      <div class="scenario-narrative" id="narrativeText">${sc.narrative}</div>
+      <div class="scenario-params">${paramsHTML}</div>
+      ${profAnswers}
+    </div>
+
+    <div class="glass" style="margin-bottom:1.5rem">
+      <h3 style="margin-bottom:1rem;font-size:1.1rem">Paso 1: Identifica el tipo de variable</h3>
+      <div class="type-selector">
+        <div class="type-option" id="typeQuant" onclick="selectType('quant', ${scIdx})">
+          <div class="type-icon">&#128202;</div>
+          <div class="type-label" style="color:var(--quant-color)">Cuantitativa</div>
+          <div class="type-desc">Media / Promedio</div>
+        </div>
+        <div class="type-option" id="typeQual" onclick="selectType('qual', ${scIdx})">
+          <div class="type-icon">&#128200;</div>
+          <div class="type-label" style="color:var(--qual-color)">Cualitativa</div>
+          <div class="type-desc">Proporcion / Porcentaje</div>
+        </div>
+      </div>
+      <div id="typeFeedback"></div>
+    </div>
+
+    <div class="step-calculator glass" id="calcSteps" style="display:none">
+      <h3 style="margin-bottom:1rem;font-size:1.1rem">Paso 2: Calcula n&#8320; (muestra sin correccion)</h3>
+      <div class="calc-step active" id="step1">
+        <div class="calc-step-header">
+          <span class="calc-step-num">Calculo n&#8320;</span>
+        </div>
+        <div class="calc-step-formula" id="stepFormula">${stepFormulaText}<br>${stepFormulaCalc}</div>
+        <div class="calc-step-input">
+          <input type="number" step="any" class="input-field" id="inputN0" placeholder="n&#8320; = ?" style="max-width:200px">
+          <button class="btn btn-primary btn-sm" onclick="checkN0(${scIdx})">Verificar</button>
+        </div>
+        <div class="step-feedback" id="feedbackN0"></div>
+      </div>
+
+      <h3 style="margin:1.5rem 0 1rem;font-size:1.1rem">Paso 3: Aplica correccion por poblacion finita</h3>
+      <div class="calc-step locked" id="step2">
+        <div class="calc-step-header">
+          <span class="calc-step-num">Calculo n final</span>
+        </div>
+        <div class="calc-step-formula">n = n&#8320; / (1 + n&#8320;/N) &nbsp; (redondear hacia arriba)</div>
+        <div class="calc-step-input">
+          <input type="number" step="any" class="input-field" id="inputN" placeholder="n = ?" style="max-width:200px">
+          <button class="btn btn-success btn-sm" onclick="checkN(${scIdx})">Verificar Final</button>
+        </div>
+        <div class="step-feedback" id="feedbackN"></div>
+      </div>
+    </div>
+
+    <div class="hint-area" id="hintArea">
+      <button class="btn btn-outline btn-sm hint-btn" onclick="showHint(${scIdx})">
+        <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><circle cx="8" cy="8" r="6.5" stroke="currentColor" stroke-width="1.5"/><path d="M6.5 6.5a1.5 1.5 0 113 0c0 1-1.5 1-1.5 2" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/><circle cx="8" cy="11" r="0.75" fill="currentColor"/></svg>
+        Pista
+      </button>
+      <span class="hint-count" id="hintCount">3 pistas disponibles (-10 pts c/u)</span>
+      <div id="hintContent"></div>
+    </div>
+
+    <div id="nextCaseArea" style="display:none;text-align:center;margin-top:2rem">
+      <button class="btn btn-gold" onclick="nextCase()" id="nextCaseBtn">
+        Siguiente Caso &#8594;
+      </button>
+    </div>
+  `;
+
+  document.getElementById('scenarioArea').innerHTML = html;
+
+  // Reset step state
+  window._caseState = {
+    typeSelected: false, typeCorrect: false,
+    n0Correct: false, nCorrect: false,
+    scIdx: scIdx, pointsEarned: 0
+  };
+}
+
+// ===== TYPE SELECTION =====
+function selectType(chosen, scIdx) {
+  if (window._caseState.typeSelected) return;
+  const sc = SCENARIOS[scIdx];
+  const correct = sc.type;
+  window._caseState.typeSelected = true;
+
+  const quantEl = document.getElementById('typeQuant');
+  const qualEl = document.getElementById('typeQual');
+  const fb = document.getElementById('typeFeedback');
+
+  if (chosen === correct) {
+    window._caseState.typeCorrect = true;
+    window._caseState.pointsEarned += 30;
+    const el = chosen === 'quant' ? quantEl : qualEl;
+    el.classList.add(chosen === 'quant' ? 'selected-quant' : 'selected-qual');
+    el.style.boxShadow = '0 0 20px ' + (chosen === 'quant' ? 'rgba(79,195,247,0.3)' : 'rgba(129,199,132,0.3)');
+    fb.innerHTML = '<span class="step-feedback ok">&#10003; Correcto! Es una variable ' + (chosen === 'quant' ? 'cuantitativa (se busca una media)' : 'cualitativa (se busca una proporcion)') + '. +30 pts</span>';
+    playCorrect();
+  } else {
+    window._caseState.typeCorrect = false;
+    const wrongEl = chosen === 'quant' ? quantEl : qualEl;
+    const rightEl = correct === 'quant' ? quantEl : qualEl;
+    wrongEl.style.border = '2px solid var(--error)';
+    wrongEl.style.background = 'rgba(255,82,82,0.1)';
+    rightEl.classList.add(correct === 'quant' ? 'selected-quant' : 'selected-qual');
+    fb.innerHTML = '<span class="step-feedback nope">&#10007; Incorrecto. Es una variable ' + (correct === 'quant' ? 'cuantitativa (se busca una media)' : 'cualitativa (se busca una proporcion)') + '. -20 pts</span>';
+    window._caseState.pointsEarned -= 20;
+    playWrong();
+    fb.parentElement.classList.add('shake');
+    setTimeout(() => fb.parentElement.classList.remove('shake'), 500);
+  }
+
+  // Show calculator steps
+  setTimeout(() => {
+    document.getElementById('calcSteps').style.display = 'block';
+    document.getElementById('calcSteps').scrollIntoView({ behavior: 'smooth', block: 'start' });
+  }, 500);
+}
+
+// ===== CHECK N0 =====
+function checkN0(scIdx) {
+  const sc = SCENARIOS[scIdx];
+  const expected = calcExpected(sc);
+  const input = parseFloat(document.getElementById('inputN0').value);
+  const fb = document.getElementById('feedbackN0');
+  const step = document.getElementById('step1');
+
+  if (isNaN(input)) { fb.innerHTML = '<span class="step-feedback nope">Ingresa un valor numerico.</span>'; return; }
+
+  // Accept within 2 of correct
+  if (Math.abs(input - expected.n0) <= 2) {
+    window._caseState.n0Correct = true;
+    window._caseState.pointsEarned += 30;
+    step.classList.remove('active');
+    step.classList.add('correct');
+    fb.innerHTML = '<span class="step-feedback ok">&#10003; Correcto! n&#8320; = ' + expected.n0.toFixed(2) + '. +30 pts</span>';
+    // Unlock step 2
+    document.getElementById('step2').classList.remove('locked');
+    document.getElementById('step2').classList.add('active');
+    document.getElementById('inputN').focus();
+    playCorrect();
+  } else {
+    step.classList.add('shake');
+    setTimeout(() => step.classList.remove('shake'), 500);
+    fb.innerHTML = '<span class="step-feedback nope">&#10007; Incorrecto. Revisa tu calculo. (Esperado: ' + expected.n0.toFixed(2) + ')</span>';
+    // Allow retry but still unlock step2 so they can continue
+    setTimeout(() => {
+      document.getElementById('step2').classList.remove('locked');
+      document.getElementById('step2').classList.add('active');
+    }, 1500);
+    playWrong();
+  }
+}
+
+// ===== CHECK N =====
+function checkN(scIdx) {
+  const sc = SCENARIOS[scIdx];
+  const expected = calcExpected(sc);
+  const input = parseFloat(document.getElementById('inputN').value);
+  const fb = document.getElementById('feedbackN');
+  const step = document.getElementById('step2');
+
+  if (isNaN(input)) { fb.innerHTML = '<span class="step-feedback nope">Ingresa un valor numerico.</span>'; return; }
+
+  if (Math.abs(input - expected.n) <= 2) {
+    window._caseState.nCorrect = true;
+    window._caseState.pointsEarned += 40;
+    step.classList.remove('active');
+    step.classList.add('correct');
+    fb.innerHTML = '<span class="step-feedback ok">&#10003; Excelente! n = ' + expected.n + ' (redondeado hacia arriba). +40 pts</span>';
+    playComplete();
+    fireConfetti();
+  } else {
+    step.classList.add('shake');
+    setTimeout(() => step.classList.remove('shake'), 500);
+    fb.innerHTML = '<span class="step-feedback nope">&#10007; Incorrecto. Revisa: n = ' + expected.n0.toFixed(2) + ' / (1 + ' + expected.n0.toFixed(2) + '/' + sc.params.N + ') = ' + (expected.n0 / (1 + expected.n0/sc.params.N)).toFixed(2) + ' &#8594; ceil = ' + expected.n + '</span>';
+    playWrong();
+  }
+
+  finishCase(scIdx);
+}
+
+// ===== FINISH CASE =====
+function finishCase(scIdx) {
+  stopTimer();
+  const hintPenalty = (state.hintsUsed[scIdx] || 0) * 10;
+  let score = Math.max(0, window._caseState.pointsEarned - hintPenalty);
+  state.caseScores[scIdx] = score;
+  state.caseDetails[scIdx] = { ...window._caseState };
+  state.totalScore = state.caseScores.reduce((a, b) => a + b, 0);
+
+  document.getElementById('scoreDisplay').textContent = state.totalScore + ' pts';
+  document.getElementById('scoreDisplay').classList.add('score-pop');
+  setTimeout(() => document.getElementById('scoreDisplay').classList.remove('score-pop'), 300);
+
+  // Show next button
+  const caseList = state.retryMode ? state.retryCases : [...Array(10).keys()];
+  document.getElementById('nextCaseArea').style.display = 'block';
+  if (state.currentCase >= caseList.length - 1) {
+    document.getElementById('nextCaseBtn').textContent = 'Ver Resultados Finales';
+  }
+  document.getElementById('nextCaseArea').scrollIntoView({ behavior: 'smooth' });
+}
+
+// ===== HINTS =====
+function showHint(scIdx) {
+  const sc = SCENARIOS[scIdx];
+  const used = state.hintsUsed[scIdx] || 0;
+  if (used >= 3) return;
+  state.hintsUsed[scIdx] = used + 1;
+  const hint = sc.hints[used];
+  const container = document.getElementById('hintContent');
+  container.innerHTML += '<div class="hint-text"><strong>Pista ' + (used + 1) + ':</strong> ' + hint + '</div>';
+  document.getElementById('hintCount').textContent = (3 - used - 1) + ' pistas disponibles (-10 pts c/u)';
+  playTone(330, 0.15);
+}
+
+// ===== NEXT CASE =====
+function nextCase() {
+  const caseList = state.retryMode ? state.retryCases : [...Array(10).keys()];
+  if (state.currentCase >= caseList.length - 1) {
+    showResults();
+    return;
+  }
+  loadCase(state.currentCase + 1);
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+// ===== CONFETTI =====
+function fireConfetti() {
+  const container = document.getElementById('confettiContainer');
+  const colors = ['#00d4ff', '#ffd700', '#00e676', '#ff5252', '#ab47bc', '#ff7043'];
+  for (let i = 0; i < 60; i++) {
+    const piece = document.createElement('div');
+    piece.className = 'confetti-piece';
+    piece.style.left = Math.random() * 100 + '%';
+    piece.style.background = colors[Math.floor(Math.random() * colors.length)];
+    piece.style.animationDelay = Math.random() * 0.8 + 's';
+    piece.style.animationDuration = (2 + Math.random() * 2) + 's';
+    piece.style.width = (6 + Math.random() * 8) + 'px';
+    piece.style.height = (6 + Math.random() * 8) + 'px';
+    piece.style.borderRadius = Math.random() > 0.5 ? '50%' : '2px';
+    container.appendChild(piece);
+  }
+  setTimeout(() => container.innerHTML = '', 4000);
+}
+
+// ===== RESULTS =====
+function showResults() {
+  stopTimer();
+  showScreen('resultsScreen');
+  document.getElementById('formulaToggle').style.display = 'none';
+
+  const total = state.totalScore;
+  document.getElementById('resultsPlayerInfo').textContent = state.playerName + ' \u2014 ' + state.firmName;
+
+  // Animated score counter
+  let displayScore = 0;
+  const scoreEl = document.getElementById('finalScore');
+  const step = Math.max(1, Math.floor(total / 60));
+  const counterInterval = setInterval(() => {
+    displayScore = Math.min(displayScore + step, total);
+    scoreEl.textContent = displayScore;
+    if (displayScore >= total) {
+      clearInterval(counterInterval);
+      scoreEl.textContent = total;
+    }
+  }, 30);
+
+  // Rank
+  let rank, rankColor;
+  if (total >= 900) { rank = 'Managing Director'; rankColor = 'linear-gradient(135deg, #ffd700, #ff9800)'; }
+  else if (total >= 700) { rank = 'Senior Partner'; rankColor = 'linear-gradient(135deg, #00d4ff, #00a8cc)'; }
+  else if (total >= 500) { rank = 'Senior Consultant'; rankColor = 'linear-gradient(135deg, #81c784, #4caf50)'; }
+  else if (total >= 300) { rank = 'Consultant'; rankColor = 'linear-gradient(135deg, #ab47bc, #7b1fa2)'; }
+  else { rank = 'Junior Analyst'; rankColor = 'linear-gradient(135deg, #78909c, #546e7a)'; }
+
+  const rankEl = document.getElementById('rankBadge');
+  rankEl.textContent = rank;
+  rankEl.style.background = rankColor;
+  rankEl.style.color = total >= 900 ? 'var(--navy)' : '#fff';
+
+  // Results grid
+  const grid = document.getElementById('resultsGrid');
+  grid.innerHTML = '';
+  SCENARIOS.forEach((sc, i) => {
+    const score = state.caseScores[i];
+    let scoreClass = 'low';
+    if (score >= 90) scoreClass = 'perfect';
+    else if (score >= 70) scoreClass = 'good';
+    else if (score >= 40) scoreClass = 'ok';
+
+    grid.innerHTML += `
+      <div class="result-case-card">
+        <div>
+          <div class="case-name" style="color:${sc.color}">${sc.company}</div>
+          <div class="case-type">${sc.type === 'quant' ? 'Cuantitativa' : 'Cualitativa'}</div>
+        </div>
+        <div class="case-score ${scoreClass}">${score} pts</div>
+      </div>`;
+  });
+
+  const progressFinal = document.getElementById('progressBar');
+  if (progressFinal) progressFinal.style.width = '100%';
+
+  fireConfetti();
+  playComplete();
+}
+
+// ===== RETRY =====
+function retryMissed() {
+  const missed = [];
+  SCENARIOS.forEach((sc, i) => {
+    if (state.caseScores[i] < 70) missed.push(i);
+  });
+  if (missed.length === 0) {
+    alert('Felicitaciones! No tienes casos por reintentar.');
+    return;
+  }
+  state.retryMode = true;
+  state.retryCases = missed;
+  // Reset scores for retry cases
+  missed.forEach(i => {
+    state.caseScores[i] = 0;
+    state.hintsUsed[i] = 0;
+  });
+  state.totalScore = state.caseScores.reduce((a, b) => a + b, 0);
+  showScreen('gameScreen');
+  document.getElementById('formulaToggle').style.display = 'block';
+  loadCase(0);
+}
+
+function restartGame() {
+  state.totalScore = 0;
+  state.caseScores = new Array(10).fill(0);
+  state.caseDetails = new Array(10).fill(null);
+  state.hintsUsed = new Array(10).fill(0);
+  state.retryMode = false;
+  state.retryCases = [];
+  showScreen('gameScreen');
+  document.getElementById('formulaToggle').style.display = 'block';
+  loadCase(0);
+}
+
+// ===== SIDEBAR =====
+function toggleSidebar() {
+  document.getElementById('formulaSidebar').classList.toggle('open');
+  document.getElementById('sidebarOverlay').classList.toggle('open');
+}
+function closeSidebar() {
+  document.getElementById('formulaSidebar').classList.remove('open');
+  document.getElementById('sidebarOverlay').classList.remove('open');
+}
+
+// ===== KEYBOARD SHORTCUT =====
+document.addEventListener('keydown', (e) => {
+  if (e.key === 'f' && e.ctrlKey) {
+    e.preventDefault();
+    toggleSidebar();
+  }
+});
+</script>
+</body>
+</html>
