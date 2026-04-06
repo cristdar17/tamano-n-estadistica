@@ -151,40 +151,41 @@ body {
 .welcome-form .field { margin-bottom: 1.2rem; text-align: left; }
 .welcome-form label { display: block; font-weight: 600; margin-bottom: 0.4rem; font-size: 0.95rem; color: var(--text-dim); }
 /* ===== FORMULA CARDS ===== */
-.formula-cards { display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem; margin: 2rem 0; }
+.formula-cards { display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem; margin: 2rem 0; width: 100%; max-width: 760px; align-self: center; }
 .formula-card {
-  perspective: 1000px; cursor: pointer; height: 220px;
+  border-radius: var(--radius); padding: 1.5rem 1.4rem;
+  border: 2px solid; transition: transform 0.3s ease, box-shadow 0.3s ease;
+  display: flex; flex-direction: column; align-items: center; text-align: center;
 }
-.formula-card-inner {
-  position: relative; width: 100%; height: 100%;
-  transition: transform 0.6s; transform-style: preserve-3d;
-}
-.formula-card.flipped .formula-card-inner { transform: rotateY(180deg); }
-.formula-card-front, .formula-card-back {
-  position: absolute; inset: 0; backface-visibility: hidden;
-  border-radius: var(--radius); padding: 1.5rem;
-  display: flex; flex-direction: column; justify-content: center; align-items: center;
-}
-.formula-card-front {
-  background: linear-gradient(135deg, var(--navy-mid), var(--navy-light));
-  border: 2px solid var(--glass-border);
-}
-.formula-card-back {
-  transform: rotateY(180deg);
-  border: 2px solid;
-  font-size: 0.85rem; text-align: left; line-height: 1.8;
-}
-.formula-card.quant .formula-card-back {
-  background: linear-gradient(135deg, rgba(79,195,247,0.15), rgba(79,195,247,0.05));
+.formula-card:hover { transform: translateY(-4px); }
+.formula-card.quant {
+  background: linear-gradient(160deg, rgba(79,195,247,0.18), rgba(79,195,247,0.04));
   border-color: var(--quant-color);
+  box-shadow: 0 8px 30px rgba(79,195,247,0.12);
 }
-.formula-card.qual .formula-card-back {
-  background: linear-gradient(135deg, rgba(129,199,132,0.15), rgba(129,199,132,0.05));
+.formula-card.qual {
+  background: linear-gradient(160deg, rgba(129,199,132,0.18), rgba(129,199,132,0.04));
   border-color: var(--qual-color);
+  box-shadow: 0 8px 30px rgba(129,199,132,0.12);
 }
-.formula-card-front h3 { font-size: 1.1rem; margin-top: 0.8rem; }
-.formula-card-front .click-hint { font-size: 0.8rem; color: var(--text-dim); margin-top: 0.5rem; }
-.formula-card-back .formula-line { font-family: 'Courier New', monospace; font-size: 1rem; font-weight: 700; }
+.formula-card .icon-badge {
+  width: 56px; height: 56px; border-radius: 14px;
+  display: flex; align-items: center; justify-content: center;
+  margin-bottom: 0.8rem;
+}
+.formula-card.quant .icon-badge { background: rgba(79,195,247,0.18); }
+.formula-card.qual  .icon-badge { background: rgba(129,199,132,0.18); }
+.formula-card h3 { font-size: 1.1rem; margin-bottom: 0.8rem; letter-spacing: 0.3px; }
+.formula-card.quant h3 { color: var(--quant-color); }
+.formula-card.qual  h3 { color: var(--qual-color); }
+.formula-card .formula-line {
+  font-family: 'Courier New', monospace; font-size: 0.98rem; font-weight: 700;
+  color: var(--text); margin: 0.25rem 0;
+}
+.formula-card .legend {
+  margin-top: 0.9rem; font-size: 0.78rem; color: var(--text-dim);
+  line-height: 1.65; text-align: left; width: 100%;
+}
 /* ===== GAME SCREEN ===== */
 .game-header {
   display: flex; justify-content: space-between; align-items: center;
@@ -509,43 +510,29 @@ body {
   <p class="subtitle">Calcula el tamano de muestra para poblaciones finitas como un profesional</p>
 
   <div class="formula-cards">
-    <div class="formula-card quant" onclick="this.classList.toggle('flipped')">
-      <div class="formula-card-inner">
-        <div class="formula-card-front">
-          <svg width="48" height="48" viewBox="0 0 48 48" fill="none"><rect x="6" y="8" width="36" height="32" rx="4" stroke="#4fc3f7" stroke-width="2" fill="rgba(79,195,247,0.1)"/><path d="M14 30V22M22 30V18M30 30V14M38 30V20" stroke="#4fc3f7" stroke-width="2.5" stroke-linecap="round"/></svg>
-          <h3 style="color:var(--quant-color)">Variable Cuantitativa</h3>
-          <span class="click-hint">Clic para ver formula</span>
-        </div>
-        <div class="formula-card-back">
-          <div class="formula-line">n&#8320; = (Z&#178; x &#963;&#178;) / e&#178;</div>
-          <div class="formula-line" style="margin-top:0.5rem">n = n&#8320; / (1 + n&#8320;/N)</div>
-          <div style="margin-top:0.8rem; font-size:0.8rem; color:var(--text-dim)">
-            Z = valor Z de confianza<br>
-            &#963; = desviacion estandar<br>
-            e = margen de error<br>
-            N = tamano de poblacion
-          </div>
-        </div>
+    <div class="formula-card quant">
+      <div class="icon-badge">
+        <svg width="32" height="32" viewBox="0 0 48 48" fill="none"><rect x="6" y="8" width="36" height="32" rx="4" stroke="#4fc3f7" stroke-width="2.5" fill="rgba(79,195,247,0.1)"/><path d="M14 30V22M22 30V18M30 30V14M38 30V20" stroke="#4fc3f7" stroke-width="3" stroke-linecap="round"/></svg>
+      </div>
+      <h3>Variable Cuantitativa</h3>
+      <div class="formula-line">n&#8320; = (Z&#178; &middot; &sigma;&#178;) / e&#178;</div>
+      <div class="formula-line">n = n&#8320; / (1 + n&#8320;/N)</div>
+      <div class="legend">
+        Z = valor Z de confianza<br>
+        &sigma; = desviacion estandar<br>
+        e = margen de error &nbsp;&middot;&nbsp; N = poblacion
       </div>
     </div>
-    <div class="formula-card qual" onclick="this.classList.toggle('flipped')">
-      <div class="formula-card-inner">
-        <div class="formula-card-front">
-          <svg width="48" height="48" viewBox="0 0 48 48" fill="none"><circle cx="24" cy="24" r="18" stroke="#81c784" stroke-width="2" fill="rgba(129,199,132,0.1)"/><path d="M24 6a18 18 0 010 36" fill="rgba(129,199,132,0.3)"/><circle cx="24" cy="24" r="6" fill="#81c784" opacity="0.5"/></svg>
-          <h3 style="color:var(--qual-color)">Variable Cualitativa</h3>
-          <span class="click-hint">Clic para ver formula</span>
-        </div>
-        <div class="formula-card-back">
-          <div class="formula-line">n&#8320; = (Z&#178; x p x q) / e&#178;</div>
-          <div class="formula-line" style="margin-top:0.5rem">n = n&#8320; / (1 + n&#8320;/N)</div>
-          <div style="margin-top:0.8rem; font-size:0.8rem; color:var(--text-dim)">
-            Z = valor Z de confianza<br>
-            p = proporcion estimada<br>
-            q = 1 - p<br>
-            e = margen de error<br>
-            N = tamano de poblacion
-          </div>
-        </div>
+    <div class="formula-card qual">
+      <div class="icon-badge">
+        <svg width="32" height="32" viewBox="0 0 48 48" fill="none"><circle cx="24" cy="24" r="18" stroke="#81c784" stroke-width="2.5" fill="rgba(129,199,132,0.1)"/><path d="M24 6a18 18 0 010 36" fill="rgba(129,199,132,0.35)"/><circle cx="24" cy="24" r="6" fill="#81c784" opacity="0.6"/></svg>
+      </div>
+      <h3>Variable Cualitativa</h3>
+      <div class="formula-line">n&#8320; = (Z&#178; &middot; p &middot; q) / e&#178;</div>
+      <div class="formula-line">n = n&#8320; / (1 + n&#8320;/N)</div>
+      <div class="legend">
+        Z = valor Z de confianza &nbsp;&middot;&nbsp; p = proporcion<br>
+        q = 1 - p &nbsp;&middot;&nbsp; e = margen de error &nbsp;&middot;&nbsp; N = poblacion
       </div>
     </div>
   </div>
