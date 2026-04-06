@@ -1101,8 +1101,10 @@ function checkN0(scIdx) {
 
   if (isNaN(input)) { fb.innerHTML = '<span class="step-feedback nope">Ingresa un valor numerico.</span>'; return; }
 
-  // Accept within 2 of correct
-  if (Math.abs(input - expected.n0) <= 2) {
+  // Tolerancia: 2% del valor o 4 absoluto (lo que sea mayor) para permitir
+  // diferencias por redondeo de estudiantes (ej: Z^2 = 3.84 en vez de 3.8416)
+  const tolN0 = Math.max(4, expected.n0 * 0.02);
+  if (Math.abs(input - expected.n0) <= tolN0) {
     window._caseState.n0Correct = true;
     window._caseState.pointsEarned += 30;
     step.classList.remove('active');
@@ -1136,7 +1138,9 @@ function checkN(scIdx) {
 
   if (isNaN(input)) { fb.innerHTML = '<span class="step-feedback nope">Ingresa un valor numerico.</span>'; return; }
 
-  if (Math.abs(input - expected.n) <= 2) {
+  // Tolerancia para n final: 3 unidades absolutas (acumula redondeos
+  // de pasos previos pero sigue siendo estricto sobre la respuesta correcta)
+  if (Math.abs(input - expected.n) <= 3) {
     window._caseState.nCorrect = true;
     window._caseState.pointsEarned += 40;
     step.classList.remove('active');
