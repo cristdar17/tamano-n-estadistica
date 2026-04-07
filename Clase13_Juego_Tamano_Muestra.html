@@ -683,6 +683,7 @@ const state = {
   timerSeconds: 0,
   retryMode: false,
   retryCases: [],
+  playOrder: [],
 };
 
 // ===== AUDIO =====
@@ -875,6 +876,30 @@ function calcExpected(sc) {
   }
 }
 
+// ===== UTIL: shuffle that avoids 3 consecutive cases of same type =====
+// Evita que el estudiante "adivine" por patron: maximo 2 casos seguidos
+// del mismo tipo (quant/qual) y alterna inicio aleatorio.
+function buildPlayOrder() {
+  const indices = [...Array(SCENARIOS.length).keys()];
+  for (let attempt = 0; attempt < 50; attempt++) {
+    // Fisher-Yates shuffle
+    for (let i = indices.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [indices[i], indices[j]] = [indices[j], indices[i]];
+    }
+    // Validar que no haya 3+ consecutivos del mismo tipo
+    let ok = true;
+    for (let i = 0; i < indices.length - 2; i++) {
+      const t1 = SCENARIOS[indices[i]].type;
+      const t2 = SCENARIOS[indices[i+1]].type;
+      const t3 = SCENARIOS[indices[i+2]].type;
+      if (t1 === t2 && t2 === t3) { ok = false; break; }
+    }
+    if (ok) return indices;
+  }
+  return indices;
+}
+
 // ===== START GAME =====
 function startGame() {
   const name = document.getElementById('playerName').value.trim();
@@ -889,6 +914,7 @@ function startGame() {
   state.hintsUsed = new Array(10).fill(0);
   state.retryMode = false;
   state.retryCases = [];
+  state.playOrder = buildPlayOrder();
   showScreen('gameScreen');
   document.getElementById('formulaToggle').style.display = 'block';
   loadCase(0);
@@ -919,7 +945,7 @@ function updateTimerDisplay() {
 
 // ===== LOAD CASE =====
 function loadCase(idx) {
-  const caseList = state.retryMode ? state.retryCases : [...Array(10).keys()];
+  const caseList = state.retryMode ? state.retryCases : state.playOrder;
   const scIdx = caseList[idx];
   const sc = SCENARIOS[scIdx];
   const total = caseList.length;
@@ -983,16 +1009,21 @@ function loadCase(idx) {
     <div class="glass" style="margin-bottom:1.5rem">
       <h3 style="margin-bottom:1rem;font-size:1.1rem">Paso 1: Identifica el tipo de variable</h3>
       <div class="type-selector">
-        <div class="type-option" id="typeQuant" onclick="selectType('quant', ${scIdx})">
+        ${(() => {
+          // Randomiza posicion de los botones para que la respuesta correcta
+          // no siempre este en el mismo lado (evita memorizacion por posicion)
+          const quantHTML = `<div class="type-option" id="typeQuant" onclick="selectType('quant', ${scIdx})">
           <div class="type-icon">&#128202;</div>
           <div class="type-label" style="color:var(--quant-color)">Cuantitativa</div>
           <div class="type-desc">Media / Promedio</div>
-        </div>
-        <div class="type-option" id="typeQual" onclick="selectType('qual', ${scIdx})">
+        </div>`;
+          const qualHTML = `<div class="type-option" id="typeQual" onclick="selectType('qual', ${scIdx})">
           <div class="type-icon">&#128200;</div>
           <div class="type-label" style="color:var(--qual-color)">Cualitativa</div>
           <div class="type-desc">Proporcion / Porcentaje</div>
-        </div>
+        </div>`;
+          return Math.random() < 0.5 ? quantHTML + qualHTML : qualHTML + quantHTML;
+        })()}
       </div>
       <div id="typeFeedback"></div>
     </div>
@@ -1172,7 +1203,7 @@ function finishCase(scIdx) {
   setTimeout(() => document.getElementById('scoreDisplay').classList.remove('score-pop'), 300);
 
   // Show next button
-  const caseList = state.retryMode ? state.retryCases : [...Array(10).keys()];
+  const caseList = state.retryMode ? state.retryCases : state.playOrder;
   document.getElementById('nextCaseArea').style.display = 'block';
   if (state.currentCase >= caseList.length - 1) {
     document.getElementById('nextCaseBtn').textContent = 'Ver Resultados Finales';
@@ -1195,7 +1226,7 @@ function showHint(scIdx) {
 
 // ===== NEXT CASE =====
 function nextCase() {
-  const caseList = state.retryMode ? state.retryCases : [...Array(10).keys()];
+  const caseList = state.retryMode ? state.retryCases : state.playOrder;
   if (state.currentCase >= caseList.length - 1) {
     showResults();
     return;
