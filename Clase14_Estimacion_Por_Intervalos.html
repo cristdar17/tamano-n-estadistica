@@ -1,0 +1,811 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Clase 14 - Estimación por Intervalos</title>
+<style>
+:root {
+  --navy: #0a1628;
+  --navy-light: #111d35;
+  --navy-mid: #162444;
+  --electric: #00d4ff;
+  --electric-dim: #00a8cc;
+  --gold: #ffd700;
+  --gold-dim: #c4a600;
+  --success: #00e676;
+  --error: #ff5252;
+  --warning: #ffab40;
+  --purple: #b388ff;
+  --glass-bg: rgba(255,255,255,0.06);
+  --glass-border: rgba(255,255,255,0.12);
+  --text: #e8edf5;
+  --text-dim: #8899b3;
+  --font-main: 'Segoe UI', system-ui, -apple-system, sans-serif;
+  --radius: 16px;
+  --radius-sm: 10px;
+}
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+html { scroll-behavior: smooth; }
+body {
+  font-family: var(--font-main);
+  background: var(--navy);
+  color: var(--text);
+  line-height: 1.65;
+  overflow-x: hidden;
+}
+::-webkit-scrollbar { width: 10px; }
+::-webkit-scrollbar-track { background: var(--navy); }
+::-webkit-scrollbar-thumb { background: var(--navy-mid); border-radius: 5px; }
+::-webkit-scrollbar-thumb:hover { background: var(--electric-dim); }
+
+/* ===== BG SHAPES ===== */
+.bg-shapes { position: fixed; inset: 0; pointer-events: none; z-index: 0; overflow: hidden; }
+.bg-shapes .shape { position: absolute; border-radius: 50%; opacity: 0.05; animation: floatShape 25s ease-in-out infinite alternate; }
+.bg-shapes .shape:nth-child(1) { width: 500px; height: 500px; background: var(--electric); top: -150px; left: -150px; }
+.bg-shapes .shape:nth-child(2) { width: 350px; height: 350px; background: var(--gold); bottom: -100px; right: -100px; animation-delay: -8s; }
+.bg-shapes .shape:nth-child(3) { width: 250px; height: 250px; background: var(--purple); top: 40%; left: 70%; animation-delay: -15s; }
+@keyframes floatShape {
+  0% { transform: translate(0,0) rotate(0deg); }
+  100% { transform: translate(40px,-30px) rotate(180deg); }
+}
+
+/* ===== LAYOUT ===== */
+.container { position: relative; z-index: 1; max-width: 1100px; margin: 0 auto; padding: 2rem 1.5rem; }
+section { margin-bottom: 4rem; scroll-margin-top: 80px; }
+
+/* ===== HERO ===== */
+.hero { text-align: center; padding: 4rem 1rem 2rem; }
+.hero .badge {
+  display: inline-block; padding: 0.4rem 1rem; border-radius: 50px;
+  background: rgba(0,212,255,0.12); color: var(--electric);
+  border: 1px solid rgba(0,212,255,0.3); font-size: 0.85rem; font-weight: 600;
+  letter-spacing: 1px; text-transform: uppercase; margin-bottom: 1.2rem;
+}
+.hero h1 {
+  font-size: clamp(2.2rem, 5vw, 3.5rem); font-weight: 800; line-height: 1.1;
+  background: linear-gradient(135deg, var(--electric), var(--gold));
+  -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+  background-clip: text; margin-bottom: 1rem;
+}
+.hero .subtitle { font-size: 1.2rem; color: var(--text-dim); max-width: 700px; margin: 0 auto; }
+
+/* ===== NAV PILLS ===== */
+.nav-pills {
+  display: flex; flex-wrap: wrap; gap: 0.5rem; justify-content: center;
+  position: sticky; top: 0; z-index: 10; padding: 1rem 0;
+  background: rgba(10,22,40,0.85); backdrop-filter: blur(12px);
+  margin: 0 -1.5rem 2rem; padding-left: 1.5rem; padding-right: 1.5rem;
+}
+.nav-pills a {
+  padding: 0.5rem 1rem; border-radius: 50px; text-decoration: none;
+  background: var(--glass-bg); border: 1px solid var(--glass-border);
+  color: var(--text-dim); font-size: 0.85rem; font-weight: 600;
+  transition: all 0.3s;
+}
+.nav-pills a:hover { color: var(--electric); border-color: var(--electric); }
+
+/* ===== GLASS CARDS ===== */
+.glass {
+  background: var(--glass-bg); backdrop-filter: blur(20px);
+  border: 1px solid var(--glass-border); border-radius: var(--radius);
+  padding: 2rem; margin-bottom: 1.5rem;
+}
+.glass h2 {
+  font-size: 1.8rem; margin-bottom: 1rem; color: var(--electric);
+  display: flex; align-items: center; gap: 0.7rem;
+}
+.glass h2 .num {
+  display: inline-flex; align-items: center; justify-content: center;
+  width: 40px; height: 40px; border-radius: 12px;
+  background: linear-gradient(135deg, var(--electric), var(--electric-dim));
+  color: var(--navy); font-weight: 800; font-size: 1.1rem;
+}
+.glass h3 { font-size: 1.2rem; margin: 1.2rem 0 0.6rem; color: var(--gold); }
+.glass p { margin-bottom: 0.9rem; }
+.glass ul { padding-left: 1.5rem; margin-bottom: 1rem; }
+.glass ul li { margin-bottom: 0.4rem; }
+.glass strong { color: var(--electric); }
+
+/* ===== FORMULA BOX ===== */
+.formula {
+  display: block; padding: 1.2rem 1.5rem; margin: 1rem 0;
+  background: linear-gradient(135deg, rgba(0,212,255,0.08), rgba(255,215,0,0.05));
+  border-left: 4px solid var(--gold); border-radius: var(--radius-sm);
+  font-family: 'Cambria Math', 'Times New Roman', serif;
+  font-size: 1.25rem; text-align: center; letter-spacing: 0.5px;
+}
+.formula .label { display: block; font-size: 0.8rem; color: var(--text-dim); margin-bottom: 0.4rem; font-family: var(--font-main); text-transform: uppercase; letter-spacing: 1px; }
+
+/* ===== KEY POINTS GRID ===== */
+.key-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 1rem; margin: 1.5rem 0; }
+.key-card {
+  padding: 1.2rem; border-radius: var(--radius-sm);
+  background: rgba(255,255,255,0.04); border: 1px solid var(--glass-border);
+  transition: transform 0.3s;
+}
+.key-card:hover { transform: translateY(-3px); border-color: var(--electric); }
+.key-card .icon { font-size: 2rem; margin-bottom: 0.5rem; }
+.key-card h4 { color: var(--gold); margin-bottom: 0.3rem; font-size: 1rem; }
+.key-card p { font-size: 0.9rem; color: var(--text-dim); margin: 0; }
+
+/* ===== ANIMATION CONTAINERS ===== */
+.anim-box {
+  background: rgba(0,0,0,0.3); border-radius: var(--radius-sm);
+  padding: 1.5rem; margin: 1.2rem 0; border: 1px solid var(--glass-border);
+}
+.anim-controls { display: flex; flex-wrap: wrap; gap: 0.8rem; align-items: center; justify-content: center; margin-bottom: 1rem; }
+.anim-controls button {
+  padding: 0.6rem 1.4rem; border: none; border-radius: 50px;
+  background: linear-gradient(135deg, var(--electric), var(--electric-dim));
+  color: var(--navy); font-weight: 700; cursor: pointer;
+  font-family: var(--font-main); transition: all 0.3s;
+}
+.anim-controls button:hover { transform: translateY(-2px); box-shadow: 0 4px 20px rgba(0,212,255,0.4); }
+.anim-controls button:disabled { opacity: 0.5; cursor: not-allowed; transform: none; }
+.anim-controls .slider-group { display: flex; align-items: center; gap: 0.8rem; flex-wrap: wrap; }
+.anim-controls input[type=range] { width: 180px; accent-color: var(--electric); }
+.anim-controls .val { font-weight: 700; color: var(--gold); min-width: 60px; text-align: center; }
+canvas { display: block; width: 100%; max-width: 100%; height: auto; background: rgba(255,255,255,0.02); border-radius: var(--radius-sm); }
+.anim-stats { display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 0.8rem; margin-top: 1rem; }
+.stat-mini {
+  padding: 0.8rem; background: rgba(255,255,255,0.05); border-radius: var(--radius-sm);
+  text-align: center; border: 1px solid var(--glass-border);
+}
+.stat-mini .num { font-size: 1.6rem; font-weight: 800; color: var(--electric); display: block; }
+.stat-mini .lbl { font-size: 0.75rem; color: var(--text-dim); text-transform: uppercase; letter-spacing: 1px; }
+
+/* ===== EXAMPLE BOX ===== */
+.example {
+  background: linear-gradient(135deg, rgba(255,215,0,0.06), rgba(179,136,255,0.04));
+  border-left: 4px solid var(--gold); padding: 1.5rem 1.8rem;
+  border-radius: var(--radius-sm); margin: 1.5rem 0;
+}
+.example .tag {
+  display: inline-block; padding: 0.3rem 0.8rem; border-radius: 50px;
+  background: var(--gold); color: var(--navy); font-size: 0.75rem;
+  font-weight: 700; letter-spacing: 1px; text-transform: uppercase; margin-bottom: 0.8rem;
+}
+.example h3 { color: var(--gold); margin-bottom: 0.6rem; font-size: 1.3rem; }
+.steps { counter-reset: step; margin: 1rem 0; }
+.step {
+  counter-increment: step; position: relative; padding: 0.9rem 1rem 0.9rem 3.2rem;
+  background: rgba(255,255,255,0.04); border-radius: var(--radius-sm);
+  margin-bottom: 0.7rem; border: 1px solid var(--glass-border);
+}
+.step::before {
+  content: counter(step); position: absolute; left: 0.9rem; top: 50%;
+  transform: translateY(-50%); width: 32px; height: 32px;
+  background: linear-gradient(135deg, var(--gold), var(--gold-dim));
+  color: var(--navy); border-radius: 50%; display: flex;
+  align-items: center; justify-content: center; font-weight: 800;
+}
+.step strong { color: var(--gold); }
+.result-box {
+  margin-top: 1rem; padding: 1.2rem; border-radius: var(--radius-sm);
+  background: linear-gradient(135deg, rgba(0,230,118,0.12), rgba(0,212,255,0.06));
+  border: 2px solid var(--success); text-align: center;
+}
+.result-box .lbl { font-size: 0.8rem; color: var(--text-dim); text-transform: uppercase; letter-spacing: 1px; }
+.result-box .val { font-size: 1.4rem; font-weight: 800; color: var(--success); margin-top: 0.3rem; }
+
+/* ===== TABLES ===== */
+table { width: 100%; border-collapse: collapse; margin: 1rem 0; }
+th, td { padding: 0.7rem; text-align: left; border-bottom: 1px solid var(--glass-border); }
+th { background: rgba(0,212,255,0.1); color: var(--electric); font-weight: 700; }
+tr:hover td { background: rgba(255,255,255,0.03); }
+
+/* ===== FOOTER ===== */
+footer { text-align: center; padding: 3rem 1rem 2rem; color: var(--text-dim); font-size: 0.9rem; border-top: 1px solid var(--glass-border); margin-top: 4rem; }
+
+@media (max-width: 700px) {
+  .hero h1 { font-size: 2rem; }
+  .glass { padding: 1.3rem; }
+  .glass h2 { font-size: 1.4rem; }
+}
+</style>
+</head>
+<body>
+
+<div class="bg-shapes">
+  <div class="shape"></div><div class="shape"></div><div class="shape"></div>
+</div>
+
+<div class="container">
+
+  <!-- ===== HERO ===== -->
+  <header class="hero">
+    <div class="badge">Clase 14 · Bloque 2</div>
+    <h1>Estimación por Intervalos</h1>
+    <p class="subtitle">Cuando un número no basta: cómo construir un rango de valores plausibles para un parámetro poblacional con un nivel de confianza dado.</p>
+  </header>
+
+  <!-- ===== NAV ===== -->
+  <nav class="nav-pills">
+    <a href="#intro">Idea</a>
+    <a href="#anim1">Fábrica de IC</a>
+    <a href="#anim2">Nivel de confianza</a>
+    <a href="#anim3">Z vs t</a>
+    <a href="#ej1">Ejemplo 1</a>
+    <a href="#ej2">Ejemplo 2</a>
+  </nav>
+
+  <!-- ===== INTRO ===== -->
+  <section id="intro" class="glass">
+    <h2><span class="num">1</span> ¿Por qué intervalos?</h2>
+    <p>Una <strong>estimación puntual</strong> (como x̄) es solo una conjetura: con otra muestra obtendrías un valor distinto. Un <strong>intervalo de confianza (IC)</strong> reconoce esa incertidumbre y entrega un rango de valores plausibles para el parámetro.</p>
+
+    <div class="key-grid">
+      <div class="key-card">
+        <div class="icon" style="color:var(--electric)">◎</div>
+        <h4>Estimación puntual</h4>
+        <p>Un único número: x̄ = 152. Casi seguro está mal por algo.</p>
+      </div>
+      <div class="key-card">
+        <div class="icon" style="color:var(--gold)">⟷</div>
+        <h4>Estimación por intervalo</h4>
+        <p>Un rango: μ está entre 148 y 156, con 95% de confianza.</p>
+      </div>
+      <div class="key-card">
+        <div class="icon" style="color:var(--success)">✓</div>
+        <h4>Nivel de confianza</h4>
+        <p>% de muestras cuyo IC capturaría al parámetro real.</p>
+      </div>
+    </div>
+
+    <h3>Fórmula general</h3>
+    <p>Casi todos los IC tienen la misma forma:</p>
+    <div class="formula">
+      <span class="label">Estructura universal del IC</span>
+      Estimador  ±  (Valor crítico)  ×  (Error estándar)
+    </div>
+
+    <h3>IC para μ con σ conocida</h3>
+    <div class="formula">
+      <span class="label">Caso Z</span>
+      x̄  ±  Z<sub>α/2</sub> · (σ / √n)
+    </div>
+
+    <h3>IC para μ con σ desconocida</h3>
+    <div class="formula">
+      <span class="label">Caso t (Student)</span>
+      x̄  ±  t<sub>α/2, n−1</sub> · (s / √n)
+    </div>
+
+    <h3>Valores críticos más usados</h3>
+    <table>
+      <tr><th>Confianza</th><th>α</th><th>Z<sub>α/2</sub></th></tr>
+      <tr><td>90%</td><td>0.10</td><td>1.645</td></tr>
+      <tr><td>95%</td><td>0.05</td><td>1.960</td></tr>
+      <tr><td>99%</td><td>0.01</td><td>2.576</td></tr>
+    </table>
+  </section>
+
+  <!-- ===== ANIMACIÓN 1: FÁBRICA DE IC ===== -->
+  <section id="anim1" class="glass">
+    <h2><span class="num">2</span> Animación · La fábrica de intervalos</h2>
+    <p>Imagina que repetimos el experimento muchas veces. Cada muestra produce un IC distinto. ¿Cuántos atrapan a la verdadera μ?</p>
+    <p>La línea dorada es la <strong>μ real</strong>. Los intervalos <span style="color:var(--success)">verdes</span> la capturan; los <span style="color:var(--error)">rojos</span> la pierden. A largo plazo, ~95% son verdes.</p>
+
+    <div class="anim-box">
+      <div class="anim-controls">
+        <button id="anim1-start">▶ Generar muestras</button>
+        <button id="anim1-reset">↻ Reiniciar</button>
+      </div>
+      <canvas id="canvas1" width="900" height="380"></canvas>
+      <div class="anim-stats">
+        <div class="stat-mini"><span class="num" id="a1-total">0</span><span class="lbl">Muestras</span></div>
+        <div class="stat-mini"><span class="num" id="a1-hit" style="color:var(--success)">0</span><span class="lbl">Aciertos</span></div>
+        <div class="stat-mini"><span class="num" id="a1-miss" style="color:var(--error)">0</span><span class="lbl">Fallos</span></div>
+        <div class="stat-mini"><span class="num" id="a1-pct">—</span><span class="lbl">% cobertura</span></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===== ANIMACIÓN 2: NIVEL DE CONFIANZA ===== -->
+  <section id="anim2" class="glass">
+    <h2><span class="num">3</span> Animación · Nivel de confianza vs ancho</h2>
+    <p>Mover el nivel de confianza cambia el ancho del IC. <strong>Más confianza → intervalo más ancho</strong> (y menos preciso). Un IC del 99.9% es casi siempre cierto, pero también casi inútil.</p>
+
+    <div class="anim-box">
+      <div class="anim-controls">
+        <div class="slider-group">
+          <label>Confianza:</label>
+          <input type="range" id="conf-slider" min="80" max="99" step="1" value="95">
+          <span class="val" id="conf-val">95%</span>
+        </div>
+        <div class="slider-group">
+          <label>n:</label>
+          <input type="range" id="n-slider" min="5" max="200" step="5" value="30">
+          <span class="val" id="n-val">30</span>
+        </div>
+      </div>
+      <canvas id="canvas2" width="900" height="320"></canvas>
+      <div class="anim-stats">
+        <div class="stat-mini"><span class="num" id="a2-z">1.96</span><span class="lbl">Z<sub>α/2</sub></span></div>
+        <div class="stat-mini"><span class="num" id="a2-me">—</span><span class="lbl">Margen de error</span></div>
+        <div class="stat-mini"><span class="num" id="a2-li">—</span><span class="lbl">Lím. inferior</span></div>
+        <div class="stat-mini"><span class="num" id="a2-ls">—</span><span class="lbl">Lím. superior</span></div>
+      </div>
+      <p style="font-size:0.85rem;color:var(--text-dim);text-align:center;margin-top:0.8rem">
+        Datos fijos: x̄ = 100, σ = 15. Solo cambian la confianza y n.
+      </p>
+    </div>
+  </section>
+
+  <!-- ===== ANIMACIÓN 3: Z vs t ===== -->
+  <section id="anim3" class="glass">
+    <h2><span class="num">4</span> Animación · Z vs t (Student)</h2>
+    <p>Cuando <strong>σ es desconocida</strong> y la reemplazamos por <em>s</em>, agregamos incertidumbre. La distribución <strong>t</strong> tiene <em>colas más gordas</em> que la Z, lo que produce IC más anchos. Al aumentar los grados de libertad (n−1), la t se acerca a la Z.</p>
+
+    <div class="anim-box">
+      <div class="anim-controls">
+        <div class="slider-group">
+          <label>Grados de libertad:</label>
+          <input type="range" id="df-slider" min="2" max="60" step="1" value="5">
+          <span class="val" id="df-val">5</span>
+        </div>
+      </div>
+      <canvas id="canvas3" width="900" height="340"></canvas>
+      <p style="font-size:0.85rem;color:var(--text-dim);text-align:center;margin-top:0.8rem">
+        <span style="color:var(--electric)">━ Z (normal estándar)</span> &nbsp;·&nbsp;
+        <span style="color:var(--gold)">━ t de Student</span>
+      </p>
+    </div>
+  </section>
+
+  <!-- ===== EJEMPLO 1 ===== -->
+  <section id="ej1" class="glass">
+    <h2><span class="num">5</span> Ejemplo 1 · IC con σ conocida (caso Z)</h2>
+    <div class="example">
+      <span class="tag">Pereira · Café exportación</span>
+      <h3>Tiempo de tostado en CafeOro S.A.S.</h3>
+      <p>El gerente de calidad mide el tiempo de tostado de un nuevo lote. Por estudios históricos sabe que <strong>σ = 1.2 minutos</strong>. Toma una muestra de <strong>n = 36</strong> tostados y obtiene un promedio de <strong>x̄ = 14.5 minutos</strong>. Construye un IC del <strong>95%</strong> para el tiempo medio real.</p>
+
+      <div class="steps">
+        <div class="step"><strong>Identificar el caso:</strong> σ conocida → usamos Z.</div>
+        <div class="step"><strong>Valor crítico:</strong> Confianza 95% → α = 0.05 → Z<sub>α/2</sub> = <strong>1.96</strong>.</div>
+        <div class="step"><strong>Error estándar:</strong> σ/√n = 1.2 / √36 = 1.2 / 6 = <strong>0.20</strong> min.</div>
+        <div class="step"><strong>Margen de error:</strong> ME = 1.96 × 0.20 = <strong>0.392</strong> min.</div>
+        <div class="step"><strong>Intervalo:</strong> 14.5 ± 0.392 → (14.108 ; 14.892).</div>
+      </div>
+
+      <div class="result-box">
+        <div class="lbl">IC 95% para μ</div>
+        <div class="val">14.11 min &nbsp;≤&nbsp; μ &nbsp;≤&nbsp; 14.89 min</div>
+      </div>
+      <p style="margin-top:1rem;font-size:0.95rem">
+        <strong>Interpretación gerencial:</strong> Con un 95% de confianza, el tiempo medio real de tostado del nuevo lote está entre 14.11 y 14.89 minutos. Como el rango está dentro del límite máximo permitido (15 min), el lote cumple con el estándar de calidad.
+      </p>
+    </div>
+  </section>
+
+  <!-- ===== EJEMPLO 2 ===== -->
+  <section id="ej2" class="glass">
+    <h2><span class="num">6</span> Ejemplo 2 · IC con σ desconocida (caso t)</h2>
+    <div class="example">
+      <span class="tag">Risaralda · Logística</span>
+      <h3>Tiempos de entrega en Rappi Pereira</h3>
+      <p>Para auditar la promesa de servicio, se selecciona una muestra de <strong>n = 12</strong> pedidos al azar. Los tiempos (en minutos) son:</p>
+      <p style="text-align:center;font-family:monospace;color:var(--gold);margin:0.6rem 0">
+        28, 32, 25, 30, 27, 35, 29, 31, 33, 26, 30, 28
+      </p>
+      <p>De los datos: <strong>x̄ = 29.5 min</strong>, <strong>s ≈ 2.94 min</strong>. Construye un IC del <strong>95%</strong> para el tiempo medio real de entrega.</p>
+
+      <div class="steps">
+        <div class="step"><strong>Identificar el caso:</strong> σ desconocida y n pequeño → usamos t.</div>
+        <div class="step"><strong>Grados de libertad:</strong> gl = n − 1 = <strong>11</strong>.</div>
+        <div class="step"><strong>Valor crítico:</strong> t<sub>0.025, 11</sub> = <strong>2.201</strong> (tabla t).</div>
+        <div class="step"><strong>Error estándar:</strong> s/√n = 2.94 / √12 ≈ <strong>0.849</strong>.</div>
+        <div class="step"><strong>Margen de error:</strong> ME = 2.201 × 0.849 ≈ <strong>1.868</strong>.</div>
+        <div class="step"><strong>Intervalo:</strong> 29.5 ± 1.868 → (27.63 ; 31.37).</div>
+      </div>
+
+      <div class="result-box">
+        <div class="lbl">IC 95% para μ</div>
+        <div class="val">27.63 min &nbsp;≤&nbsp; μ &nbsp;≤&nbsp; 31.37 min</div>
+      </div>
+      <p style="margin-top:1rem;font-size:0.95rem">
+        <strong>Interpretación gerencial:</strong> Con 95% de confianza, el tiempo medio de entrega real está entre 27.6 y 31.4 minutos. Si Rappi promete entregas en ≤ 30 min, el extremo superior del IC supera ese umbral, así que <em>no</em> hay evidencia suficiente para garantizar la promesa: conviene investigar mejoras en el proceso.
+      </p>
+    </div>
+  </section>
+
+  <!-- ===== CIERRE ===== -->
+  <section class="glass">
+    <h2><span class="num">★</span> Lo que debes recordar</h2>
+    <div class="key-grid">
+      <div class="key-card">
+        <div class="icon" style="color:var(--electric)">①</div>
+        <h4>Estructura única</h4>
+        <p>Estimador ± (crítico × EE). Cambia el crítico y el EE según el caso.</p>
+      </div>
+      <div class="key-card">
+        <div class="icon" style="color:var(--gold)">②</div>
+        <h4>Confianza ≠ probabilidad</h4>
+        <p>El IC ya está calculado: μ está o no está. La confianza es del <em>método</em>, no del intervalo.</p>
+      </div>
+      <div class="key-card">
+        <div class="icon" style="color:var(--success)">③</div>
+        <h4>Más confianza = más ancho</h4>
+        <p>Para reducir el ancho sin perder confianza: aumenta n.</p>
+      </div>
+      <div class="key-card">
+        <div class="icon" style="color:var(--purple)">④</div>
+        <h4>Z o t</h4>
+        <p>σ conocida → Z. σ desconocida → t (con n−1 grados de libertad).</p>
+      </div>
+    </div>
+  </section>
+
+  <footer>
+    Estadística II · Universidad Tecnológica de Pereira · 2026-1<br>
+    Clase 14 — Estimación por Intervalos
+  </footer>
+
+</div>
+
+<script>
+/* ============================================================
+   ANIMACIÓN 1 — La fábrica de intervalos de confianza
+   ============================================================ */
+(() => {
+  const canvas = document.getElementById('canvas1');
+  const ctx = canvas.getContext('2d');
+  const W = canvas.width, H = canvas.height;
+  const MU = 100, SIGMA = 15, N = 30;
+  const Z = 1.96;
+  const SE = SIGMA / Math.sqrt(N);
+  const ME = Z * SE;
+  const xMin = MU - 4*SE, xMax = MU + 4*SE;
+
+  let intervals = [];
+  let total = 0, hit = 0, miss = 0;
+  let running = false, raf = null;
+
+  function randNormal(mean, sd) {
+    let u = 0, v = 0;
+    while(u === 0) u = Math.random();
+    while(v === 0) v = Math.random();
+    return mean + sd * Math.sqrt(-2*Math.log(u)) * Math.cos(2*Math.PI*v);
+  }
+
+  function xToPx(x) {
+    return 60 + ((x - xMin) / (xMax - xMin)) * (W - 100);
+  }
+
+  function draw() {
+    ctx.clearRect(0,0,W,H);
+    // axis
+    ctx.strokeStyle = 'rgba(255,255,255,0.15)';
+    ctx.lineWidth = 1;
+    ctx.beginPath();
+    ctx.moveTo(60, H-30); ctx.lineTo(W-40, H-30);
+    ctx.stroke();
+    // ticks
+    ctx.fillStyle = '#8899b3';
+    ctx.font = '11px Segoe UI';
+    ctx.textAlign = 'center';
+    for(let v=85; v<=115; v+=5) {
+      const px = xToPx(v);
+      ctx.beginPath();
+      ctx.moveTo(px, H-30); ctx.lineTo(px, H-25);
+      ctx.stroke();
+      ctx.fillText(v, px, H-12);
+    }
+    // mu line
+    const muX = xToPx(MU);
+    ctx.strokeStyle = '#ffd700';
+    ctx.lineWidth = 2;
+    ctx.setLineDash([6,4]);
+    ctx.beginPath();
+    ctx.moveTo(muX, 20); ctx.lineTo(muX, H-30);
+    ctx.stroke();
+    ctx.setLineDash([]);
+    ctx.fillStyle = '#ffd700';
+    ctx.font = 'bold 13px Segoe UI';
+    ctx.fillText('μ = 100', muX, 14);
+
+    // intervals
+    const maxShow = 28;
+    const start = Math.max(0, intervals.length - maxShow);
+    for(let i=start;i<intervals.length;i++){
+      const it = intervals[i];
+      const y = 30 + (i - start) * 11;
+      const x1 = xToPx(it.lo), x2 = xToPx(it.hi), xm = xToPx(it.mean);
+      ctx.strokeStyle = it.contains ? '#00e676' : '#ff5252';
+      ctx.lineWidth = 2;
+      ctx.beginPath();
+      ctx.moveTo(x1, y); ctx.lineTo(x2, y);
+      ctx.stroke();
+      // caps
+      ctx.beginPath();
+      ctx.moveTo(x1, y-3); ctx.lineTo(x1, y+3);
+      ctx.moveTo(x2, y-3); ctx.lineTo(x2, y+3);
+      ctx.stroke();
+      // mean dot
+      ctx.fillStyle = it.contains ? '#00e676' : '#ff5252';
+      ctx.beginPath();
+      ctx.arc(xm, y, 2.5, 0, 2*Math.PI);
+      ctx.fill();
+    }
+  }
+
+  function generate() {
+    const xs = [];
+    for(let i=0;i<N;i++) xs.push(randNormal(MU, SIGMA));
+    const mean = xs.reduce((a,b)=>a+b,0)/N;
+    const lo = mean - ME, hi = mean + ME;
+    const contains = MU >= lo && MU <= hi;
+    intervals.push({mean, lo, hi, contains});
+    total++;
+    if(contains) hit++; else miss++;
+    document.getElementById('a1-total').textContent = total;
+    document.getElementById('a1-hit').textContent = hit;
+    document.getElementById('a1-miss').textContent = miss;
+    document.getElementById('a1-pct').textContent = ((hit/total)*100).toFixed(1) + '%';
+    draw();
+  }
+
+  let stepCount = 0;
+  function loop() {
+    if(!running) return;
+    generate();
+    stepCount++;
+    if(stepCount >= 80) { running = false; document.getElementById('anim1-start').disabled = false; return; }
+    raf = setTimeout(loop, 120);
+  }
+
+  document.getElementById('anim1-start').onclick = () => {
+    running = true;
+    stepCount = 0;
+    document.getElementById('anim1-start').disabled = true;
+    loop();
+  };
+  document.getElementById('anim1-reset').onclick = () => {
+    running = false;
+    if(raf) clearTimeout(raf);
+    intervals = []; total = 0; hit = 0; miss = 0;
+    document.getElementById('a1-total').textContent = 0;
+    document.getElementById('a1-hit').textContent = 0;
+    document.getElementById('a1-miss').textContent = 0;
+    document.getElementById('a1-pct').textContent = '—';
+    document.getElementById('anim1-start').disabled = false;
+    draw();
+  };
+
+  draw();
+})();
+
+/* ============================================================
+   ANIMACIÓN 2 — Nivel de confianza vs ancho
+   ============================================================ */
+(() => {
+  const canvas = document.getElementById('canvas2');
+  const ctx = canvas.getContext('2d');
+  const W = canvas.width, H = canvas.height;
+  const MEAN = 100, SIGMA = 15;
+
+  // approximate inverse normal (Acklam's algorithm simplified)
+  function invNorm(p) {
+    const a=[-3.969683028665376e+01,2.209460984245205e+02,-2.759285104469687e+02,1.383577518672690e+02,-3.066479806614716e+01,2.506628277459239e+00];
+    const b=[-5.447609879822406e+01,1.615858368580409e+02,-1.556989798598866e+02,6.680131188771972e+01,-1.328068155288572e+01];
+    const c=[-7.784894002430293e-03,-3.223964580411365e-01,-2.400758277161838e+00,-2.549732539343734e+00,4.374664141464968e+00,2.938163982698783e+00];
+    const d=[7.784695709041462e-03,3.224671290700398e-01,2.445134137142996e+00,3.754408661907416e+00];
+    const pl=0.02425, ph=1-pl;
+    let q,r;
+    if(p<pl){q=Math.sqrt(-2*Math.log(p));return (((((c[0]*q+c[1])*q+c[2])*q+c[3])*q+c[4])*q+c[5])/((((d[0]*q+d[1])*q+d[2])*q+d[3])*q+1);}
+    if(p<=ph){q=p-0.5;r=q*q;return (((((a[0]*r+a[1])*r+a[2])*r+a[3])*r+a[4])*r+a[5])*q/(((((b[0]*r+b[1])*r+b[2])*r+b[3])*r+b[4])*r+1);}
+    q=Math.sqrt(-2*Math.log(1-p));return -(((((c[0]*q+c[1])*q+c[2])*q+c[3])*q+c[4])*q+c[5])/((((d[0]*q+d[1])*q+d[2])*q+d[3])*q+1);
+  }
+  function pdfNorm(x, mu, sd) {
+    return Math.exp(-0.5*((x-mu)/sd)**2) / (sd*Math.sqrt(2*Math.PI));
+  }
+
+  function draw() {
+    const conf = parseInt(document.getElementById('conf-slider').value);
+    const n = parseInt(document.getElementById('n-slider').value);
+    const alpha = 1 - conf/100;
+    const z = invNorm(1 - alpha/2);
+    const SE = SIGMA / Math.sqrt(n);
+    const ME = z * SE;
+    const lo = MEAN - ME, hi = MEAN + ME;
+
+    document.getElementById('conf-val').textContent = conf + '%';
+    document.getElementById('n-val').textContent = n;
+    document.getElementById('a2-z').textContent = z.toFixed(3);
+    document.getElementById('a2-me').textContent = ME.toFixed(2);
+    document.getElementById('a2-li').textContent = lo.toFixed(2);
+    document.getElementById('a2-ls').textContent = hi.toFixed(2);
+
+    ctx.clearRect(0,0,W,H);
+    // x range based on max possible
+    const xMin = MEAN - 4*SIGMA/Math.sqrt(5);
+    const xMax = MEAN + 4*SIGMA/Math.sqrt(5);
+    const xToPx = x => 60 + ((x - xMin)/(xMax - xMin))*(W-100);
+
+    // sampling distribution PDF
+    const sd = SE;
+    let maxPdf = pdfNorm(MEAN, MEAN, sd);
+    const baseY = H - 60;
+    const topY = 30;
+    const scale = (baseY - topY) / maxPdf * 0.85;
+
+    // shaded area inside CI
+    ctx.beginPath();
+    ctx.moveTo(xToPx(lo), baseY);
+    for(let x=lo; x<=hi; x+=(hi-lo)/120){
+      ctx.lineTo(xToPx(x), baseY - pdfNorm(x, MEAN, sd)*scale);
+    }
+    ctx.lineTo(xToPx(hi), baseY);
+    ctx.closePath();
+    const grad = ctx.createLinearGradient(0, topY, 0, baseY);
+    grad.addColorStop(0, 'rgba(0,212,255,0.55)');
+    grad.addColorStop(1, 'rgba(0,212,255,0.05)');
+    ctx.fillStyle = grad;
+    ctx.fill();
+
+    // tail areas
+    ctx.fillStyle = 'rgba(255,82,82,0.35)';
+    ctx.beginPath();
+    ctx.moveTo(xToPx(xMin), baseY);
+    for(let x=xMin; x<=lo; x+=(hi-lo)/120){
+      ctx.lineTo(xToPx(x), baseY - pdfNorm(x, MEAN, sd)*scale);
+    }
+    ctx.lineTo(xToPx(lo), baseY);
+    ctx.closePath();
+    ctx.fill();
+    ctx.beginPath();
+    ctx.moveTo(xToPx(hi), baseY);
+    for(let x=hi; x<=xMax; x+=(hi-lo)/120){
+      ctx.lineTo(xToPx(x), baseY - pdfNorm(x, MEAN, sd)*scale);
+    }
+    ctx.lineTo(xToPx(xMax), baseY);
+    ctx.closePath();
+    ctx.fill();
+
+    // curve
+    ctx.strokeStyle = '#00d4ff';
+    ctx.lineWidth = 2.5;
+    ctx.beginPath();
+    let first = true;
+    for(let x=xMin; x<=xMax; x+=(xMax-xMin)/250){
+      const px = xToPx(x), py = baseY - pdfNorm(x, MEAN, sd)*scale;
+      if(first){ctx.moveTo(px,py); first=false;} else ctx.lineTo(px,py);
+    }
+    ctx.stroke();
+
+    // axis
+    ctx.strokeStyle = 'rgba(255,255,255,0.2)';
+    ctx.beginPath();
+    ctx.moveTo(40, baseY); ctx.lineTo(W-30, baseY);
+    ctx.stroke();
+
+    // mean line
+    ctx.strokeStyle = '#ffd700';
+    ctx.setLineDash([5,4]);
+    ctx.beginPath();
+    ctx.moveTo(xToPx(MEAN), topY); ctx.lineTo(xToPx(MEAN), baseY);
+    ctx.stroke();
+    ctx.setLineDash([]);
+
+    // CI bracket below
+    const brY = baseY + 18;
+    ctx.strokeStyle = '#00e676';
+    ctx.lineWidth = 3;
+    ctx.beginPath();
+    ctx.moveTo(xToPx(lo), brY); ctx.lineTo(xToPx(hi), brY);
+    ctx.moveTo(xToPx(lo), brY-6); ctx.lineTo(xToPx(lo), brY+6);
+    ctx.moveTo(xToPx(hi), brY-6); ctx.lineTo(xToPx(hi), brY+6);
+    ctx.stroke();
+
+    // labels
+    ctx.fillStyle = '#e8edf5';
+    ctx.font = 'bold 12px Segoe UI';
+    ctx.textAlign = 'center';
+    ctx.fillText('x̄ = ' + MEAN, xToPx(MEAN), topY-5);
+    ctx.fillStyle = '#00e676';
+    ctx.fillText(lo.toFixed(2), xToPx(lo), brY+22);
+    ctx.fillText(hi.toFixed(2), xToPx(hi), brY+22);
+    ctx.fillStyle = '#8899b3';
+    ctx.font = '11px Segoe UI';
+    ctx.fillText('IC ' + conf + '%', xToPx(MEAN), brY+22);
+  }
+
+  document.getElementById('conf-slider').oninput = draw;
+  document.getElementById('n-slider').oninput = draw;
+  draw();
+})();
+
+/* ============================================================
+   ANIMACIÓN 3 — Z vs t (Student)
+   ============================================================ */
+(() => {
+  const canvas = document.getElementById('canvas3');
+  const ctx = canvas.getContext('2d');
+  const W = canvas.width, H = canvas.height;
+
+  function gamma(z) {
+    // Lanczos approximation
+    const g=7;
+    const c=[0.99999999999980993,676.5203681218851,-1259.1392167224028,771.32342877765313,-176.61502916214059,12.507343278686905,-0.13857109526572012,9.9843695780195716e-6,1.5056327351493116e-7];
+    if(z<0.5) return Math.PI/(Math.sin(Math.PI*z)*gamma(1-z));
+    z-=1;
+    let x=c[0];
+    for(let i=1;i<g+2;i++) x+=c[i]/(z+i);
+    const t=z+g+0.5;
+    return Math.sqrt(2*Math.PI)*Math.pow(t,z+0.5)*Math.exp(-t)*x;
+  }
+  function pdfNorm(x){return Math.exp(-x*x/2)/Math.sqrt(2*Math.PI);}
+  function pdfT(x, df){
+    const num = gamma((df+1)/2);
+    const den = Math.sqrt(df*Math.PI)*gamma(df/2);
+    return (num/den)*Math.pow(1+x*x/df, -(df+1)/2);
+  }
+
+  function draw() {
+    const df = parseInt(document.getElementById('df-slider').value);
+    document.getElementById('df-val').textContent = df;
+
+    ctx.clearRect(0,0,W,H);
+    const xMin=-4, xMax=4;
+    const baseY = H - 40, topY = 30;
+    const xToPx = x => 50 + ((x-xMin)/(xMax-xMin))*(W-80);
+    const maxY = 0.42;
+    const yToPx = y => baseY - (y/maxY)*(baseY-topY);
+
+    // axis
+    ctx.strokeStyle = 'rgba(255,255,255,0.2)';
+    ctx.beginPath();
+    ctx.moveTo(40, baseY); ctx.lineTo(W-30, baseY);
+    ctx.stroke();
+    // x labels
+    ctx.fillStyle = '#8899b3';
+    ctx.font = '11px Segoe UI';
+    ctx.textAlign = 'center';
+    for(let v=-4;v<=4;v++){
+      ctx.beginPath();
+      ctx.moveTo(xToPx(v), baseY); ctx.lineTo(xToPx(v), baseY+4);
+      ctx.stroke();
+      ctx.fillText(v, xToPx(v), baseY+18);
+    }
+
+    // Z curve
+    ctx.strokeStyle = '#00d4ff';
+    ctx.lineWidth = 2.5;
+    ctx.beginPath();
+    let first=true;
+    for(let x=xMin;x<=xMax;x+=0.05){
+      const px=xToPx(x), py=yToPx(pdfNorm(x));
+      if(first){ctx.moveTo(px,py);first=false;}else ctx.lineTo(px,py);
+    }
+    ctx.stroke();
+
+    // T curve
+    ctx.strokeStyle = '#ffd700';
+    ctx.lineWidth = 2.5;
+    ctx.beginPath();
+    first=true;
+    for(let x=xMin;x<=xMax;x+=0.05){
+      const px=xToPx(x), py=yToPx(pdfT(x,df));
+      if(first){ctx.moveTo(px,py);first=false;}else ctx.lineTo(px,py);
+    }
+    ctx.stroke();
+
+    // info
+    ctx.fillStyle = '#e8edf5';
+    ctx.font = 'bold 13px Segoe UI';
+    ctx.textAlign = 'left';
+    ctx.fillText('df = ' + df, 60, 50);
+    ctx.fillStyle = '#8899b3';
+    ctx.font = '11px Segoe UI';
+    ctx.fillText('Más df → t se acerca a Z', 60, 68);
+  }
+
+  document.getElementById('df-slider').oninput = draw;
+  draw();
+})();
+</script>
+
+</body>
+</html>
