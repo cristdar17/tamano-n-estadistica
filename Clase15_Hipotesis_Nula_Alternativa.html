@@ -1,0 +1,2040 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Clase 15 — Hipótesis Nula y Alternativa</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;700;800&family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+<script>
+tailwind.config = {
+  theme: {
+    extend: {
+      colors: {
+        ink: '#0a0014',
+        ink2: '#13031f',
+        magenta: { DEFAULT: '#ff2e93', dim: '#c41e76', glow: '#ff5cb0' },
+        cyan: { DEFAULT: '#00f0ff', dim: '#00b8c4', glow: '#5cf6ff' },
+        violet: { DEFAULT: '#b388ff', dim: '#8a5cff' },
+        lime: { DEFAULT: '#ccff00', dim: '#9bc400' },
+      },
+      fontFamily: {
+        mono: ['JetBrains Mono', 'monospace'],
+        sans: ['Inter', 'system-ui', 'sans-serif'],
+      }
+    }
+  }
+}
+</script>
+<style>
+:root {
+  --magenta: #ff2e93;
+  --cyan: #00f0ff;
+  --violet: #b388ff;
+  --lime: #ccff00;
+  --ink: #0a0014;
+  --ink2: #13031f;
+}
+* { -webkit-tap-highlight-color: transparent; }
+html { scroll-behavior: smooth; }
+body {
+  font-family: 'Inter', system-ui, sans-serif;
+  background: var(--ink);
+  color: #fff;
+  min-height: 100vh;
+  overflow-x: hidden;
+  position: relative;
+}
+
+/* ===== BACKGROUND GRID + AMBIENT GLOW ===== */
+.bg-grid {
+  position: fixed; inset: 0; z-index: 0; pointer-events: none;
+  background-image:
+    linear-gradient(rgba(255,46,147,.04) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(0,240,255,.04) 1px, transparent 1px);
+  background-size: 60px 60px;
+  mask-image: radial-gradient(ellipse at center, #000 30%, transparent 80%);
+}
+.bg-orb {
+  position: fixed; z-index: 0; pointer-events: none;
+  border-radius: 50%; filter: blur(80px); opacity: .3;
+  animation: orbFloat 20s ease-in-out infinite alternate;
+}
+.bg-orb-1 { width: 500px; height: 500px; background: var(--magenta); top: -100px; left: -100px; }
+.bg-orb-2 { width: 400px; height: 400px; background: var(--cyan); bottom: -100px; right: -50px; animation-delay: -7s; }
+.bg-orb-3 { width: 300px; height: 300px; background: var(--violet); top: 50%; left: 60%; animation-delay: -14s; }
+@keyframes orbFloat {
+  0% { transform: translate(0,0) scale(1); }
+  100% { transform: translate(40px,-30px) scale(1.1); }
+}
+
+/* Scanlines (subtle) */
+.scanlines::before {
+  content: ''; position: fixed; inset: 0; z-index: 1; pointer-events: none;
+  background: repeating-linear-gradient(0deg, rgba(255,255,255,.015) 0 1px, transparent 1px 3px);
+  mix-blend-mode: overlay;
+}
+
+/* ===== HUD ===== */
+.hud-top {
+  position: fixed; top: 0; left: 0; right: 0; z-index: 50;
+  padding: 14px 22px;
+  background: linear-gradient(180deg, rgba(10,0,20,.95), rgba(10,0,20,.6) 70%, transparent);
+  backdrop-filter: blur(12px);
+  display: flex; align-items: center; gap: 18px;
+  border-bottom: 1px solid rgba(255,46,147,.15);
+}
+.hud-logo { font-family: 'JetBrains Mono', monospace; font-weight: 800; font-size: 13px; letter-spacing: 2px; color: var(--magenta); text-shadow: 0 0 12px var(--magenta); }
+.hud-progress { flex: 1; display: flex; gap: 4px; }
+.hud-seg {
+  flex: 1; height: 4px; border-radius: 2px;
+  background: rgba(255,255,255,.08); transition: all .4s;
+  position: relative; overflow: hidden;
+}
+.hud-seg.done { background: rgba(255,46,147,.4); }
+.hud-seg.active {
+  background: var(--magenta);
+  box-shadow: 0 0 14px var(--magenta), 0 0 28px rgba(255,46,147,.5);
+}
+.hud-seg.active::after {
+  content: ''; position: absolute; inset: 0;
+  background: linear-gradient(90deg, transparent, rgba(255,255,255,.6), transparent);
+  animation: hudPulse 2s linear infinite;
+}
+@keyframes hudPulse { 0% { transform: translateX(-100%);} 100% { transform: translateX(100%);} }
+.hud-counter {
+  font-family: 'JetBrains Mono', monospace; font-size: 12px; color: var(--cyan);
+  letter-spacing: 1px; min-width: 80px; text-align: right;
+}
+.hud-help-btn {
+  font-family: 'JetBrains Mono', monospace; font-size: 11px; color: rgba(255,255,255,.6);
+  border: 1px solid rgba(255,255,255,.15); padding: 4px 10px; border-radius: 4px; cursor: pointer;
+  transition: all .2s;
+}
+.hud-help-btn:hover { color: var(--cyan); border-color: var(--cyan); box-shadow: 0 0 12px rgba(0,240,255,.3); }
+
+.hud-bottom {
+  position: fixed; bottom: 0; left: 0; right: 0; z-index: 50;
+  padding: 12px 22px; display: flex; justify-content: space-between; align-items: center;
+  background: linear-gradient(0deg, rgba(10,0,20,.95), transparent);
+  pointer-events: none;
+  font-family: 'JetBrains Mono', monospace; font-size: 11px; color: rgba(255,255,255,.4);
+  letter-spacing: 1px;
+}
+.hud-step-counter { color: var(--cyan); }
+.hud-next-hint {
+  display: inline-block; color: var(--magenta);
+  animation: blink 1.4s ease-in-out infinite;
+}
+@keyframes blink { 0%, 100% { opacity: 1; } 50% { opacity: 0.3; } }
+.hud-timer { color: var(--lime); display: none; }
+.hud-timer.show { display: inline; }
+
+/* Mobile floating buttons */
+.mobile-nav {
+  position: fixed; bottom: 50px; right: 20px; z-index: 60;
+  display: none; gap: 10px;
+}
+.mobile-nav button {
+  width: 56px; height: 56px; border-radius: 50%;
+  background: rgba(10,0,20,.85); border: 2px solid var(--magenta);
+  color: var(--magenta); font-size: 24px; cursor: pointer;
+  box-shadow: 0 0 20px rgba(255,46,147,.4);
+  display: flex; align-items: center; justify-content: center;
+}
+@media (max-width: 768px) { .mobile-nav { display: flex; } }
+
+/* ===== HELP OVERLAY ===== */
+.help-overlay {
+  position: fixed; inset: 0; z-index: 100;
+  background: rgba(10,0,20,.92); backdrop-filter: blur(20px);
+  display: flex; align-items: center; justify-content: center;
+  opacity: 0; pointer-events: none; transition: opacity .3s;
+}
+.help-overlay.show { opacity: 1; pointer-events: auto; }
+.help-card {
+  max-width: 600px; padding: 40px;
+  border: 1px solid var(--cyan); border-radius: 12px;
+  background: rgba(0,240,255,.04);
+  box-shadow: 0 0 60px rgba(0,240,255,.15);
+}
+.help-card h2 {
+  font-family: 'JetBrains Mono', monospace; color: var(--cyan); margin-bottom: 24px;
+  text-transform: uppercase; letter-spacing: 3px; font-size: 14px;
+}
+.help-card kbd {
+  font-family: 'JetBrains Mono', monospace;
+  background: rgba(255,46,147,.15); border: 1px solid var(--magenta);
+  color: var(--magenta); padding: 3px 9px; border-radius: 4px;
+  font-size: 12px; min-width: 38px; display: inline-block; text-align: center;
+}
+.help-card .row { display: flex; align-items: center; gap: 14px; padding: 8px 0; font-size: 14px; }
+
+/* ===== SECTIONS ===== */
+.scene {
+  position: relative; z-index: 2;
+  min-height: 100vh; padding: 90px 24px 70px;
+  display: flex; align-items: center; justify-content: center;
+  scroll-margin-top: 0;
+}
+.scene-inner {
+  max-width: 1100px; width: 100%; margin: 0 auto;
+}
+.chapter-tag {
+  display: inline-flex; align-items: center; gap: 10px;
+  font-family: 'JetBrains Mono', monospace; font-size: 11px;
+  color: var(--cyan); letter-spacing: 3px; text-transform: uppercase;
+  padding: 6px 14px; border: 1px solid rgba(0,240,255,.3); border-radius: 50px;
+  margin-bottom: 24px;
+}
+.chapter-tag::before {
+  content: ''; width: 8px; height: 8px; border-radius: 50%;
+  background: var(--cyan); box-shadow: 0 0 10px var(--cyan);
+  animation: tagPulse 1.5s ease-in-out infinite;
+}
+@keyframes tagPulse { 50% { opacity: .4; } }
+
+/* ===== STEP REVEAL ===== */
+[data-step] {
+  opacity: 0;
+  transform: translateY(20px);
+  transition: opacity .8s cubic-bezier(.2,.7,.3,1), transform .8s cubic-bezier(.2,.7,.3,1);
+  pointer-events: none;
+}
+[data-step].is-revealed {
+  opacity: 1; transform: translateY(0); pointer-events: auto;
+}
+[data-step][data-anim="slide-left"] { transform: translateX(-60px); }
+[data-step][data-anim="slide-left"].is-revealed { transform: translateX(0); }
+[data-step][data-anim="slide-right"] { transform: translateX(60px); }
+[data-step][data-anim="slide-right"].is-revealed { transform: translateX(0); }
+[data-step][data-anim="zoom"] { transform: scale(.7); }
+[data-step][data-anim="zoom"].is-revealed { transform: scale(1); }
+[data-step][data-anim="glitch"] { transform: none; }
+[data-step][data-anim="glitch"].is-revealed { animation: glitchIn .8s steps(8); }
+@keyframes glitchIn {
+  0% { opacity: 0; clip-path: inset(45% 0 50% 0); transform: translate(-2px, 0); }
+  20% { clip-path: inset(20% 0 70% 0); transform: translate(2px, 0); }
+  40% { clip-path: inset(70% 0 10% 0); transform: translate(-1px, 1px); }
+  60% { clip-path: inset(10% 0 80% 0); transform: translate(1px, -1px); }
+  80% { clip-path: inset(0 0 0 0); transform: translate(0, 0); }
+  100% { opacity: 1; clip-path: inset(0); transform: translate(0); }
+}
+
+/* ===== TYPOGRAPHY ===== */
+h1.cyber {
+  font-family: 'JetBrains Mono', monospace;
+  font-weight: 800;
+  font-size: clamp(2.5rem, 6vw, 4.5rem);
+  line-height: 1.05;
+  letter-spacing: -1px;
+}
+h2.cyber {
+  font-family: 'JetBrains Mono', monospace;
+  font-weight: 700;
+  font-size: clamp(2rem, 4.5vw, 3.2rem);
+  line-height: 1.1;
+}
+.gradient-text {
+  background: linear-gradient(135deg, var(--magenta), var(--cyan));
+  -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+.gradient-text-2 {
+  background: linear-gradient(135deg, var(--cyan), var(--violet));
+  -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+.glow-magenta { text-shadow: 0 0 24px var(--magenta), 0 0 8px var(--magenta); }
+.glow-cyan { text-shadow: 0 0 24px var(--cyan), 0 0 8px var(--cyan); }
+.glow-lime { text-shadow: 0 0 24px var(--lime); color: var(--lime); }
+
+/* Glitch title effect */
+.glitch {
+  position: relative; display: inline-block;
+}
+.glitch::before, .glitch::after {
+  content: attr(data-text); position: absolute; top: 0; left: 0; width: 100%;
+}
+.glitch::before { color: var(--magenta); animation: glitchA 4s infinite linear alternate-reverse; }
+.glitch::after  { color: var(--cyan);    animation: glitchB 5s infinite linear alternate-reverse; }
+@keyframes glitchA {
+  0%, 95%, 100% { clip-path: inset(0 0 100% 0); transform: translate(0); }
+  96% { clip-path: inset(0 0 60% 0); transform: translate(-2px, 0); }
+  98% { clip-path: inset(40% 0 30% 0); transform: translate(2px, 1px); }
+}
+@keyframes glitchB {
+  0%, 95%, 100% { clip-path: inset(100% 0 0 0); transform: translate(0); }
+  97% { clip-path: inset(60% 0 0 0); transform: translate(2px, 0); }
+  99% { clip-path: inset(30% 0 40% 0); transform: translate(-2px, -1px); }
+}
+
+/* ===== CARDS ===== */
+.cyber-card {
+  background: linear-gradient(135deg, rgba(255,46,147,.04), rgba(0,240,255,.03));
+  border: 1px solid rgba(255,255,255,.1);
+  border-radius: 14px;
+  padding: 28px;
+  position: relative;
+  backdrop-filter: blur(10px);
+}
+.cyber-card.magenta { border-color: rgba(255,46,147,.4); box-shadow: 0 0 30px rgba(255,46,147,.1); }
+.cyber-card.cyan { border-color: rgba(0,240,255,.4); box-shadow: 0 0 30px rgba(0,240,255,.1); }
+.cyber-card.violet { border-color: rgba(179,136,255,.4); box-shadow: 0 0 30px rgba(179,136,255,.1); }
+.cyber-card .corner {
+  position: absolute; width: 14px; height: 14px;
+  border-color: currentColor; border-style: solid; border-width: 0;
+}
+.cyber-card .c-tl { top: -1px; left: -1px; border-top-width: 2px; border-left-width: 2px; }
+.cyber-card .c-tr { top: -1px; right: -1px; border-top-width: 2px; border-right-width: 2px; }
+.cyber-card .c-bl { bottom: -1px; left: -1px; border-bottom-width: 2px; border-left-width: 2px; }
+.cyber-card .c-br { bottom: -1px; right: -1px; border-bottom-width: 2px; border-right-width: 2px; }
+
+/* ===== BUTTONS ===== */
+.cyber-btn {
+  font-family: 'JetBrains Mono', monospace; font-weight: 700;
+  padding: 12px 28px; border-radius: 6px;
+  background: transparent; color: var(--cyan);
+  border: 1px solid var(--cyan); cursor: pointer;
+  letter-spacing: 1px; text-transform: uppercase; font-size: 13px;
+  transition: all .2s; position: relative; overflow: hidden;
+}
+.cyber-btn:hover {
+  background: rgba(0,240,255,.1); box-shadow: 0 0 24px rgba(0,240,255,.4);
+  text-shadow: 0 0 8px var(--cyan);
+}
+.cyber-btn.magenta { color: var(--magenta); border-color: var(--magenta); }
+.cyber-btn.magenta:hover { background: rgba(255,46,147,.1); box-shadow: 0 0 24px rgba(255,46,147,.4); text-shadow: 0 0 8px var(--magenta); }
+.cyber-btn.lime { color: var(--lime); border-color: var(--lime); }
+.cyber-btn.lime:hover { background: rgba(204,255,0,.1); box-shadow: 0 0 24px rgba(204,255,0,.4); }
+
+/* ===== SIM 1: COIN ===== */
+.coin-stage {
+  display: flex; flex-direction: column; align-items: center; gap: 30px;
+  padding: 30px;
+}
+.coin {
+  width: 140px; height: 140px; position: relative;
+  transform-style: preserve-3d;
+  transition: transform .1s;
+}
+.coin.flipping { animation: coinFlip 1.2s cubic-bezier(.5,0,.5,1) forwards; }
+@keyframes coinFlip {
+  0% { transform: rotateY(0) translateY(0); }
+  50% { transform: rotateY(720deg) translateY(-120px); }
+  100% { transform: rotateY(1440deg) translateY(0); }
+}
+.coin .face {
+  position: absolute; inset: 0; border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  font-family: 'JetBrains Mono', monospace; font-size: 56px; font-weight: 800;
+  backface-visibility: hidden;
+  border: 3px solid;
+}
+.coin .heads {
+  background: radial-gradient(circle at 30% 30%, var(--magenta), #8b0050);
+  border-color: var(--magenta); color: #fff;
+  box-shadow: 0 0 30px rgba(255,46,147,.5), inset 0 0 30px rgba(255,255,255,.2);
+}
+.coin .tails {
+  background: radial-gradient(circle at 30% 30%, var(--cyan), #007a8c);
+  border-color: var(--cyan); color: #fff;
+  transform: rotateY(180deg);
+  box-shadow: 0 0 30px rgba(0,240,255,.5), inset 0 0 30px rgba(255,255,255,.2);
+}
+.coin.show-tails { transform: rotateY(180deg); }
+
+/* Coin stats */
+.coin-stats {
+  display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; width: 100%;
+  max-width: 600px;
+}
+.coin-stat {
+  text-align: center; padding: 16px;
+  border: 1px solid rgba(255,255,255,.1); border-radius: 10px;
+  background: rgba(255,255,255,.02);
+}
+.coin-stat .label { font-family: 'JetBrains Mono', monospace; font-size: 10px; color: rgba(255,255,255,.5); letter-spacing: 2px; text-transform: uppercase; }
+.coin-stat .val { font-family: 'JetBrains Mono', monospace; font-size: 36px; font-weight: 800; }
+.coin-stat.heads .val { color: var(--magenta); text-shadow: 0 0 20px var(--magenta); }
+.coin-stat.tails .val { color: var(--cyan); text-shadow: 0 0 20px var(--cyan); }
+.coin-stat.prop .val { color: var(--lime); text-shadow: 0 0 20px var(--lime); }
+
+.coin-bar-wrap { width: 100%; max-width: 600px; }
+.coin-bar {
+  display: flex; height: 28px; border-radius: 6px; overflow: hidden;
+  border: 1px solid rgba(255,255,255,.1);
+}
+.coin-bar .fill-h { background: var(--magenta); transition: width .6s cubic-bezier(.2,.7,.3,1); box-shadow: inset 0 0 10px rgba(255,255,255,.2); }
+.coin-bar .fill-t { background: var(--cyan); transition: width .6s cubic-bezier(.2,.7,.3,1); box-shadow: inset 0 0 10px rgba(255,255,255,.2); }
+.coin-bar-labels { display: flex; justify-content: space-between; margin-top: 8px; font-family: 'JetBrains Mono', monospace; font-size: 11px; color: rgba(255,255,255,.5); }
+
+.coin-controls { display: flex; flex-wrap: wrap; gap: 10px; justify-content: center; }
+
+.coin-msg {
+  margin-top: 20px; padding: 18px 24px; max-width: 700px;
+  border-left: 3px solid var(--lime);
+  background: rgba(204,255,0,.05);
+  font-family: 'JetBrains Mono', monospace; font-size: 14px; color: var(--lime);
+  border-radius: 0 8px 8px 0;
+  opacity: 0; transition: opacity .4s;
+}
+.coin-msg.show { opacity: 1; }
+
+/* ===== SIM 2: CONFETTI CURVE ===== */
+#confetti-canvas {
+  width: 100%; max-width: 900px; height: 360px;
+  background: radial-gradient(ellipse at center, rgba(0,240,255,.04), transparent 70%);
+  border-radius: 12px;
+  border: 1px solid rgba(0,240,255,.2);
+}
+.confetti-controls { display: flex; gap: 10px; justify-content: center; margin-top: 18px; flex-wrap: wrap; }
+.confetti-readout {
+  display: flex; gap: 24px; justify-content: center; margin-top: 14px;
+  font-family: 'JetBrains Mono', monospace; font-size: 13px;
+}
+.confetti-readout .key { color: rgba(255,255,255,.5); }
+.confetti-readout .val { color: var(--cyan); font-weight: 700; }
+.confetti-readout .val.danger { color: var(--magenta); text-shadow: 0 0 10px var(--magenta); }
+
+/* ===== SIM 3: ERROR MATRIX ===== */
+.matrix-wrap {
+  display: grid; grid-template-columns: 130px 1fr 1fr; grid-template-rows: 60px 1fr 1fr;
+  gap: 8px; max-width: 800px; margin: 0 auto;
+  font-family: 'JetBrains Mono', monospace;
+}
+.matrix-wrap .lbl {
+  display: flex; align-items: center; justify-content: center;
+  font-size: 11px; letter-spacing: 2px; text-transform: uppercase; color: rgba(255,255,255,.6);
+  text-align: center; padding: 8px;
+}
+.matrix-wrap .lbl strong { display: block; color: #fff; font-size: 13px; margin-top: 2px; }
+.matrix-cell {
+  border-radius: 12px; padding: 24px 20px; cursor: pointer; position: relative; overflow: hidden;
+  border: 1px solid rgba(255,255,255,.1); background: rgba(255,255,255,.02);
+  transition: all .3s; min-height: 140px;
+}
+.matrix-cell:hover, .matrix-cell.active { transform: translateY(-3px); }
+.matrix-cell .name { font-size: 13px; letter-spacing: 1px; text-transform: uppercase; opacity: .7; }
+.matrix-cell .verdict { font-size: 22px; font-weight: 800; margin: 8px 0; }
+.matrix-cell .desc { font-size: 12px; opacity: .8; margin-top: 8px; line-height: 1.5; }
+.matrix-cell.correct { border-color: var(--lime); }
+.matrix-cell.correct:hover, .matrix-cell.correct.active { background: rgba(204,255,0,.08); box-shadow: 0 0 30px rgba(204,255,0,.25); }
+.matrix-cell.correct .verdict { color: var(--lime); }
+.matrix-cell.t1 { border-color: var(--magenta); }
+.matrix-cell.t1:hover, .matrix-cell.t1.active { background: rgba(255,46,147,.08); box-shadow: 0 0 30px rgba(255,46,147,.25); }
+.matrix-cell.t1 .verdict { color: var(--magenta); }
+.matrix-cell.t2 { border-color: #ffab40; }
+.matrix-cell.t2:hover, .matrix-cell.t2.active { background: rgba(255,171,64,.08); box-shadow: 0 0 30px rgba(255,171,64,.25); }
+.matrix-cell.t2 .verdict { color: #ffab40; }
+
+.metaphor-toggle {
+  display: flex; gap: 6px; justify-content: center; margin-bottom: 24px;
+  background: rgba(255,255,255,.04); padding: 4px; border-radius: 50px;
+  width: fit-content; margin-left: auto; margin-right: auto;
+  border: 1px solid rgba(255,255,255,.08);
+}
+.metaphor-toggle button {
+  padding: 8px 18px; border-radius: 50px; background: transparent;
+  color: rgba(255,255,255,.6); cursor: pointer; font-family: 'JetBrains Mono', monospace;
+  font-size: 11px; letter-spacing: 1px; text-transform: uppercase; border: none;
+  transition: all .2s;
+}
+.metaphor-toggle button.active {
+  background: var(--cyan); color: var(--ink);
+  box-shadow: 0 0 16px rgba(0,240,255,.5);
+}
+
+/* ===== SIM 4: EVIDENCE BAR ===== */
+.evidence-wrap { max-width: 800px; margin: 0 auto; padding: 20px 0; }
+.evidence-bar-frame {
+  position: relative; height: 80px; border-radius: 12px;
+  background: rgba(255,255,255,.03);
+  border: 1px solid rgba(255,255,255,.1);
+  overflow: hidden;
+}
+.evidence-fill {
+  position: absolute; left: 0; top: 0; bottom: 0; width: 0%;
+  background: linear-gradient(90deg, var(--cyan), var(--magenta));
+  box-shadow: 0 0 30px rgba(255,46,147,.4);
+  transition: width .5s cubic-bezier(.2,.7,.3,1);
+}
+.evidence-fill.cross { animation: evidenceCross .6s; }
+@keyframes evidenceCross {
+  0% { filter: brightness(1); }
+  50% { filter: brightness(2.2); }
+  100% { filter: brightness(1); }
+}
+.evidence-threshold {
+  position: absolute; left: 95%; top: -10px; bottom: -10px;
+  width: 2px; background: var(--lime); box-shadow: 0 0 14px var(--lime);
+}
+.evidence-threshold::after {
+  content: 'umbral 95%'; position: absolute; top: -22px; left: 50%; transform: translateX(-50%);
+  font-family: 'JetBrains Mono', monospace; font-size: 10px; color: var(--lime);
+  white-space: nowrap; letter-spacing: 1px;
+}
+.evidence-readout {
+  display: flex; justify-content: space-between; margin-top: 14px;
+  font-family: 'JetBrains Mono', monospace; font-size: 13px;
+}
+.evidence-readout .val { color: var(--cyan); font-weight: 700; }
+.evidence-controls { display: flex; gap: 10px; justify-content: center; margin-top: 24px; flex-wrap: wrap; }
+.verdict-banner {
+  margin-top: 30px; padding: 30px;
+  text-align: center;
+  border: 2px solid var(--magenta);
+  border-radius: 14px;
+  background: radial-gradient(ellipse at center, rgba(255,46,147,.15), transparent 70%);
+  box-shadow: 0 0 60px rgba(255,46,147,.3);
+  display: none;
+}
+.verdict-banner.show { display: block; animation: verdictIn .8s; }
+.verdict-banner.no-reject {
+  border-color: var(--cyan);
+  background: radial-gradient(ellipse at center, rgba(0,240,255,.15), transparent 70%);
+  box-shadow: 0 0 60px rgba(0,240,255,.3);
+}
+@keyframes verdictIn {
+  0% { opacity: 0; transform: scale(.7); }
+  60% { transform: scale(1.05); }
+  100% { opacity: 1; transform: scale(1); }
+}
+.verdict-banner h3 {
+  font-family: 'JetBrains Mono', monospace; font-size: 28px; font-weight: 800;
+  letter-spacing: 4px; text-transform: uppercase;
+  color: var(--magenta); text-shadow: 0 0 20px var(--magenta);
+}
+.verdict-banner.no-reject h3 { color: var(--cyan); text-shadow: 0 0 20px var(--cyan); }
+.verdict-banner p { margin-top: 14px; color: rgba(255,255,255,.8); }
+
+/* ===== EXAMPLE STYLES ===== */
+.ex-emoji { font-size: 80px; line-height: 1; filter: drop-shadow(0 0 24px currentColor); }
+.ex-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 18px; margin-top: 20px; }
+@media (max-width: 768px) { .ex-grid { grid-template-columns: 1fr; } }
+
+.h-card {
+  padding: 22px; border-radius: 12px; border: 1px solid;
+}
+.h-card.h0 {
+  border-color: rgba(0,240,255,.4); background: rgba(0,240,255,.05);
+}
+.h-card.h1 {
+  border-color: rgba(255,46,147,.4); background: rgba(255,46,147,.05);
+}
+.h-card .pre {
+  font-family: 'JetBrains Mono', monospace; font-size: 11px;
+  letter-spacing: 2px; text-transform: uppercase; opacity: .6;
+}
+.h-card.h0 .pre { color: var(--cyan); }
+.h-card.h1 .pre { color: var(--magenta); }
+.h-card .formula {
+  font-family: 'JetBrains Mono', monospace; font-size: 22px; font-weight: 700;
+  margin: 10px 0; color: #fff;
+}
+.h-card .desc { font-size: 14px; color: rgba(255,255,255,.75); }
+
+/* Footer */
+.scene-footer {
+  text-align: center; padding: 40px 20px; color: rgba(255,255,255,.3);
+  font-family: 'JetBrains Mono', monospace; font-size: 10px; letter-spacing: 2px;
+}
+.scene-footer a { color: var(--cyan); text-decoration: none; cursor: pointer; }
+.scene-footer a:hover { text-shadow: 0 0 8px var(--cyan); }
+
+/* utility */
+.divider {
+  height: 1px; background: linear-gradient(90deg, transparent, var(--magenta), transparent);
+  margin: 30px 0; opacity: .5;
+}
+
+/* Final verdict big text */
+.big-verdict {
+  font-family: 'JetBrains Mono', monospace; font-weight: 800;
+  font-size: clamp(2rem, 5vw, 3.6rem); letter-spacing: 2px;
+}
+
+/* Welcome overlay */
+.welcome-overlay {
+  position: fixed; inset: 0; z-index: 200;
+  background: var(--ink);
+  display: flex; align-items: center; justify-content: center; flex-direction: column;
+  padding: 40px;
+  transition: opacity .8s;
+}
+.welcome-overlay.hide { opacity: 0; pointer-events: none; }
+.welcome-overlay h1 {
+  font-family: 'JetBrains Mono', monospace; font-size: clamp(2rem, 5vw, 4rem); font-weight: 800;
+  text-align: center; line-height: 1.1;
+}
+.welcome-overlay .sub {
+  margin-top: 24px; max-width: 700px; text-align: center; color: rgba(255,255,255,.6);
+  font-size: 16px; line-height: 1.7;
+}
+.welcome-overlay .keys-hint {
+  margin-top: 40px; font-family: 'JetBrains Mono', monospace; font-size: 12px;
+  color: var(--cyan); letter-spacing: 2px;
+}
+.welcome-overlay .start-btn {
+  margin-top: 30px;
+}
+
+/* Pereira lluvia bars */
+.rain-bars { display: flex; gap: 8px; align-items: flex-end; height: 200px; padding: 20px; }
+.rain-bar {
+  flex: 1; background: linear-gradient(180deg, var(--cyan), rgba(0,240,255,.3));
+  border-radius: 4px 4px 0 0; position: relative;
+  box-shadow: 0 0 12px rgba(0,240,255,.3);
+  transition: height 1s cubic-bezier(.2,.7,.3,1);
+}
+.rain-bar.lunes { background: linear-gradient(180deg, var(--magenta), rgba(255,46,147,.3)); box-shadow: 0 0 12px rgba(255,46,147,.4); }
+.rain-bar .day { position: absolute; bottom: -22px; left: 0; right: 0; text-align: center; font-family: 'JetBrains Mono', monospace; font-size: 10px; color: rgba(255,255,255,.5); }
+.rain-bar .num { position: absolute; top: -22px; left: 0; right: 0; text-align: center; font-family: 'JetBrains Mono', monospace; font-size: 11px; font-weight: 700; color: #fff; }
+
+/* Café bars */
+.cafe-compare { display: grid; grid-template-columns: 1fr 1fr; gap: 30px; align-items: center; }
+.cafe-cup {
+  position: relative; height: 200px; display: flex; align-items: flex-end; justify-content: center;
+}
+.cafe-cup .cup {
+  width: 120px; height: 160px;
+  border: 3px solid currentColor;
+  border-radius: 8px 8px 30px 30px;
+  position: relative; overflow: hidden;
+}
+.cafe-cup .liquid {
+  position: absolute; bottom: 0; left: 0; right: 0;
+  background: currentColor;
+  transition: height 1.5s cubic-bezier(.2,.7,.3,1);
+  opacity: .7;
+}
+.cafe-cup .label {
+  position: absolute; top: -36px; left: 0; right: 0; text-align: center;
+  font-family: 'JetBrains Mono', monospace; font-size: 12px; letter-spacing: 1px;
+}
+.cafe-cup .mg {
+  position: absolute; bottom: -28px; left: 0; right: 0; text-align: center;
+  font-family: 'JetBrains Mono', monospace; font-size: 14px; font-weight: 700;
+}
+
+/* Gym scatter */
+.gym-scatter {
+  position: relative; height: 240px;
+  border-bottom: 1px solid rgba(255,255,255,.2);
+  border-left: 1px solid rgba(255,255,255,.2);
+  margin: 30px 20px;
+}
+.gym-dot {
+  position: absolute; width: 14px; height: 14px; border-radius: 50%;
+  transform: translate(-50%, 50%);
+  box-shadow: 0 0 10px currentColor;
+  opacity: 0; transition: opacity .6s;
+}
+.gym-dot.show { opacity: 1; }
+.gym-axis-y, .gym-axis-x {
+  position: absolute; font-family: 'JetBrains Mono', monospace; font-size: 10px;
+  color: rgba(255,255,255,.5); letter-spacing: 1px;
+}
+.gym-axis-y { top: 50%; left: -50px; transform: rotate(-90deg); }
+.gym-axis-x { bottom: -28px; left: 50%; transform: translateX(-50%); }
+
+/* Instagram split */
+.ig-split {
+  display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-top: 20px;
+}
+.ig-face {
+  aspect-ratio: 1; border-radius: 12px;
+  display: flex; align-items: center; justify-content: center; font-size: 60px;
+  border: 2px solid;
+  position: relative;
+}
+.ig-face.real { border-color: var(--cyan); background: rgba(0,240,255,.05); }
+.ig-face.filt { border-color: var(--magenta); background: rgba(255,46,147,.05); }
+.ig-face .tag {
+  position: absolute; top: 10px; left: 10px;
+  font-family: 'JetBrains Mono', monospace; font-size: 10px; letter-spacing: 1px;
+  padding: 3px 8px; border-radius: 4px;
+}
+.ig-face.real .tag { background: var(--cyan); color: var(--ink); }
+.ig-face.filt .tag { background: var(--magenta); color: #fff; }
+
+/* p-value box */
+.pval-box {
+  display: inline-block;
+  font-family: 'JetBrains Mono', monospace; font-weight: 800; font-size: 20px;
+  padding: 8px 18px; border-radius: 8px;
+  background: rgba(0,0,0,.4); border: 1px solid currentColor;
+}
+.pval-box.low { color: var(--magenta); box-shadow: 0 0 20px rgba(255,46,147,.3); }
+.pval-box.high { color: var(--cyan); box-shadow: 0 0 20px rgba(0,240,255,.3); }
+
+/* Verdict mini for examples */
+.mini-verdict {
+  margin-top: 24px; padding: 20px;
+  border-radius: 10px; text-align: center;
+  border: 1px solid;
+}
+.mini-verdict.reject { border-color: var(--magenta); background: rgba(255,46,147,.08); }
+.mini-verdict.no-reject { border-color: var(--cyan); background: rgba(0,240,255,.08); }
+.mini-verdict .lbl {
+  font-family: 'JetBrains Mono', monospace; font-size: 11px; letter-spacing: 3px;
+  text-transform: uppercase; opacity: .7;
+}
+.mini-verdict .verdict-txt {
+  font-family: 'JetBrains Mono', monospace; font-size: 22px; font-weight: 800;
+  margin-top: 6px;
+}
+.mini-verdict.reject .verdict-txt { color: var(--magenta); text-shadow: 0 0 16px var(--magenta); }
+.mini-verdict.no-reject .verdict-txt { color: var(--cyan); text-shadow: 0 0 16px var(--cyan); }
+.mini-verdict .conclusion { margin-top: 10px; color: rgba(255,255,255,.85); font-size: 14px; }
+
+/* Print/screenshot mode */
+@media print { .hud-top, .hud-bottom, .help-overlay, .welcome-overlay, .mobile-nav { display: none !important; } [data-step] { opacity: 1 !important; transform: none !important; } }
+</style>
+</head>
+<body class="scanlines">
+
+<!-- BACKGROUND -->
+<div class="bg-grid"></div>
+<div class="bg-orb bg-orb-1"></div>
+<div class="bg-orb bg-orb-2"></div>
+<div class="bg-orb bg-orb-3"></div>
+
+<!-- WELCOME OVERLAY -->
+<div class="welcome-overlay" id="welcome">
+  <div class="chapter-tag">CLASE 15 / ESTADÍSTICA</div>
+  <h1 class="cyber"><span class="gradient-text">HIPÓTESIS NULA</span><br>vs <span class="gradient-text-2">HIPÓTESIS ALTERNATIVA</span></h1>
+  <p class="sub">Hoy aprendes el método más usado en estadística para responder preguntas como: <em>¿la moneda está cargada?</em>, <em>¿el medicamento sí funciona?</em>, <em>¿el filtro engaña?</em><br><br>1 hora de teoría + 30 min de ejemplos. Avanza con <strong style="color:var(--magenta)">→</strong> o <strong style="color:var(--magenta)">Espacio</strong>.</p>
+  <div class="keys-hint">presiona <kbd style="font-family:inherit;background:rgba(255,46,147,.15);border:1px solid var(--magenta);color:var(--magenta);padding:3px 9px;border-radius:4px">H</kbd> para ver todas las teclas</div>
+  <button class="cyber-btn magenta start-btn" onclick="startClass()">▶ INICIAR CLASE</button>
+</div>
+
+<!-- HUD TOP -->
+<div class="hud-top">
+  <div class="hud-logo">CLASE_15.exe</div>
+  <div class="hud-progress" id="hudProgress"></div>
+  <div class="hud-counter" id="hudCounter">0 / 11</div>
+  <button class="hud-help-btn" onclick="toggleHelp()">[ H ] AYUDA</button>
+</div>
+
+<!-- HUD BOTTOM -->
+<div class="hud-bottom">
+  <span><span class="hud-step-counter" id="stepCounter">step 0/0</span> · <span class="hud-timer" id="hudTimer">00:00</span></span>
+  <span class="hud-next-hint" id="nextHint">→ presiona para continuar</span>
+</div>
+
+<!-- HELP OVERLAY -->
+<div class="help-overlay" id="helpOverlay" onclick="if(event.target===this)toggleHelp()">
+  <div class="help-card">
+    <h2>// CONTROLES</h2>
+    <div class="row"><kbd>→</kbd><kbd>␣</kbd><span>Siguiente paso</span></div>
+    <div class="row"><kbd>←</kbd><span>Paso anterior</span></div>
+    <div class="row"><kbd>↓</kbd><kbd>↑</kbd><span>Saltar capítulo</span></div>
+    <div class="row"><kbd>1</kbd>‥<kbd>9</kbd><kbd>0</kbd><span>Ir directo al capítulo 1‥10 (0 = capítulo 11)</span></div>
+    <div class="row"><kbd>R</kbd><span>Reiniciar simulación actual</span></div>
+    <div class="row"><kbd>F</kbd><span>Pantalla completa</span></div>
+    <div class="row"><kbd>T</kbd><span>Mostrar / ocultar timer</span></div>
+    <div class="row"><kbd>H</kbd><kbd>?</kbd><span>Mostrar / ocultar esta ayuda</span></div>
+    <div class="row"><kbd>Esc</kbd><span>Cerrar ayuda</span></div>
+    <div style="margin-top:24px;font-family:'JetBrains Mono',monospace;font-size:11px;color:rgba(255,255,255,.4);text-align:center">click fuera para cerrar</div>
+  </div>
+</div>
+
+<!-- ===================== CHAPTER 1: PROBLEMA ===================== -->
+<section class="scene" data-chapter="1" id="cap1">
+  <div class="scene-inner">
+    <div data-step="1" data-anim="zoom"><span class="chapter-tag">cap 01 // el problema</span></div>
+
+    <h1 class="cyber" data-step="2" data-anim="glitch" style="margin-bottom:30px">
+      Cuando <span class="gradient-text glow-magenta">dudamos</span>…
+    </h1>
+
+    <div data-step="3" class="cyber-card violet" style="margin-bottom:20px;font-size:22px;line-height:1.6">
+      <span class="corner c-tl" style="color:var(--violet)"></span><span class="corner c-tr" style="color:var(--violet)"></span>
+      <span class="corner c-bl" style="color:var(--violet)"></span><span class="corner c-br" style="color:var(--violet)"></span>
+      🪙 ¿Esa moneda con la que tu amigo siempre gana <strong style="color:var(--magenta)">está cargada</strong>?
+    </div>
+
+    <div data-step="4" class="cyber-card violet" style="margin-bottom:20px;font-size:22px;line-height:1.6">
+      <span class="corner c-tl" style="color:var(--violet)"></span><span class="corner c-tr" style="color:var(--violet)"></span>
+      <span class="corner c-bl" style="color:var(--violet)"></span><span class="corner c-br" style="color:var(--violet)"></span>
+      💊 ¿Ese medicamento nuevo de verdad <strong style="color:var(--magenta)">funciona</strong>… o es lo mismo de siempre?
+    </div>
+
+    <div data-step="5" class="cyber-card violet" style="margin-bottom:40px;font-size:22px;line-height:1.6">
+      <span class="corner c-tl" style="color:var(--violet)"></span><span class="corner c-tr" style="color:var(--violet)"></span>
+      <span class="corner c-bl" style="color:var(--violet)"></span><span class="corner c-br" style="color:var(--violet)"></span>
+      📸 ¿La gente <strong style="color:var(--magenta)">de verdad</strong> distingue una foto con filtro de una sin filtro?
+    </div>
+
+    <div data-step="6" data-anim="glitch" style="text-align:center;margin-top:30px">
+      <p style="font-size:20px;color:rgba(255,255,255,.7);margin-bottom:20px">Toda la estadística inferencial responde estas preguntas con <em>el mismo método</em>.</p>
+      <h2 class="cyber" style="font-size:clamp(2rem,4.5vw,3rem)"><span class="gradient-text">El método: H₀ vs H₁</span></h2>
+      <p style="margin-top:20px;color:var(--cyan);font-family:'JetBrains Mono',monospace;font-size:14px;letter-spacing:2px">► HOY LO APRENDES ◄</p>
+    </div>
+  </div>
+</section>
+
+<!-- ===================== CHAPTER 2: H0 vs H1 ===================== -->
+<section class="scene" data-chapter="2" id="cap2">
+  <div class="scene-inner">
+    <div data-step="1"><span class="chapter-tag">cap 02 // las dos rivales</span></div>
+
+    <h2 class="cyber" data-step="2" style="margin-bottom:40px">
+      Toda investigación enfrenta <span class="gradient-text">2 hipótesis rivales</span>
+    </h2>
+
+    <div class="grid md:grid-cols-2 gap-5 mb-8">
+      <div data-step="3" data-anim="slide-left" class="cyber-card cyan">
+        <span class="corner c-tl" style="color:var(--cyan)"></span><span class="corner c-tr" style="color:var(--cyan)"></span>
+        <span class="corner c-bl" style="color:var(--cyan)"></span><span class="corner c-br" style="color:var(--cyan)"></span>
+        <div style="font-family:'JetBrains Mono',monospace;font-size:11px;letter-spacing:3px;color:var(--cyan);text-transform:uppercase">// hipótesis nula</div>
+        <h3 class="cyber" style="font-size:48px;color:var(--cyan);text-shadow:0 0 20px var(--cyan);margin:10px 0">H₀</h3>
+        <p style="font-size:18px;font-weight:600;margin-bottom:10px">"Aquí <em>no</em> pasa nada."</p>
+        <p style="color:rgba(255,255,255,.75);font-size:15px">Es lo aburrido, lo de siempre. La afirmación de que <strong>nada cambió</strong>, que la diferencia que vemos es por puro azar.</p>
+      </div>
+
+      <div data-step="4" data-anim="slide-right" class="cyber-card magenta">
+        <span class="corner c-tl" style="color:var(--magenta)"></span><span class="corner c-tr" style="color:var(--magenta)"></span>
+        <span class="corner c-bl" style="color:var(--magenta)"></span><span class="corner c-br" style="color:var(--magenta)"></span>
+        <div style="font-family:'JetBrains Mono',monospace;font-size:11px;letter-spacing:3px;color:var(--magenta);text-transform:uppercase">// hipótesis alternativa</div>
+        <h3 class="cyber" style="font-size:48px;color:var(--magenta);text-shadow:0 0 20px var(--magenta);margin:10px 0">H₁</h3>
+        <p style="font-size:18px;font-weight:600;margin-bottom:10px">"Sí pasa algo."</p>
+        <p style="color:rgba(255,255,255,.75);font-size:15px">Es la <strong>sospecha</strong> que queremos demostrar. La afirmación de que <strong>sí hay diferencia</strong>, que esto no es solo azar.</p>
+      </div>
+    </div>
+
+    <div data-step="5" data-anim="zoom" class="cyber-card violet" style="text-align:center;font-size:18px">
+      <span class="corner c-tl" style="color:var(--violet)"></span><span class="corner c-tr" style="color:var(--violet)"></span>
+      <span class="corner c-bl" style="color:var(--violet)"></span><span class="corner c-br" style="color:var(--violet)"></span>
+      🕵️ <strong>Como un detective:</strong> H₀ es "no pasó nada raro", H₁ es "sí hubo crimen".<br>
+      <span style="color:var(--violet);font-family:'JetBrains Mono',monospace;font-size:14px;letter-spacing:1px;margin-top:10px;display:inline-block">La pregunta NO es "¿quién tiene la razón?"</span><br>
+      <span style="color:var(--magenta);font-family:'JetBrains Mono',monospace;font-size:16px;font-weight:700">La pregunta es: ¿hay suficiente evidencia para abandonar H₀?</span>
+    </div>
+
+    <div data-step="6" style="margin-top:40px">
+      <h3 class="cyber" style="font-size:24px;color:var(--cyan);margin-bottom:20px">// REGLAS PARA ESCRIBIRLAS</h3>
+      <div class="grid md:grid-cols-2 gap-4">
+        <div class="cyber-card">
+          <p style="font-family:'JetBrains Mono',monospace;font-size:12px;letter-spacing:2px;color:var(--cyan);margin-bottom:8px">REGLA #1</p>
+          <p>H₀ <strong>siempre</strong> lleva el signo <span class="pval-box high" style="font-size:16px">=</span> (igualdad)</p>
+        </div>
+        <div class="cyber-card">
+          <p style="font-family:'JetBrains Mono',monospace;font-size:12px;letter-spacing:2px;color:var(--magenta);margin-bottom:8px">REGLA #2</p>
+          <p>H₁ lleva <span class="pval-box low" style="font-size:16px">&gt;</span>, <span class="pval-box low" style="font-size:16px">&lt;</span> o <span class="pval-box low" style="font-size:16px">≠</span> (desigualdad)</p>
+        </div>
+      </div>
+    </div>
+
+    <div data-step="7" data-anim="zoom" style="margin-top:30px">
+      <h3 class="cyber" style="font-size:24px;color:var(--magenta);margin-bottom:20px">// EJEMPLOS RÁPIDOS</h3>
+      <div style="overflow-x:auto">
+      <table style="width:100%;border-collapse:separate;border-spacing:0 8px;font-size:14px">
+        <thead>
+          <tr style="font-family:'JetBrains Mono',monospace;font-size:11px;letter-spacing:2px;color:rgba(255,255,255,.5);text-transform:uppercase">
+            <th style="text-align:left;padding:8px 14px">PREGUNTA</th>
+            <th style="text-align:left;padding:8px 14px;color:var(--cyan)">H₀</th>
+            <th style="text-align:left;padding:8px 14px;color:var(--magenta)">H₁</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr style="background:rgba(255,255,255,.03)"><td style="padding:14px;border-radius:8px 0 0 8px">¿La moneda es justa?</td><td style="padding:14px" class="font-mono"><span style="color:var(--cyan)">p = 0.5</span></td><td style="padding:14px;border-radius:0 8px 8px 0" class="font-mono"><span style="color:var(--magenta)">p ≠ 0.5</span></td></tr>
+          <tr style="background:rgba(255,255,255,.03)"><td style="padding:14px;border-radius:8px 0 0 8px">¿El gym hace bajar de peso?</td><td style="padding:14px" class="font-mono"><span style="color:var(--cyan)">μ = 0</span></td><td style="padding:14px;border-radius:0 8px 8px 0" class="font-mono"><span style="color:var(--magenta)">μ &gt; 0</span></td></tr>
+          <tr style="background:rgba(255,255,255,.03)"><td style="padding:14px;border-radius:8px 0 0 8px">¿El medicamento A cura mejor?</td><td style="padding:14px" class="font-mono"><span style="color:var(--cyan)">μ_A = μ_B</span></td><td style="padding:14px;border-radius:0 8px 8px 0" class="font-mono"><span style="color:var(--magenta)">μ_A &gt; μ_B</span></td></tr>
+          <tr style="background:rgba(255,255,255,.03)"><td style="padding:14px;border-radius:8px 0 0 8px">¿Llueve más los lunes?</td><td style="padding:14px" class="font-mono"><span style="color:var(--cyan)">μ_lun = μ_resto</span></td><td style="padding:14px;border-radius:0 8px 8px 0" class="font-mono"><span style="color:var(--magenta)">μ_lun ≠ μ_resto</span></td></tr>
+        </tbody>
+      </table>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ===================== CHAPTER 3: SIM MONEDA ===================== -->
+<section class="scene" data-chapter="3" id="cap3">
+  <div class="scene-inner">
+    <div data-step="1"><span class="chapter-tag">cap 03 // la evidencia</span></div>
+
+    <h2 class="cyber" data-step="2" style="margin-bottom:30px">
+      Para decidir necesitamos <span class="gradient-text">evidencia</span>
+    </h2>
+
+    <div data-step="3" class="cyber-card cyan" style="margin-bottom:30px;font-size:18px">
+      <span class="corner c-tl" style="color:var(--cyan)"></span><span class="corner c-tr" style="color:var(--cyan)"></span>
+      <span class="corner c-bl" style="color:var(--cyan)"></span><span class="corner c-br" style="color:var(--cyan)"></span>
+      Tu amigo dice "esta moneda es normal" (= H₀: <span class="font-mono">p = 0.5</span>).<br>
+      Tú sospechas que está cargada (= H₁: <span class="font-mono">p ≠ 0.5</span>).<br>
+      <strong style="color:var(--cyan)">Vas a lanzarla varias veces y ver qué tan raro es lo que sale.</strong>
+    </div>
+
+    <div data-step="4" class="cyber-card" style="padding:30px">
+      <div class="coin-stage">
+        <div class="coin" id="coin">
+          <div class="face heads">C</div>
+          <div class="face tails">S</div>
+        </div>
+
+        <div class="coin-stats">
+          <div class="coin-stat heads"><div class="label">caras</div><div class="val" id="cntHeads">0</div></div>
+          <div class="coin-stat tails"><div class="label">sellos</div><div class="val" id="cntTails">0</div></div>
+          <div class="coin-stat prop"><div class="label">% caras</div><div class="val" id="cntProp">—</div></div>
+        </div>
+
+        <div class="coin-bar-wrap">
+          <div class="coin-bar">
+            <div class="fill-h" id="barH" style="width:50%"></div>
+            <div class="fill-t" id="barT" style="width:50%"></div>
+          </div>
+          <div class="coin-bar-labels">
+            <span>caras</span><span>esperado bajo H₀ → 50%</span><span>sellos</span>
+          </div>
+        </div>
+
+        <div class="coin-controls">
+          <button class="cyber-btn magenta" onclick="flipCoin(1)">▶ TIRAR 1×</button>
+          <button class="cyber-btn magenta" onclick="flipCoin(10)">▶▶ TIRAR 10×</button>
+          <button class="cyber-btn magenta" onclick="flipCoin(100)">▶▶▶ TIRAR 100×</button>
+          <button class="cyber-btn lime" onclick="flipCoin(1000)">⚡ TIRAR 1.000×</button>
+          <button class="cyber-btn" onclick="resetCoin()">↺ RESET</button>
+        </div>
+
+        <div class="coin-msg" id="coinMsg"></div>
+      </div>
+    </div>
+
+    <div data-step="5" data-anim="zoom" style="margin-top:40px;text-align:center">
+      <h3 class="cyber" style="color:var(--magenta);font-size:28px;margin-bottom:14px">↳ La pregunta clave</h3>
+      <p style="font-size:20px;line-height:1.5">¿Qué tan <strong style="color:var(--magenta)">raro</strong> sería ver lo que vimos<br>si la moneda fuera realmente justa (H₀)?</p>
+      <p style="margin-top:18px;color:rgba(255,255,255,.7);font-size:16px">Esa "rareza" tiene un nombre: <span class="pval-box low" style="font-size:18px">p-value</span></p>
+    </div>
+  </div>
+</section>
+
+<!-- ===================== CHAPTER 4: P-VALUE / CONFETTI ===================== -->
+<section class="scene" data-chapter="4" id="cap4">
+  <div class="scene-inner">
+    <div data-step="1"><span class="chapter-tag">cap 04 // el p-value</span></div>
+
+    <h2 class="cyber" data-step="2" style="margin-bottom:24px">
+      P-value: <span class="gradient-text">"qué tan raro sería esto si H₀ fuera cierta"</span>
+    </h2>
+
+    <div data-step="3" class="cyber-card cyan" style="margin-bottom:30px;font-size:17px">
+      <span class="corner c-tl" style="color:var(--cyan)"></span><span class="corner c-tr" style="color:var(--cyan)"></span>
+      <span class="corner c-bl" style="color:var(--cyan)"></span><span class="corner c-br" style="color:var(--cyan)"></span>
+      <strong>Imagina que H₀ es VERDAD</strong> (la moneda sí es justa). Vamos a simular <strong style="color:var(--cyan)">10.000 experimentos</strong> de "tirar la moneda 100 veces" y ver cuántas caras salen en cada uno.<br>
+      <span style="color:var(--lime);font-family:'JetBrains Mono',monospace;font-size:13px;margin-top:10px;display:inline-block">► cada partícula = 1 experimento completo de 100 tiros</span>
+    </div>
+
+    <div data-step="4" class="cyber-card" style="padding:20px">
+      <canvas id="confetti-canvas" width="900" height="360"></canvas>
+      <div class="confetti-readout">
+        <span><span class="key">simulaciones:</span> <span class="val" id="confSims">0</span></span>
+        <span><span class="key">media:</span> <span class="val" id="confMean">—</span></span>
+        <span><span class="key">tu observación:</span> <span class="val danger" id="confObs">—</span></span>
+        <span><span class="key">p-value:</span> <span class="val danger" id="confPval">—</span></span>
+      </div>
+      <div class="confetti-controls">
+        <button class="cyber-btn cyan" onclick="dropConfetti()">⬇ LANZAR 10.000 SIMULACIONES</button>
+        <button class="cyber-btn magenta" onclick="markObservation(70)">📍 MARCAR "70 CARAS"</button>
+        <button class="cyber-btn" onclick="resetConfetti()">↺ RESET</button>
+      </div>
+    </div>
+
+    <div data-step="5" style="margin-top:40px">
+      <h3 class="cyber" style="color:var(--magenta);font-size:24px;margin-bottom:16px">↳ Cómo leerlo</h3>
+      <div class="grid md:grid-cols-2 gap-4">
+        <div class="cyber-card magenta">
+          <span class="corner c-tl" style="color:var(--magenta)"></span><span class="corner c-tr" style="color:var(--magenta)"></span>
+          <span class="corner c-bl" style="color:var(--magenta)"></span><span class="corner c-br" style="color:var(--magenta)"></span>
+          <div class="pval-box low" style="margin-bottom:12px">p &lt; 0.05</div>
+          <p>"Lo que vimos sería <strong>rarísimo</strong> si H₀ fuera cierta."<br><span style="color:var(--magenta);font-family:'JetBrains Mono',monospace;font-size:13px">► RECHAZAMOS H₀</span></p>
+        </div>
+        <div class="cyber-card cyan">
+          <span class="corner c-tl" style="color:var(--cyan)"></span><span class="corner c-tr" style="color:var(--cyan)"></span>
+          <span class="corner c-bl" style="color:var(--cyan)"></span><span class="corner c-br" style="color:var(--cyan)"></span>
+          <div class="pval-box high" style="margin-bottom:12px">p ≥ 0.05</div>
+          <p>"Lo que vimos <strong>podría perfectamente</strong> ocurrir bajo H₀."<br><span style="color:var(--cyan);font-family:'JetBrains Mono',monospace;font-size:13px">► NO RECHAZAMOS H₀</span></p>
+        </div>
+      </div>
+    </div>
+
+    <div data-step="6" data-anim="zoom" class="cyber-card violet" style="margin-top:30px;text-align:center">
+      <span class="corner c-tl" style="color:var(--violet)"></span><span class="corner c-tr" style="color:var(--violet)"></span>
+      <span class="corner c-bl" style="color:var(--violet)"></span><span class="corner c-br" style="color:var(--violet)"></span>
+      ⚠️ <strong>Cuidado:</strong> "no rechazar H₀" <em>NO</em> es lo mismo que "aceptar H₀".<br>
+      <span style="color:var(--violet);font-size:14px;font-family:'JetBrains Mono',monospace">simplemente significa: la evidencia no alcanzó.</span>
+    </div>
+  </div>
+</section>
+
+<!-- ===================== CHAPTER 5: ERRORS ===================== -->
+<section class="scene" data-chapter="5" id="cap5">
+  <div class="scene-inner">
+    <div data-step="1"><span class="chapter-tag">cap 05 // errores tipo I y II</span></div>
+
+    <h2 class="cyber" data-step="2" style="margin-bottom:14px">
+      Podemos <span class="gradient-text">equivocarnos</span> de 2 formas
+    </h2>
+
+    <p data-step="3" style="font-size:17px;color:rgba(255,255,255,.75);margin-bottom:30px">
+      Incluso haciendo todo bien, nuestra decisión puede salir mal por puro azar. Hay <strong>dos errores posibles</strong>, y los llamamos <strong style="color:var(--magenta)">Tipo I</strong> y <strong style="color:#ffab40">Tipo II</strong>. Pasa el cursor por cada cuadrante.
+    </p>
+
+    <div data-step="4">
+      <div class="metaphor-toggle">
+        <button id="metMed" class="active" onclick="setMetaphor('med')">🩺 Médico</button>
+        <button id="metTri" onclick="setMetaphor('tri')">⚖️ Tribunal</button>
+      </div>
+
+      <div class="matrix-wrap">
+        <div class="lbl"></div>
+        <div class="lbl">REALIDAD<strong id="matRealH0">H₀ verdadera<br>(sano)</strong></div>
+        <div class="lbl">REALIDAD<strong id="matRealH1">H₀ falsa<br>(enfermo)</strong></div>
+
+        <div class="lbl">DECISIÓN<strong id="matDecNo">No rechazar<br>(decimos sano)</strong></div>
+        <div class="matrix-cell correct" data-quad="ok1">
+          <div class="name">CORRECTO</div>
+          <div class="verdict">✓</div>
+          <div class="desc" id="cellOk1">Sano y dijimos sano. Todo en orden.</div>
+        </div>
+        <div class="matrix-cell t2" data-quad="t2">
+          <div class="name">ERROR TIPO II <span style="font-family:'JetBrains Mono',monospace">(β)</span></div>
+          <div class="verdict">✗</div>
+          <div class="desc" id="cellT2">Enfermo pero dijimos sano. <strong>FALSO NEGATIVO.</strong> El cáncer pasó desapercibido.</div>
+        </div>
+
+        <div class="lbl">DECISIÓN<strong id="matDecRej">Rechazar<br>(decimos enfermo)</strong></div>
+        <div class="matrix-cell t1" data-quad="t1">
+          <div class="name">ERROR TIPO I <span style="font-family:'JetBrains Mono',monospace">(α)</span></div>
+          <div class="verdict">✗</div>
+          <div class="desc" id="cellT1">Sano pero dijimos enfermo. <strong>FALSO POSITIVO.</strong> Susto y tratamiento innecesario.</div>
+        </div>
+        <div class="matrix-cell correct" data-quad="ok2">
+          <div class="name">CORRECTO</div>
+          <div class="verdict">✓</div>
+          <div class="desc" id="cellOk2">Enfermo y dijimos enfermo. Diagnóstico acertado.</div>
+        </div>
+      </div>
+    </div>
+
+    <div data-step="5" style="margin-top:40px">
+      <div class="grid md:grid-cols-2 gap-4">
+        <div class="cyber-card magenta">
+          <span class="corner c-tl" style="color:var(--magenta)"></span><span class="corner c-tr" style="color:var(--magenta)"></span>
+          <span class="corner c-bl" style="color:var(--magenta)"></span><span class="corner c-br" style="color:var(--magenta)"></span>
+          <div style="font-family:'JetBrains Mono',monospace;font-size:11px;letter-spacing:2px;color:var(--magenta)">// ERROR TIPO I = α</div>
+          <p style="margin-top:10px;font-size:18px;font-weight:600">Rechazar H₀ cuando es verdadera.</p>
+          <p style="color:rgba(255,255,255,.75);margin-top:8px;font-size:14px">Es el riesgo que <strong>nosotros fijamos</strong>. Convención: <span class="font-mono">α = 0.05</span> (5%).</p>
+        </div>
+        <div class="cyber-card" style="border-color:rgba(255,171,64,.4)">
+          <div style="font-family:'JetBrains Mono',monospace;font-size:11px;letter-spacing:2px;color:#ffab40">// ERROR TIPO II = β</div>
+          <p style="margin-top:10px;font-size:18px;font-weight:600">No rechazar H₀ cuando es falsa.</p>
+          <p style="color:rgba(255,255,255,.75);margin-top:8px;font-size:14px">Depende del tamaño de muestra y del efecto real. Más datos → menos β.</p>
+        </div>
+      </div>
+    </div>
+
+    <div data-step="6" data-anim="zoom" class="cyber-card violet" style="margin-top:30px;text-align:center">
+      <span class="corner c-tl" style="color:var(--violet)"></span><span class="corner c-tr" style="color:var(--violet)"></span>
+      <span class="corner c-bl" style="color:var(--violet)"></span><span class="corner c-br" style="color:var(--violet)"></span>
+      🎯 <strong>Idea clave:</strong> bajar α (ser más estricto) <em>aumenta</em> β. Y viceversa.<br>
+      <span style="color:var(--violet);font-family:'JetBrains Mono',monospace;font-size:13px">no se pueden minimizar los dos a la vez con datos fijos</span>
+    </div>
+  </div>
+</section>
+
+<!-- ===================== CHAPTER 6: VEREDICTO / EVIDENCE BAR ===================== -->
+<section class="scene" data-chapter="6" id="cap6">
+  <div class="scene-inner">
+    <div data-step="1"><span class="chapter-tag">cap 06 // veredicto</span></div>
+
+    <h2 class="cyber" data-step="2" style="margin-bottom:24px">
+      El detective junta evidencia → llega <span class="gradient-text">el veredicto</span>
+    </h2>
+
+    <div data-step="3" class="cyber-card" style="margin-bottom:30px;font-size:16px">
+      Cada nueva observación <strong>suma</strong> a la barra de evidencia. Cuando esa evidencia cruza el <strong style="color:var(--lime)">umbral del 95%</strong> (o sea, p &lt; 0.05), el detective tiene caso: <strong style="color:var(--magenta)">rechaza H₀</strong>.
+    </div>
+
+    <div data-step="4" class="cyber-card" style="padding:30px">
+      <div class="evidence-wrap">
+        <div class="evidence-bar-frame">
+          <div class="evidence-fill" id="evidenceFill"></div>
+          <div class="evidence-threshold"></div>
+        </div>
+        <div class="evidence-readout">
+          <span><span class="key" style="color:rgba(255,255,255,.5)">datos recolectados:</span> <span class="val" id="evDataN">0</span></span>
+          <span><span class="key" style="color:rgba(255,255,255,.5)">fuerza de evidencia:</span> <span class="val" id="evStrength">0%</span></span>
+          <span><span class="key" style="color:rgba(255,255,255,.5)">p-value estimado:</span> <span class="val" id="evPval">—</span></span>
+        </div>
+        <div class="evidence-controls">
+          <button class="cyber-btn magenta" onclick="addEvidence(1)">+ 1 dato</button>
+          <button class="cyber-btn magenta" onclick="addEvidence(10)">+ 10 datos</button>
+          <button class="cyber-btn cyan" onclick="addEvidence(100)">+ 100 datos</button>
+          <button class="cyber-btn" onclick="resetEvidence()">↺ RESET</button>
+        </div>
+        <div class="verdict-banner" id="verdictBanner">
+          <h3 id="verdictText">VEREDICTO: RECHAZAR H₀</h3>
+          <p id="verdictSubtext">La evidencia es suficientemente rara bajo H₀. Aceptamos la sospecha (H₁).</p>
+        </div>
+      </div>
+    </div>
+
+    <div data-step="5" data-anim="zoom" class="cyber-card cyan" style="margin-top:30px;text-align:center">
+      <span class="corner c-tl" style="color:var(--cyan)"></span><span class="corner c-tr" style="color:var(--cyan)"></span>
+      <span class="corner c-bl" style="color:var(--cyan)"></span><span class="corner c-br" style="color:var(--cyan)"></span>
+      <h3 class="cyber" style="color:var(--cyan);font-size:24px;margin-bottom:14px">// LA RECETA COMPLETA</h3>
+      <ol style="text-align:left;max-width:600px;margin:0 auto;font-size:16px;line-height:2">
+        <li><strong style="color:var(--magenta)">1.</strong> Plantea H₀ y H₁</li>
+        <li><strong style="color:var(--magenta)">2.</strong> Recolecta datos</li>
+        <li><strong style="color:var(--magenta)">3.</strong> Calcula el p-value</li>
+        <li><strong style="color:var(--magenta)">4.</strong> Compara con α (típico 0.05)</li>
+        <li><strong style="color:var(--magenta)">5.</strong> Decide: rechazar o no rechazar H₀</li>
+      </ol>
+    </div>
+
+    <div data-step="6" data-anim="glitch" style="text-align:center;margin-top:40px">
+      <div class="big-verdict gradient-text glow-magenta">FIN PARTE 1</div>
+      <p style="margin-top:14px;color:var(--cyan);font-family:'JetBrains Mono',monospace;font-size:13px;letter-spacing:2px">► AHORA: 5 EJEMPLOS DEL MUNDO REAL ◄</p>
+    </div>
+  </div>
+</section>
+
+<!-- ===================== EJEMPLO 1: MONEDA AMIGO ===================== -->
+<section class="scene" data-chapter="7" id="cap7">
+  <div class="scene-inner">
+    <div data-step="1"><span class="chapter-tag">ejemplo 01 / 05</span></div>
+
+    <div style="display:flex;align-items:center;gap:24px;margin-bottom:20px;flex-wrap:wrap">
+      <span class="ex-emoji" style="color:var(--magenta)">🪙</span>
+      <h2 class="cyber" data-step="2" style="flex:1;min-width:300px">¿La moneda de tu amigo <span class="gradient-text">está cargada</span>?</h2>
+    </div>
+
+    <div data-step="3" class="cyber-card" style="font-size:17px;margin-bottom:20px">
+      Tu amigo tira la moneda <strong>10 veces</strong> y le sale <strong style="color:var(--magenta)">7 caras</strong> (gana 7 apuestas seguidas).
+      ¿Es trampa o azar normal?
+    </div>
+
+    <div data-step="4" class="ex-grid">
+      <div class="h-card h0">
+        <div class="pre">// hipótesis nula</div>
+        <div class="formula">H₀ : p = 0.5</div>
+        <div class="desc">La moneda es justa, lo que pasó fue suerte.</div>
+      </div>
+      <div class="h-card h1">
+        <div class="pre">// hipótesis alternativa</div>
+        <div class="formula">H₁ : p ≠ 0.5</div>
+        <div class="desc">La moneda está cargada hacia caras (o sellos).</div>
+      </div>
+    </div>
+
+    <div data-step="5" style="margin-top:30px" class="cyber-card cyan">
+      <span class="corner c-tl" style="color:var(--cyan)"></span><span class="corner c-tr" style="color:var(--cyan)"></span>
+      <span class="corner c-bl" style="color:var(--cyan)"></span><span class="corner c-br" style="color:var(--cyan)"></span>
+      <p style="font-family:'JetBrains Mono',monospace;color:var(--cyan);font-size:11px;letter-spacing:2px">// CÁLCULO</p>
+      <p style="margin-top:8px">Si la moneda fuera justa, ¿qué tan raro es ver <strong>7 o más caras en 10 tiros</strong>?<br>
+      Probabilidad (binomial): <span class="pval-box high">0.172</span></p>
+    </div>
+
+    <div data-step="6" class="mini-verdict no-reject">
+      <div class="lbl">// VEREDICTO</div>
+      <div class="verdict-txt">NO RECHAZAMOS H₀</div>
+      <div class="conclusion"><strong>p = 0.172 &gt; 0.05</strong> → 7 caras en 10 tiros pasaría el 17% de las veces solo por azar. <em>No hay evidencia para acusarlo.</em></div>
+    </div>
+
+    <div data-step="7" data-anim="zoom" class="cyber-card magenta" style="margin-top:20px">
+      <span class="corner c-tl" style="color:var(--magenta)"></span><span class="corner c-tr" style="color:var(--magenta)"></span>
+      <span class="corner c-bl" style="color:var(--magenta)"></span><span class="corner c-br" style="color:var(--magenta)"></span>
+      🤔 <strong>Pregunta extra:</strong> ¿y si fueran <strong>70 caras en 100 tiros</strong>? Misma proporción, pero ahora p = <span class="pval-box low">0.0001</span> → <span style="color:var(--magenta)">RECHAZAMOS H₀</span>.<br>
+      <span style="font-family:'JetBrains Mono',monospace;font-size:13px;color:var(--magenta)">↳ moraleja: el tamaño de la muestra cambia todo.</span>
+    </div>
+  </div>
+</section>
+
+<!-- ===================== EJEMPLO 2: CAFÉ ===================== -->
+<section class="scene" data-chapter="8" id="cap8">
+  <div class="scene-inner">
+    <div data-step="1"><span class="chapter-tag">ejemplo 02 / 05</span></div>
+
+    <div style="display:flex;align-items:center;gap:24px;margin-bottom:20px;flex-wrap:wrap">
+      <span class="ex-emoji" style="color:var(--cyan)">☕</span>
+      <h2 class="cyber" data-step="2" style="flex:1;min-width:300px">¿El café de la esquina <span class="gradient-text">tiene más cafeína</span>?</h2>
+    </div>
+
+    <div data-step="3" class="cyber-card" style="font-size:17px;margin-bottom:20px">
+      Juan Valdez tradicional tiene <strong>95 mg</strong> de cafeína por taza (μ₀). El café de la esquina afirma tener más. Mides <strong>30 tazas</strong> y promedias <strong style="color:var(--magenta)">110 mg</strong> con desv. estándar <strong>20 mg</strong>.
+    </div>
+
+    <div data-step="4" class="ex-grid">
+      <div class="h-card h0">
+        <div class="pre">// hipótesis nula</div>
+        <div class="formula">H₀ : μ = 95 mg</div>
+        <div class="desc">El café de la esquina tiene la misma cafeína que Juan Valdez.</div>
+      </div>
+      <div class="h-card h1">
+        <div class="pre">// hipótesis alternativa</div>
+        <div class="formula">H₁ : μ &gt; 95 mg</div>
+        <div class="desc">El café de la esquina tiene más cafeína (de un solo lado).</div>
+      </div>
+    </div>
+
+    <div data-step="5" class="cyber-card" style="margin-top:30px;padding:30px">
+      <div class="cafe-compare">
+        <div class="cafe-cup" style="color:var(--cyan)">
+          <div class="cup">
+            <div class="liquid" style="height:79%"></div>
+            <div class="label">JUAN VALDEZ (μ₀)</div>
+            <div class="mg">95 mg</div>
+          </div>
+        </div>
+        <div class="cafe-cup" style="color:var(--magenta)">
+          <div class="cup">
+            <div class="liquid" style="height:92%"></div>
+            <div class="label">EL DE LA ESQUINA</div>
+            <div class="mg">110 mg ± 20</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div data-step="6" class="cyber-card cyan" style="margin-top:30px">
+      <span class="corner c-tl" style="color:var(--cyan)"></span><span class="corner c-tr" style="color:var(--cyan)"></span>
+      <span class="corner c-bl" style="color:var(--cyan)"></span><span class="corner c-br" style="color:var(--cyan)"></span>
+      <p style="font-family:'JetBrains Mono',monospace;color:var(--cyan);font-size:11px;letter-spacing:2px">// CÁLCULO (test t)</p>
+      <p style="margin-top:8px;font-family:'JetBrains Mono',monospace">t = (110 − 95) / (20 / √30) = <strong style="color:var(--cyan)">4.11</strong></p>
+      <p style="margin-top:8px">Para 29 grados de libertad y test de una cola: <span class="pval-box low">p ≈ 0.00014</span></p>
+    </div>
+
+    <div data-step="7" class="mini-verdict reject">
+      <div class="lbl">// VEREDICTO</div>
+      <div class="verdict-txt">RECHAZAMOS H₀</div>
+      <div class="conclusion"><strong>p ≈ 0.00014 &lt;&lt; 0.05</strong> → es prácticamente imposible obtener este resultado si fueran iguales. <em>Sí: el café de la esquina tiene significativamente más cafeína.</em></div>
+    </div>
+  </div>
+</section>
+
+<!-- ===================== EJEMPLO 3: LLUVIA LUNES ===================== -->
+<section class="scene" data-chapter="9" id="cap9">
+  <div class="scene-inner">
+    <div data-step="1"><span class="chapter-tag">ejemplo 03 / 05</span></div>
+
+    <div style="display:flex;align-items:center;gap:24px;margin-bottom:20px;flex-wrap:wrap">
+      <span class="ex-emoji" style="color:var(--cyan)">☔</span>
+      <h2 class="cyber" data-step="2" style="flex:1;min-width:300px">¿De verdad <span class="gradient-text">llueve más los lunes</span> en Pereira?</h2>
+    </div>
+
+    <div data-step="3" class="cyber-card" style="font-size:17px;margin-bottom:20px">
+      Tu mamá jura que los lunes llueve más en Pereira. Recoges datos de <strong>52 lunes</strong> y <strong>52 días promedio del resto de la semana</strong> durante un año.
+    </div>
+
+    <div data-step="4" class="ex-grid">
+      <div class="h-card h0">
+        <div class="pre">// hipótesis nula</div>
+        <div class="formula">H₀ : μ_lun = μ_resto</div>
+        <div class="desc">Llueve igual los lunes que cualquier otro día.</div>
+      </div>
+      <div class="h-card h1">
+        <div class="pre">// hipótesis alternativa</div>
+        <div class="formula">H₁ : μ_lun ≠ μ_resto</div>
+        <div class="desc">Llueve diferente los lunes (más o menos).</div>
+      </div>
+    </div>
+
+    <div data-step="5" class="cyber-card" style="margin-top:30px;padding:30px 20px 50px">
+      <p style="font-family:'JetBrains Mono',monospace;color:var(--cyan);font-size:11px;letter-spacing:2px;margin-bottom:14px">// MM DE LLUVIA PROMEDIO POR DÍA (año completo)</p>
+      <div class="rain-bars">
+        <div class="rain-bar lunes" style="height:75%"><span class="num">12.4</span><span class="day">LUN</span></div>
+        <div class="rain-bar" style="height:65%"><span class="num">10.8</span><span class="day">MAR</span></div>
+        <div class="rain-bar" style="height:60%"><span class="num">9.9</span><span class="day">MIÉ</span></div>
+        <div class="rain-bar" style="height:68%"><span class="num">11.2</span><span class="day">JUE</span></div>
+        <div class="rain-bar" style="height:55%"><span class="num">9.0</span><span class="day">VIE</span></div>
+        <div class="rain-bar" style="height:62%"><span class="num">10.3</span><span class="day">SÁB</span></div>
+        <div class="rain-bar" style="height:58%"><span class="num">9.5</span><span class="day">DOM</span></div>
+      </div>
+    </div>
+
+    <div data-step="6" class="cyber-card cyan" style="margin-top:30px">
+      <span class="corner c-tl" style="color:var(--cyan)"></span><span class="corner c-tr" style="color:var(--cyan)"></span>
+      <span class="corner c-bl" style="color:var(--cyan)"></span><span class="corner c-br" style="color:var(--cyan)"></span>
+      <p style="font-family:'JetBrains Mono',monospace;color:var(--cyan);font-size:11px;letter-spacing:2px">// CÁLCULO (test t para 2 muestras)</p>
+      <p style="margin-top:8px">Lunes: μ̄ = 12.4 mm | Resto: μ̄ = 10.1 mm | Diferencia = 2.3 mm</p>
+      <p style="margin-top:8px;font-family:'JetBrains Mono',monospace">t = 1.34 → <span class="pval-box high">p ≈ 0.18</span></p>
+    </div>
+
+    <div data-step="7" class="mini-verdict no-reject">
+      <div class="lbl">// VEREDICTO</div>
+      <div class="verdict-txt">NO RECHAZAMOS H₀</div>
+      <div class="conclusion"><strong>p ≈ 0.18 &gt; 0.05</strong> → la diferencia de 2.3 mm es perfectamente compatible con azar. <em>Lo siento mamá: con estos datos, los lunes no llueve significativamente más.</em></div>
+    </div>
+
+    <div data-step="8" data-anim="zoom" class="cyber-card violet" style="margin-top:20px">
+      <span class="corner c-tl" style="color:var(--violet)"></span><span class="corner c-tr" style="color:var(--violet)"></span>
+      <span class="corner c-bl" style="color:var(--violet)"></span><span class="corner c-br" style="color:var(--violet)"></span>
+      💡 <strong>Sesgo de confirmación:</strong> recordamos los lunes lluviosos (porque odiamos los lunes) y olvidamos los soleados. Por eso necesitamos datos, no intuición.
+    </div>
+  </div>
+</section>
+
+<!-- ===================== EJEMPLO 4: GIMNASIO ===================== -->
+<section class="scene" data-chapter="10" id="cap10">
+  <div class="scene-inner">
+    <div data-step="1"><span class="chapter-tag">ejemplo 04 / 05</span></div>
+
+    <div style="display:flex;align-items:center;gap:24px;margin-bottom:20px;flex-wrap:wrap">
+      <span class="ex-emoji" style="color:var(--lime)">💪</span>
+      <h2 class="cyber" data-step="2" style="flex:1;min-width:300px">¿El nuevo gym <span class="gradient-text">funciona</span> o es placebo?</h2>
+    </div>
+
+    <div data-step="3" class="cyber-card" style="font-size:17px;margin-bottom:20px">
+      Un gym promete bajar peso. <strong>40 personas</strong> entrenan 3 meses. Promedio: bajaron <strong style="color:var(--lime)">2.1 kg</strong> con desv. estándar <strong>3.2 kg</strong>.
+      ¿Esto es por el gym… o pasaría igual sin entrenar?
+    </div>
+
+    <div data-step="4" class="ex-grid">
+      <div class="h-card h0">
+        <div class="pre">// hipótesis nula</div>
+        <div class="formula">H₀ : μ = 0 kg</div>
+        <div class="desc">El gym no hace nada, el cambio promedio es 0.</div>
+      </div>
+      <div class="h-card h1">
+        <div class="pre">// hipótesis alternativa</div>
+        <div class="formula">H₁ : μ &gt; 0 kg</div>
+        <div class="desc">El gym sí hace bajar peso (en promedio).</div>
+      </div>
+    </div>
+
+    <div data-step="5" class="cyber-card" style="margin-top:30px;padding:30px">
+      <p style="font-family:'JetBrains Mono',monospace;color:var(--cyan);font-size:11px;letter-spacing:2px;margin-bottom:18px">// CADA PUNTO = 1 PERSONA · KG PERDIDOS</p>
+      <div class="gym-scatter" id="gymScatter">
+        <span class="gym-axis-y">KG ↑</span>
+        <span class="gym-axis-x">PARTICIPANTES (1—40)</span>
+      </div>
+    </div>
+
+    <div data-step="6" class="cyber-card cyan" style="margin-top:30px">
+      <span class="corner c-tl" style="color:var(--cyan)"></span><span class="corner c-tr" style="color:var(--cyan)"></span>
+      <span class="corner c-bl" style="color:var(--cyan)"></span><span class="corner c-br" style="color:var(--cyan)"></span>
+      <p style="font-family:'JetBrains Mono',monospace;color:var(--cyan);font-size:11px;letter-spacing:2px">// CÁLCULO</p>
+      <p style="margin-top:8px;font-family:'JetBrains Mono',monospace">t = 2.1 / (3.2 / √40) = <strong style="color:var(--cyan)">4.15</strong></p>
+      <p style="margin-top:8px">Para 39 grados de libertad y test de una cola: <span class="pval-box low">p ≈ 0.00009</span></p>
+    </div>
+
+    <div data-step="7" class="mini-verdict reject">
+      <div class="lbl">// VEREDICTO</div>
+      <div class="verdict-txt">RECHAZAMOS H₀</div>
+      <div class="conclusion"><strong>p ≈ 0.00009 &lt;&lt; 0.05</strong> → bajar 2.1 kg en promedio con estos datos sería casi imposible si el gym no hiciera nada. <em>El gym sí funciona</em> (al menos para esta muestra).</div>
+    </div>
+
+    <div data-step="8" data-anim="zoom" class="cyber-card violet" style="margin-top:20px">
+      <span class="corner c-tl" style="color:var(--violet)"></span><span class="corner c-tr" style="color:var(--violet)"></span>
+      <span class="corner c-bl" style="color:var(--violet)"></span><span class="corner c-br" style="color:var(--violet)"></span>
+      ⚠️ <strong>OJO:</strong> "estadísticamente significativo" ≠ "importante en la vida real". 2.1 kg en 3 meses puede ser un cambio modesto. Significancia estadística es solo "no es azar".
+    </div>
+  </div>
+</section>
+
+<!-- ===================== EJEMPLO 5: INSTAGRAM ===================== -->
+<section class="scene" data-chapter="11" id="cap11">
+  <div class="scene-inner">
+    <div data-step="1"><span class="chapter-tag">ejemplo 05 / 05</span></div>
+
+    <div style="display:flex;align-items:center;gap:24px;margin-bottom:20px;flex-wrap:wrap">
+      <span class="ex-emoji" style="color:var(--magenta)">📸</span>
+      <h2 class="cyber" data-step="2" style="flex:1;min-width:300px">¿La gente <span class="gradient-text">distingue</span> filtro de Instagram?</h2>
+    </div>
+
+    <div data-step="3" class="cyber-card" style="font-size:17px;margin-bottom:20px">
+      Test ciego: a <strong>200 personas</strong> les muestras 2 fotos del mismo paisaje (una real, una con filtro). Si <strong>fueran indistinguibles</strong> (H₀), esperaríamos que el 50% acertara cuál es real. En realidad, <strong style="color:var(--magenta)">128 acertaron (64%)</strong>.
+    </div>
+
+    <div data-step="4" class="ex-grid">
+      <div class="h-card h0">
+        <div class="pre">// hipótesis nula</div>
+        <div class="formula">H₀ : p = 0.5</div>
+        <div class="desc">No se distingue. Aciertan al azar (puro 50/50).</div>
+      </div>
+      <div class="h-card h1">
+        <div class="pre">// hipótesis alternativa</div>
+        <div class="formula">H₁ : p &gt; 0.5</div>
+        <div class="desc">Sí se nota el filtro: aciertan más del 50%.</div>
+      </div>
+    </div>
+
+    <div data-step="5" class="cyber-card" style="margin-top:30px;padding:30px">
+      <p style="font-family:'JetBrains Mono',monospace;color:var(--cyan);font-size:11px;letter-spacing:2px;margin-bottom:14px">// LAS DOS FOTOS</p>
+      <div class="ig-split">
+        <div class="ig-face real"><span class="tag">REAL</span>🏞️</div>
+        <div class="ig-face filt"><span class="tag">FILTRO</span>✨</div>
+      </div>
+      <p style="margin-top:30px;text-align:center;font-family:'JetBrains Mono',monospace;font-size:14px">resultado: <span style="color:var(--magenta);font-weight:700">128 / 200 = 64%</span> acertaron cuál era real</p>
+    </div>
+
+    <div data-step="6" class="cyber-card cyan" style="margin-top:30px">
+      <span class="corner c-tl" style="color:var(--cyan)"></span><span class="corner c-tr" style="color:var(--cyan)"></span>
+      <span class="corner c-bl" style="color:var(--cyan)"></span><span class="corner c-br" style="color:var(--cyan)"></span>
+      <p style="font-family:'JetBrains Mono',monospace;color:var(--cyan);font-size:11px;letter-spacing:2px">// CÁLCULO (test z para proporción)</p>
+      <p style="margin-top:8px;font-family:'JetBrains Mono',monospace">z = (0.64 − 0.50) / √(0.5·0.5/200) = <strong style="color:var(--cyan)">3.96</strong></p>
+      <p style="margin-top:8px">Test una cola: <span class="pval-box low">p ≈ 0.00004</span></p>
+    </div>
+
+    <div data-step="7" class="mini-verdict reject">
+      <div class="lbl">// VEREDICTO</div>
+      <div class="verdict-txt">RECHAZAMOS H₀</div>
+      <div class="conclusion"><strong>p ≈ 0.00004 &lt;&lt; 0.05</strong> → es prácticamente imposible que 128 de 200 acertaran por azar. <em>Sí, la gente nota el filtro</em> (más de lo que pensábamos).</div>
+    </div>
+
+    <div data-step="8" data-anim="glitch" style="text-align:center;margin-top:50px">
+      <div class="big-verdict gradient-text glow-magenta">FIN DE LA CLASE</div>
+      <p style="margin-top:18px;color:rgba(255,255,255,.7);font-size:18px">H₀ vs H₁ es <strong>el método</strong>.<br>Lo demás (test t, test z, ANOVA, chi-cuadrado…) es solo cómo calcular el p-value en cada caso.</p>
+      <p style="margin-top:30px;color:var(--cyan);font-family:'JetBrains Mono',monospace;font-size:13px;letter-spacing:3px">► HASTA LA PRÓXIMA CLASE ◄</p>
+    </div>
+  </div>
+</section>
+
+<!-- FOOTER -->
+<div class="scene-footer">
+  CLASE_15.exe // CRISTHIAN GRAJALES // 2026 // <a onclick="resetClass()">[ reiniciar clase ]</a>
+</div>
+
+<!-- MOBILE NAV -->
+<div class="mobile-nav">
+  <button onclick="prevStep()">◀</button>
+  <button onclick="nextStep()">▶</button>
+</div>
+
+<script>
+/* ============================================================
+   STEP MANAGER
+   ============================================================ */
+const TOTAL_CHAPTERS = 11;
+let currentChapter = 1;
+let currentStep = 0;          // 0 = nada revelado todavía en el cap
+let stepsPerChapter = {};     // {1: 6, 2: 7, ...}
+let started = false;
+
+// Timer
+let timerStart = null;
+let timerVisible = false;
+let timerInterval = null;
+
+function buildHud() {
+  const hud = document.getElementById('hudProgress');
+  hud.innerHTML = '';
+  for (let i = 1; i <= TOTAL_CHAPTERS; i++) {
+    const seg = document.createElement('div');
+    seg.className = 'hud-seg';
+    seg.dataset.idx = i;
+    seg.title = 'capítulo ' + i;
+    seg.style.cursor = 'pointer';
+    seg.onclick = () => gotoChapter(i);
+    hud.appendChild(seg);
+  }
+}
+
+function indexSteps() {
+  for (let c = 1; c <= TOTAL_CHAPTERS; c++) {
+    const sec = document.querySelector('[data-chapter="' + c + '"]');
+    if (!sec) { stepsPerChapter[c] = 0; continue; }
+    const steps = sec.querySelectorAll('[data-step]');
+    let max = 0;
+    steps.forEach(el => { const n = parseInt(el.dataset.step); if (n > max) max = n; });
+    stepsPerChapter[c] = max;
+  }
+}
+
+function updateHud() {
+  document.querySelectorAll('.hud-seg').forEach(seg => {
+    const idx = parseInt(seg.dataset.idx);
+    seg.classList.remove('done', 'active');
+    if (idx < currentChapter) seg.classList.add('done');
+    else if (idx === currentChapter) seg.classList.add('active');
+  });
+  document.getElementById('hudCounter').textContent = currentChapter + ' / ' + TOTAL_CHAPTERS;
+  const total = stepsPerChapter[currentChapter] || 0;
+  document.getElementById('stepCounter').textContent = 'step ' + currentStep + '/' + total;
+  const hint = document.getElementById('nextHint');
+  if (currentStep < total) hint.style.opacity = ''; else hint.style.opacity = '0';
+}
+
+function applyReveal() {
+  const sec = document.querySelector('[data-chapter="' + currentChapter + '"]');
+  if (!sec) return;
+  sec.querySelectorAll('[data-step]').forEach(el => {
+    const n = parseInt(el.dataset.step);
+    el.classList.toggle('is-revealed', n <= currentStep);
+  });
+}
+
+function scrollToCurrentChapter(behavior = 'smooth') {
+  const sec = document.querySelector('[data-chapter="' + currentChapter + '"]');
+  if (sec) sec.scrollIntoView({ behavior, block: 'start' });
+}
+
+function nextStep() {
+  if (!started) { startClass(); return; }
+  const total = stepsPerChapter[currentChapter] || 0;
+  if (currentStep < total) {
+    currentStep++;
+    applyReveal();
+    updateHud();
+    saveState();
+    triggerSimOnStep();
+  } else if (currentChapter < TOTAL_CHAPTERS) {
+    nextChapter();
+  }
+}
+
+function prevStep() {
+  if (currentStep > 0) {
+    currentStep--;
+    applyReveal();
+    updateHud();
+    saveState();
+  } else if (currentChapter > 1) {
+    currentChapter--;
+    currentStep = stepsPerChapter[currentChapter];
+    applyReveal();
+    updateHud();
+    scrollToCurrentChapter();
+    saveState();
+  }
+}
+
+function nextChapter() {
+  if (currentChapter < TOTAL_CHAPTERS) {
+    currentChapter++;
+    currentStep = 0;
+    // hide future chapters fully but reveal previous-chapter content fully
+    document.querySelectorAll('[data-chapter]').forEach(sec => {
+      const c = parseInt(sec.dataset.chapter);
+      if (c < currentChapter) {
+        sec.querySelectorAll('[data-step]').forEach(el => el.classList.add('is-revealed'));
+      } else if (c > currentChapter) {
+        sec.querySelectorAll('[data-step]').forEach(el => el.classList.remove('is-revealed'));
+      }
+    });
+    applyReveal();
+    updateHud();
+    scrollToCurrentChapter();
+    saveState();
+  }
+}
+
+function prevChapter() {
+  if (currentChapter > 1) {
+    currentChapter--;
+    currentStep = stepsPerChapter[currentChapter];
+    applyReveal();
+    updateHud();
+    scrollToCurrentChapter();
+    saveState();
+  }
+}
+
+function gotoChapter(c) {
+  if (c < 1 || c > TOTAL_CHAPTERS) return;
+  currentChapter = c;
+  currentStep = 0;
+  document.querySelectorAll('[data-chapter]').forEach(sec => {
+    const ch = parseInt(sec.dataset.chapter);
+    if (ch < currentChapter) {
+      sec.querySelectorAll('[data-step]').forEach(el => el.classList.add('is-revealed'));
+    } else {
+      sec.querySelectorAll('[data-step]').forEach(el => el.classList.remove('is-revealed'));
+    }
+  });
+  updateHud();
+  scrollToCurrentChapter();
+  saveState();
+}
+
+function resetCurrentSim() {
+  if (currentChapter === 3) resetCoin();
+  else if (currentChapter === 4) resetConfetti();
+  else if (currentChapter === 6) resetEvidence();
+}
+
+function triggerSimOnStep() {
+  // when revealing the simulation step, optionally auto-prep
+  // (no auto-run, all manual via buttons - this is presenter mode)
+}
+
+function saveState() {
+  try { localStorage.setItem('clase15_state', JSON.stringify({ chapter: currentChapter, step: currentStep })); } catch(e){}
+}
+
+function loadState() {
+  try {
+    const s = JSON.parse(localStorage.getItem('clase15_state') || 'null');
+    if (s && s.chapter >= 1 && s.chapter <= TOTAL_CHAPTERS) {
+      currentChapter = s.chapter;
+      currentStep = s.step || 0;
+    }
+  } catch(e){}
+}
+
+function resetClass() {
+  if (!confirm('¿Reiniciar la clase desde el principio?')) return;
+  localStorage.removeItem('clase15_state');
+  currentChapter = 1; currentStep = 0;
+  document.querySelectorAll('[data-step]').forEach(el => el.classList.remove('is-revealed'));
+  resetCoin(); resetConfetti(); resetEvidence();
+  document.getElementById('welcome').classList.remove('hide');
+  started = false;
+  updateHud();
+  scrollToCurrentChapter('auto');
+}
+
+function startClass() {
+  document.getElementById('welcome').classList.add('hide');
+  started = true;
+  if (currentStep === 0 && currentChapter === 1) currentStep = 1;
+  // mark previous chapters fully revealed
+  document.querySelectorAll('[data-chapter]').forEach(sec => {
+    const ch = parseInt(sec.dataset.chapter);
+    if (ch < currentChapter) sec.querySelectorAll('[data-step]').forEach(el => el.classList.add('is-revealed'));
+  });
+  applyReveal();
+  updateHud();
+  scrollToCurrentChapter('auto');
+  if (!timerStart) timerStart = Date.now();
+  timerInterval = setInterval(updateTimer, 1000);
+}
+
+/* ============================================================
+   KEYBOARD
+   ============================================================ */
+document.addEventListener('keydown', (e) => {
+  if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA') return;
+  const key = e.key;
+  if (document.getElementById('helpOverlay').classList.contains('show')) {
+    if (key === 'Escape' || key === 'h' || key === 'H' || key === '?') { toggleHelp(); e.preventDefault(); }
+    return;
+  }
+  switch(key) {
+    case 'ArrowRight': case ' ': nextStep(); e.preventDefault(); break;
+    case 'ArrowLeft': prevStep(); e.preventDefault(); break;
+    case 'ArrowDown': nextChapter(); e.preventDefault(); break;
+    case 'ArrowUp': prevChapter(); e.preventDefault(); break;
+    case 'r': case 'R': resetCurrentSim(); break;
+    case 'f': case 'F':
+      if (!document.fullscreenElement) document.documentElement.requestFullscreen?.();
+      else document.exitFullscreen?.();
+      break;
+    case 'h': case 'H': case '?': toggleHelp(); e.preventDefault(); break;
+    case 't': case 'T': toggleTimer(); break;
+    case 'Escape': document.getElementById('helpOverlay').classList.remove('show'); break;
+    case '1': case '2': case '3': case '4': case '5': case '6': case '7': case '8': case '9':
+      if (started) { gotoChapter(parseInt(key)); e.preventDefault(); }
+      break;
+    case '0': if (started) { gotoChapter(11); e.preventDefault(); } break;
+  }
+});
+
+function toggleHelp() {
+  document.getElementById('helpOverlay').classList.toggle('show');
+}
+
+function toggleTimer() {
+  timerVisible = !timerVisible;
+  document.getElementById('hudTimer').classList.toggle('show', timerVisible);
+  if (!timerStart) timerStart = Date.now();
+}
+
+function updateTimer() {
+  if (!timerStart) return;
+  const sec = Math.floor((Date.now() - timerStart) / 1000);
+  const m = Math.floor(sec / 60), s = sec % 60;
+  document.getElementById('hudTimer').textContent = String(m).padStart(2,'0') + ':' + String(s).padStart(2,'0');
+}
+
+/* ============================================================
+   SIM 1 — COIN
+   ============================================================ */
+let coinHeads = 0, coinTails = 0;
+const coinEl = document.getElementById('coin');
+
+function flipCoin(n) {
+  if (n === 1) {
+    flipOnce(true);
+    return;
+  }
+  // batch flips with quick visual
+  coinEl.classList.add('flipping');
+  setTimeout(() => coinEl.classList.remove('flipping'), 1200);
+  for (let i = 0; i < n; i++) {
+    if (Math.random() < 0.5) coinHeads++; else coinTails++;
+  }
+  // show last result on coin
+  const lastWasHead = Math.random() < (coinHeads / (coinHeads + coinTails));
+  setTimeout(() => coinEl.classList.toggle('show-tails', !lastWasHead), 1200);
+  updateCoinUI();
+}
+
+function flipOnce(animate) {
+  coinEl.classList.remove('flipping');
+  void coinEl.offsetWidth;
+  coinEl.classList.add('flipping');
+  setTimeout(() => coinEl.classList.remove('flipping'), 1200);
+  const isHead = Math.random() < 0.5;
+  if (isHead) coinHeads++; else coinTails++;
+  setTimeout(() => coinEl.classList.toggle('show-tails', !isHead), 1200);
+  updateCoinUI();
+}
+
+function updateCoinUI() {
+  const total = coinHeads + coinTails;
+  document.getElementById('cntHeads').textContent = coinHeads;
+  document.getElementById('cntTails').textContent = coinTails;
+  document.getElementById('cntProp').textContent = total > 0 ? Math.round(100 * coinHeads / total) + '%' : '—';
+  document.getElementById('barH').style.width = total > 0 ? (100 * coinHeads / total) + '%' : '50%';
+  document.getElementById('barT').style.width = total > 0 ? (100 * coinTails / total) + '%' : '50%';
+
+  const msg = document.getElementById('coinMsg');
+  if (total === 0) { msg.classList.remove('show'); return; }
+  const prop = coinHeads / total;
+  let txt = '';
+  if (total <= 10) {
+    txt = `► ${coinHeads}/${total} caras. Con tan pocos tiros, casi cualquier cosa pasa por azar. Necesitas más datos.`;
+  } else if (total <= 100) {
+    if (Math.abs(prop - 0.5) < 0.05) txt = `► Llevas ${coinHeads}/${total} (${Math.round(prop*100)}%). Pegado al 50% — consistente con H₀ (moneda justa).`;
+    else if (Math.abs(prop - 0.5) > 0.15) txt = `► ${Math.round(prop*100)}% de caras en ${total} tiros. Empieza a verse sospechoso…`;
+    else txt = `► ${Math.round(prop*100)}% de caras. Algo desviado, pero todavía podría ser azar.`;
+  } else {
+    if (Math.abs(prop - 0.5) < 0.03) txt = `► ${total} tiros y ${Math.round(prop*100)}%: la ley de los grandes números mostró que era justa.`;
+    else if (Math.abs(prop - 0.5) > 0.10) txt = `► ${total} tiros y ${Math.round(prop*100)}%. Con esta cantidad de datos, esa desviación sería rarísima si fuera justa. ⚠`;
+    else txt = `► ${total} tiros y ${Math.round(prop*100)}%. Con muchos datos, las pequeñas desviaciones sí importan.`;
+  }
+  msg.textContent = txt;
+  msg.classList.add('show');
+}
+
+function resetCoin() {
+  coinHeads = 0; coinTails = 0;
+  coinEl.classList.remove('show-tails');
+  updateCoinUI();
+  document.getElementById('coinMsg').classList.remove('show');
+}
+
+/* ============================================================
+   SIM 2 — CONFETTI / SAMPLING DISTRIBUTION
+   ============================================================ */
+const confCanvas = document.getElementById('confetti-canvas');
+const confCtx = confCanvas.getContext('2d');
+let confParticles = [];   // {x, y, vy, target, color, settled}
+let confBins = [];        // counts per bin (0..100 caras)
+let confSimsDone = 0;
+let confObservation = null;
+let confAnimating = false;
+
+function gaussianRandom() {
+  // Box-Muller
+  let u = 0, v = 0;
+  while (u === 0) u = Math.random();
+  while (v === 0) v = Math.random();
+  return Math.sqrt(-2 * Math.log(u)) * Math.cos(2 * Math.PI * v);
+}
+
+function simulateOnce() {
+  // 100 coin flips, count heads
+  // approx via normal: mean 50, sd ~5
+  let h = 50 + gaussianRandom() * 5;
+  h = Math.round(Math.max(0, Math.min(100, h)));
+  return h;
+}
+
+function dropConfetti() {
+  if (confAnimating) return;
+  confAnimating = true;
+  confSimsDone = 0;
+  confBins = new Array(101).fill(0);
+  confParticles = [];
+  confObservation = null;
+
+  const TOTAL = 10000;
+  const W = confCanvas.width, H = confCanvas.height;
+  const binW = W / 101;
+
+  // generate all results immediately
+  const results = [];
+  for (let i = 0; i < TOTAL; i++) results.push(simulateOnce());
+
+  // animate in waves of N
+  let i = 0;
+  const WAVE = 80;
+  const interval = setInterval(() => {
+    for (let k = 0; k < WAVE && i < TOTAL; k++, i++) {
+      const r = results[i];
+      const targetY = H - 8 - confBins[r] * 1.4;
+      confBins[r]++;
+      // particle starts above
+      const x = (r + 0.5) * binW + (Math.random() - 0.5) * binW * 0.6;
+      confParticles.push({
+        x, y: -10, vy: 4 + Math.random() * 3,
+        targetY: Math.max(8, targetY),
+        color: r >= 65 ? '#ff2e93' : '#00f0ff',
+        size: 2 + Math.random() * 1.5,
+        settled: false
+      });
+      confSimsDone++;
+    }
+    document.getElementById('confSims').textContent = confSimsDone.toLocaleString('es');
+    if (i >= TOTAL) {
+      clearInterval(interval);
+      setTimeout(() => { confAnimating = false; finishConfetti(); }, 1500);
+    }
+  }, 16);
+
+  if (!window._confLoop) {
+    window._confLoop = true;
+    requestAnimationFrame(confettiTick);
+  }
+}
+
+function confettiTick() {
+  const W = confCanvas.width, H = confCanvas.height;
+  confCtx.fillStyle = 'rgba(10,0,20,0.18)';
+  confCtx.fillRect(0, 0, W, H);
+
+  for (const p of confParticles) {
+    if (!p.settled) {
+      p.y += p.vy;
+      p.vy += 0.18; // gravity
+      if (p.y >= p.targetY) { p.y = p.targetY; p.settled = true; }
+    }
+    confCtx.fillStyle = p.color;
+    confCtx.shadowBlur = p.settled ? 0 : 8;
+    confCtx.shadowColor = p.color;
+    confCtx.beginPath();
+    confCtx.arc(p.x, p.y, p.size, 0, 2 * Math.PI);
+    confCtx.fill();
+  }
+  confCtx.shadowBlur = 0;
+
+  // draw observation line
+  if (confObservation !== null) {
+    const x = (confObservation + 0.5) * (W / 101);
+    confCtx.strokeStyle = '#ff2e93';
+    confCtx.shadowColor = '#ff2e93';
+    confCtx.shadowBlur = 16;
+    confCtx.lineWidth = 2;
+    confCtx.beginPath();
+    confCtx.moveTo(x, 0); confCtx.lineTo(x, H); confCtx.stroke();
+    confCtx.shadowBlur = 0;
+    // label
+    confCtx.fillStyle = '#ff2e93';
+    confCtx.font = 'bold 12px JetBrains Mono, monospace';
+    confCtx.fillText('= ' + confObservation, x + 6, 18);
+  }
+
+  // axis baseline
+  confCtx.strokeStyle = 'rgba(255,255,255,.15)';
+  confCtx.lineWidth = 1;
+  confCtx.beginPath();
+  confCtx.moveTo(0, H - 1); confCtx.lineTo(W, H - 1); confCtx.stroke();
+  // x labels
+  confCtx.fillStyle = 'rgba(255,255,255,.4)';
+  confCtx.font = '10px JetBrains Mono, monospace';
+  [0, 25, 50, 75, 100].forEach(v => {
+    const x = (v + 0.5) * (W / 101);
+    confCtx.fillText(v, x - 6, H - 4);
+  });
+  // mean label
+  confCtx.fillStyle = '#00f0ff';
+  confCtx.fillText('media bajo H₀ = 50', W/2 - 50, 14);
+
+  requestAnimationFrame(confettiTick);
+}
+
+function markObservation(value) {
+  confObservation = value;
+  document.getElementById('confObs').textContent = value + ' caras';
+  if (confSimsDone > 0) {
+    // p-value: proportion of simulations with |result - 50| >= |value - 50|
+    const dist = Math.abs(value - 50);
+    let extreme = 0;
+    confBins.forEach((cnt, idx) => { if (Math.abs(idx - 50) >= dist) extreme += cnt; });
+    const p = extreme / confSimsDone;
+    document.getElementById('confPval').textContent = p < 0.0001 ? '< 0.0001' : p.toFixed(4);
+  }
+}
+
+function finishConfetti() {
+  // compute mean
+  let sum = 0, total = 0;
+  confBins.forEach((cnt, idx) => { sum += idx * cnt; total += cnt; });
+  document.getElementById('confMean').textContent = total > 0 ? (sum / total).toFixed(1) : '—';
+}
+
+function resetConfetti() {
+  confParticles = []; confBins = []; confSimsDone = 0; confObservation = null;
+  confCtx.fillStyle = 'rgba(10,0,20,1)';
+  confCtx.fillRect(0,0,confCanvas.width,confCanvas.height);
+  document.getElementById('confSims').textContent = '0';
+  document.getElementById('confMean').textContent = '—';
+  document.getElementById('confObs').textContent = '—';
+  document.getElementById('confPval').textContent = '—';
+}
+
+/* ============================================================
+   SIM 3 — ERROR MATRIX
+   ============================================================ */
+const metaphors = {
+  med: {
+    realH0: 'H₀ verdadera<br>(realmente sano)',
+    realH1: 'H₀ falsa<br>(realmente enfermo)',
+    decNo: 'No rechazar<br>(diagnóstico: sano)',
+    decRej: 'Rechazar<br>(diagnóstico: enfermo)',
+    ok1: 'Sano y dijimos sano. Diagnóstico correcto.',
+    t2: 'Está enfermo pero dijimos sano. <strong>FALSO NEGATIVO.</strong> El cáncer pasó desapercibido.',
+    t1: 'Está sano pero dijimos enfermo. <strong>FALSO POSITIVO.</strong> Susto y tratamiento innecesario.',
+    ok2: 'Enfermo y lo detectamos. Diagnóstico correcto.'
+  },
+  tri: {
+    realH0: 'H₀ verdadera<br>(realmente inocente)',
+    realH1: 'H₀ falsa<br>(realmente culpable)',
+    decNo: 'No rechazar<br>(absolver)',
+    decRej: 'Rechazar<br>(condenar)',
+    ok1: 'Inocente y absuelto. Justicia hecha.',
+    t2: 'Culpable pero absuelto. <strong>El criminal queda libre.</strong>',
+    t1: 'Inocente pero condenado. <strong>Tragedia judicial.</strong>',
+    ok2: 'Culpable y condenado. Caso resuelto.'
+  }
+};
+
+function setMetaphor(key) {
+  document.getElementById('metMed').classList.toggle('active', key === 'med');
+  document.getElementById('metTri').classList.toggle('active', key === 'tri');
+  const m = metaphors[key];
+  document.getElementById('matRealH0').innerHTML = m.realH0;
+  document.getElementById('matRealH1').innerHTML = m.realH1;
+  document.getElementById('matDecNo').innerHTML = m.decNo;
+  document.getElementById('matDecRej').innerHTML = m.decRej;
+  document.getElementById('cellOk1').innerHTML = m.ok1;
+  document.getElementById('cellT2').innerHTML = m.t2;
+  document.getElementById('cellT1').innerHTML = m.t1;
+  document.getElementById('cellOk2').innerHTML = m.ok2;
+}
+
+/* ============================================================
+   SIM 4 — EVIDENCE BAR
+   ============================================================ */
+let evidenceN = 0;
+const fillEl = document.getElementById('evidenceFill');
+const verdictBanner = document.getElementById('verdictBanner');
+
+function evidenceFromN(n) {
+  // simulated growth of evidence: approaches 100% asymptotically
+  // at n = 100, ~95%; at n = 30, ~75%
+  if (n === 0) return 0;
+  return Math.min(99.9, 100 * (1 - Math.exp(-n / 30)));
+}
+
+function pvalueFromN(n) {
+  // synthetic: p decreases as n grows (only for visual demo)
+  if (n === 0) return null;
+  const evi = evidenceFromN(n) / 100;
+  return Math.max(0.0001, (1 - evi) * 0.5);
+}
+
+function addEvidence(n) {
+  evidenceN += n;
+  const evi = evidenceFromN(evidenceN);
+  fillEl.style.width = evi + '%';
+  document.getElementById('evDataN').textContent = evidenceN;
+  document.getElementById('evStrength').textContent = evi.toFixed(1) + '%';
+  const p = pvalueFromN(evidenceN);
+  document.getElementById('evPval').textContent = p === null ? '—' : (p < 0.0001 ? '< 0.0001' : p.toFixed(4));
+
+  if (evi >= 95) {
+    fillEl.classList.add('cross');
+    verdictBanner.classList.remove('no-reject');
+    verdictBanner.classList.add('show');
+    document.getElementById('verdictText').textContent = 'VEREDICTO: RECHAZAR H₀';
+    document.getElementById('verdictSubtext').textContent = 'La evidencia es suficientemente rara bajo H₀. Aceptamos la sospecha (H₁).';
+  } else if (evidenceN >= 100) {
+    verdictBanner.classList.add('no-reject');
+    verdictBanner.classList.add('show');
+    document.getElementById('verdictText').textContent = 'NO RECHAZAMOS H₀';
+    document.getElementById('verdictSubtext').textContent = 'La evidencia no alcanzó el umbral. La diferencia podría ser azar.';
+  } else {
+    verdictBanner.classList.remove('show');
+  }
+}
+
+function resetEvidence() {
+  evidenceN = 0;
+  fillEl.style.width = '0%';
+  fillEl.classList.remove('cross');
+  document.getElementById('evDataN').textContent = '0';
+  document.getElementById('evStrength').textContent = '0%';
+  document.getElementById('evPval').textContent = '—';
+  verdictBanner.classList.remove('show');
+}
+
+/* ============================================================
+   GYM SCATTER (ej 4)
+   ============================================================ */
+function buildGymScatter() {
+  const c = document.getElementById('gymScatter');
+  if (!c) return;
+  // 40 dots: most positive, mean ~2.1, sd ~3.2
+  const N = 40;
+  c.innerHTML = '<span class="gym-axis-y">KG ↑</span><span class="gym-axis-x">PARTICIPANTES (1—40)</span>';
+  for (let i = 0; i < N; i++) {
+    const v = 2.1 + (Math.random() + Math.random() + Math.random() - 1.5) * 2.5;  // synthetic
+    const x = (i + 0.5) / N * 100;
+    // map v from [-6, +10] to [0%, 100%] vertical, with 0 line at 60%
+    const y = Math.max(2, Math.min(98, 60 - v * 5));
+    const dot = document.createElement('div');
+    dot.className = 'gym-dot';
+    dot.style.left = x + '%';
+    dot.style.bottom = (100 - y) + '%';
+    dot.style.background = v > 0 ? 'var(--lime)' : '#ff5252';
+    dot.style.color = v > 0 ? 'var(--lime)' : '#ff5252';
+    c.appendChild(dot);
+    setTimeout(() => dot.classList.add('show'), 200 + i * 30);
+  }
+  // 0-line
+  const line = document.createElement('div');
+  line.style.cssText = 'position:absolute;left:0;right:0;bottom:40%;height:1px;background:rgba(255,255,255,.3);border-top:1px dashed rgba(255,255,255,.3)';
+  c.appendChild(line);
+  const lbl = document.createElement('span');
+  lbl.style.cssText = 'position:absolute;left:0;bottom:42%;font-family:JetBrains Mono,monospace;font-size:10px;color:rgba(255,255,255,.5)';
+  lbl.textContent = '0 kg (sin cambio)';
+  c.appendChild(lbl);
+}
+
+// observe when chapter 10 becomes active to build the scatter
+const gymObserver = new IntersectionObserver((entries) => {
+  entries.forEach(e => {
+    if (e.isIntersecting) {
+      const c = document.getElementById('gymScatter');
+      if (c && !c.dataset.built) {
+        buildGymScatter();
+        c.dataset.built = '1';
+      }
+    }
+  });
+}, { threshold: 0.3 });
+
+/* ============================================================
+   INIT
+   ============================================================ */
+window.addEventListener('DOMContentLoaded', () => {
+  buildHud();
+  indexSteps();
+  loadState();
+  // initial canvas clear
+  resetConfetti();
+  updateHud();
+  // observe gym section
+  const gymSection = document.getElementById('cap10');
+  if (gymSection) gymObserver.observe(gymSection);
+});
+</script>
+
+</body>
+</html>
