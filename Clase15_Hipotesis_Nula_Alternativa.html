@@ -9,10 +9,9 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;700;800&family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
 <!-- KaTeX -->
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.css" integrity="sha384-nB0miv6/jRmo5UMMR1wu3Gz6NLsoTkbqJghGIsx//Rlm+ZU03BU6SQNC66uf4l5+" crossorigin="anonymous">
-<script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.js" integrity="sha384-7zkQWkzuo3B5mTepMUcHkMB5jZaolc2xDwL6VFqjFALcbeS9Ggm/Yr2r3Dy4lfFg" crossorigin="anonymous"></script>
-<script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/contrib/auto-render.min.js" integrity="sha384-43gviWU0YVjaDtb/GhzOouOXtZm5/qNlBwESJbWWBV7uERFlE5y82RnnLPtkpKa+" crossorigin="anonymous"
-  onload="renderMathInElement(document.body, { delimiters: [{left:'$$',right:'$$',display:true},{left:'$',right:'$',display:false},{left:'\\\\(',right:'\\\\)',display:false},{left:'\\\\[',right:'\\\\]',display:true}], throwOnError: false });"></script>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.css" crossorigin="anonymous">
+<script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.js" crossorigin="anonymous"></script>
+<script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/contrib/auto-render.min.js" crossorigin="anonymous"></script>
 <style>
 :root {
   --magenta: #ff2e93;
@@ -2245,12 +2244,36 @@ function resetEvidence() {
 /* ============================================================
    INIT
    ============================================================ */
+function renderMath(root) {
+  if (typeof renderMathInElement !== 'function') return;
+  try {
+    renderMathInElement(root || document.body, {
+      delimiters: [
+        { left: '$$', right: '$$', display: true },
+        { left: '$', right: '$', display: false }
+      ],
+      throwOnError: false,
+      ignoredTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code', 'kbd']
+    });
+  } catch (e) { console.warn('KaTeX render error', e); }
+}
+
+function whenKatexReady(cb) {
+  if (typeof renderMathInElement === 'function') { cb(); return; }
+  let tries = 0;
+  const id = setInterval(() => {
+    if (typeof renderMathInElement === 'function') { clearInterval(id); cb(); }
+    else if (++tries > 60) { clearInterval(id); console.warn('KaTeX not loaded'); }
+  }, 100);
+}
+
 window.addEventListener('DOMContentLoaded', () => {
   buildHud();
   indexSteps();
   loadState();
   buildUniverseGrid();
   updateHud();
+  whenKatexReady(() => renderMath(document.body));
 });
 </script>
 
