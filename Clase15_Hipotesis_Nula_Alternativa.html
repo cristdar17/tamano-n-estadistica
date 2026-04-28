@@ -558,6 +558,137 @@ h3.cyber { font-family: 'JetBrains Mono', monospace; font-weight: 700; }
   font-size: 22px; margin: 4px 0; opacity: .6;
 }
 
+/* ===== INTUITIVE BOX (la respuesta sin matemáticas) ===== */
+.intuitive-box {
+  background: linear-gradient(135deg, rgba(204,255,0,.08), rgba(0,240,255,.04));
+  border: 1px solid rgba(204,255,0,.35);
+  border-left: 5px solid var(--lime);
+  border-radius: 0 14px 14px 0;
+  padding: 28px 30px 24px;
+  margin-bottom: 26px;
+  position: relative;
+  box-shadow: 0 0 30px rgba(204,255,0,.06);
+}
+.intuitive-box::before {
+  content: '💡  ASÍ NOMÁS — SIN MATEMÁTICAS';
+  position: absolute; top: -12px; left: 22px;
+  background: var(--ink);
+  padding: 4px 14px;
+  font-family: 'JetBrains Mono', monospace; font-size: 11px; font-weight: 700;
+  letter-spacing: 3px; color: var(--lime);
+  border: 1px solid rgba(204,255,0,.4); border-radius: 50px;
+  text-shadow: 0 0 8px var(--lime);
+}
+.intuitive-box .imagine {
+  font-size: 16px; line-height: 1.75; color: rgba(255,255,255,.9);
+  margin-bottom: 14px;
+}
+.intuitive-box .imagine strong { color: var(--lime); }
+.intuitive-box .so-what {
+  display: flex; align-items: center; gap: 12px;
+  padding: 12px 18px; background: rgba(0,0,0,.35);
+  border-radius: 10px; margin-top: 14px;
+  border-left: 3px solid var(--magenta);
+}
+.intuitive-box .so-what .arrow {
+  font-family: 'JetBrains Mono', monospace; font-size: 22px; color: var(--magenta); font-weight: 800;
+}
+.intuitive-box .so-what .conclusion {
+  font-family: 'JetBrains Mono', monospace; font-weight: 700; font-size: 15px;
+  color: var(--magenta); text-shadow: 0 0 10px var(--magenta);
+}
+.intuitive-box.no-reject .so-what { border-color: var(--cyan); }
+.intuitive-box.no-reject .so-what .arrow { color: var(--cyan); }
+.intuitive-box.no-reject .so-what .conclusion { color: var(--cyan); text-shadow: 0 0 10px var(--cyan); }
+
+/* Procedure becomes secondary visually */
+.procedure { opacity: .92; }
+.procedure::before { content: '🔬  PARA LOS CURIOSOS — LAS MATEMÁTICAS'; }
+
+/* ===== BOWLING ===== */
+.bowling-scene {
+  display: flex; gap: 24px; align-items: center; justify-content: center;
+  flex-wrap: wrap; padding: 20px;
+}
+.bowling-lane {
+  position: relative;
+  background: linear-gradient(180deg, #2a1810 0%, #4a2818 100%);
+  border-radius: 14px;
+  padding: 24px 30px;
+  min-height: 200px;
+  display: flex; flex-direction: column; justify-content: space-between;
+  align-items: center; gap: 20px;
+  border: 2px solid rgba(255,171,64,.4);
+  box-shadow: inset 0 0 30px rgba(0,0,0,.5);
+}
+.bowling-pins-row {
+  display: flex; gap: 6px; justify-content: center; align-items: end;
+}
+.pin {
+  width: 16px; height: 32px;
+  background: linear-gradient(180deg, #fff 30%, #d8d8d8 100%);
+  border-radius: 50% 50% 30% 30%;
+  box-shadow: 0 2px 8px rgba(0,0,0,.6);
+  position: relative; flex-shrink: 0;
+}
+.pin::after {
+  content: ''; position: absolute; top: 6px; left: 2px; right: 2px; height: 5px;
+  background: var(--magenta); border-radius: 50%;
+}
+.pin.fallen { transform: rotate(-65deg) translate(-3px, 6px); opacity: .55; }
+.bowling-ball {
+  width: 50px; height: 50px;
+  background: radial-gradient(circle at 30% 30%, var(--magenta), #4d0028 80%);
+  border-radius: 50%;
+  box-shadow: 0 0 24px var(--magenta);
+  position: relative;
+}
+.bowling-ball::before, .bowling-ball::after {
+  content: ''; position: absolute; width: 5px; height: 5px;
+  border-radius: 50%; background: #1a0008;
+}
+.bowling-ball::before { top: 14px; left: 16px; }
+.bowling-ball::after  { top: 14px; left: 28px; }
+
+.strike-grid {
+  display: grid; grid-template-columns: repeat(9, 1fr); gap: 5px;
+  margin: 14px auto; max-width: 540px;
+}
+.strike-cell {
+  aspect-ratio: 1; border-radius: 6px;
+  background: rgba(255,255,255,.05);
+  border: 1px solid rgba(255,255,255,.1);
+  display: flex; align-items: center; justify-content: center;
+  font-family: 'JetBrains Mono', monospace; font-size: 18px;
+}
+.strike-cell.strike {
+  background: var(--magenta); color: #fff;
+  box-shadow: 0 0 12px rgba(255,46,147,.6);
+}
+.strike-cell.miss { color: rgba(255,255,255,.3); font-size: 14px; }
+.bowling-readout {
+  display: flex; gap: 28px; justify-content: center; flex-wrap: wrap;
+  margin-top: 18px; font-family: 'JetBrains Mono', monospace; font-size: 14px;
+}
+.bowling-readout .key { color: rgba(255,255,255,.55); font-size: 11px; letter-spacing: 2px; text-transform: uppercase; }
+.bowling-readout .val { color: var(--magenta); font-weight: 800; font-size: 22px; text-shadow: 0 0 12px var(--magenta); }
+.bowling-vs {
+  display: grid; grid-template-columns: 1fr auto 1fr; gap: 24px; align-items: center;
+  padding: 24px;
+}
+.bowling-vs .label {
+  font-family: 'JetBrains Mono', monospace; font-size: 12px; letter-spacing: 2px;
+  text-transform: uppercase; text-align: center; margin-bottom: 8px;
+}
+.bowling-vs .pct {
+  font-family: 'JetBrains Mono', monospace; font-size: 38px; font-weight: 800;
+  text-align: center;
+}
+.bowling-vs .common .label, .bowling-vs .common .pct { color: var(--cyan); }
+.bowling-vs .new .label, .bowling-vs .new .pct { color: var(--magenta); text-shadow: 0 0 16px var(--magenta); }
+.bowling-vs .vs-arrow { font-size: 24px; color: var(--lime); font-family: 'JetBrains Mono', monospace; font-weight: 800; }
+.bowling-vs .small { font-size: 11px; color: rgba(255,255,255,.5); text-align: center; margin-top: 4px; }
+
 @media print { .hud-top, .hud-bottom, .help-overlay, .welcome-overlay, .mobile-nav { display: none !important; } [data-step] { opacity: 1 !important; transform: none !important; } }
 </style>
 </head>
@@ -573,7 +704,7 @@ h3.cyber { font-family: 'JetBrains Mono', monospace; font-weight: 700; }
 <div class="welcome-overlay" id="welcome">
   <div class="chapter-tag">CLASE 15 / ESTADÍSTICA · UTP</div>
   <h1 class="cyber"><span class="gradient-text">¿VERDAD</span> o <span class="gradient-text-2">SUERTE?</span></h1>
-  <p class="sub">Pedro, tu parcero de la UTP, te ganó <strong style="color:var(--magenta)">8 apuestas seguidas</strong> tirando una moneda en la cafetería. ¿Te robó… o tuviste mala suerte?<br><br>Hoy aprendes el método que <em>los científicos, médicos y la gente de marketing</em> usan para responder este tipo de preguntas. Sin adivinar.</p>
+  <p class="sub">Pedro, tu amigo de la UTP, te ganó <strong style="color:var(--magenta)">8 apuestas seguidas</strong> tirando una moneda en la cafetería. ¿Te robó… o tuviste mala suerte?<br><br>Hoy aprendes el método que <em>los científicos, médicos y la gente de marketing</em> usan para responder este tipo de preguntas. Sin adivinar.</p>
   <div class="keys-hint">presiona <kbd style="font-family:inherit;background:rgba(255,46,147,.15);border:1px solid var(--magenta);color:var(--magenta);padding:3px 9px;border-radius:4px">H</kbd> para ver las teclas</div>
   <button class="cyber-btn magenta start-btn" onclick="startClass()">▶ INICIAR CLASE</button>
 </div>
@@ -613,13 +744,13 @@ h3.cyber { font-family: 'JetBrains Mono', monospace; font-weight: 700; }
     <div data-step="1"><span class="chapter-tag">acto 01 // el caso</span></div>
 
     <h1 class="cyber" data-step="2" data-anim="glitch" style="margin-bottom:30px">
-      Tu parcero <span class="gradient-text glow-magenta">Pedro</span><br>te acaba de ganar <span class="gradient-text-2">8 apuestas seguidas</span>
+      Tu amigo <span class="gradient-text glow-magenta">Pedro</span><br>te acaba de ganar <span class="gradient-text-2">8 apuestas seguidas</span>
     </h1>
 
     <div data-step="3" class="cyber-card violet" style="font-size:18px;line-height:1.7">
       <span class="corner c-tl" style="color:var(--violet)"></span><span class="corner c-tr" style="color:var(--violet)"></span>
       <span class="corner c-bl" style="color:var(--violet)"></span><span class="corner c-br" style="color:var(--violet)"></span>
-      <p>📍 <strong>Cafetería de la UTP</strong>, 10:30am, parche de siempre. Pedro saca una moneda.</p>
+      <p>📍 <strong>Cafetería de la UTP</strong>, 10:30am, grupo de siempre. Pedro saca una moneda.</p>
       <p style="margin-top:10px">📍 "Cara o sello, 5.000 pesos cada uno." Tirada tras tirada… <strong style="color:var(--magenta)">8 caras de 10 tiros</strong>. Te dejó sin almuerzo.</p>
       <p style="margin-top:10px">📍 Todos los amigos están en silencio. Pedro está tranquilo.</p>
     </div>
@@ -907,7 +1038,7 @@ h3.cyber { font-family: 'JetBrains Mono', monospace; font-weight: 700; }
         <div class="matrix-cell correct" data-quad="ok1">
           <div class="name">CORRECTO</div>
           <div class="verdict">✓</div>
-          <div class="desc" id="cellOk1">Pedro inocente y le creemos. Todo en orden, parche normal.</div>
+          <div class="desc" id="cellOk1">Pedro inocente y le creemos. Todo en orden, sin drama.</div>
         </div>
         <div class="matrix-cell t2" data-quad="t2">
           <div class="name">ERROR TIPO II <span style="font-family:'JetBrains Mono',monospace">(β)</span></div>
@@ -919,12 +1050,12 @@ h3.cyber { font-family: 'JetBrains Mono', monospace; font-weight: 700; }
         <div class="matrix-cell t1" data-quad="t1">
           <div class="name">ERROR TIPO I <span style="font-family:'JetBrains Mono',monospace">(α)</span></div>
           <div class="verdict">✗ PARANOICO</div>
-          <div class="desc" id="cellT1">Pedro era inocente y lo acusas. <strong>Quedas como malparcero gratis.</strong></div>
+          <div class="desc" id="cellT1">Pedro era inocente y lo acusaste. <strong>Quedaste mal con él sin razón.</strong></div>
         </div>
         <div class="matrix-cell correct" data-quad="ok2">
           <div class="name">CORRECTO</div>
           <div class="verdict">✓</div>
-          <div class="desc" id="cellOk2">Pedro hace trampa y lo cachamos. Caso resuelto, plata recuperada.</div>
+          <div class="desc" id="cellOk2">Pedro hace trampa y lo descubrimos. Caso resuelto, plata recuperada.</div>
         </div>
       </div>
     </div>
@@ -1051,6 +1182,15 @@ h3.cyber { font-family: 'JetBrains Mono', monospace; font-weight: 700; }
       </div>
     </div>
 
+    <div data-step="5" class="intuitive-box">
+      <p class="imagine">Pedro sacó <strong>36 caras de 50</strong> tiros (72%). Si la moneda fuera justa, esperaríamos algo cerca del 50% (unas 25 caras). Sacar 36 sería <strong>tan raro</strong> que pasaría menos de <strong>2 veces de cada 1.000</strong>.</p>
+      <p class="imagine">Esto es como ganarse el "amigo invisible" que nadie quiere 5 navidades seguidas: posible, pero no creíble.</p>
+      <div class="so-what">
+        <span class="arrow">→</span>
+        <span class="conclusion">PEDRO ESTÁ HACIENDO TRAMPA</span>
+      </div>
+    </div>
+
     <div data-step="5" class="procedure">
       <div class="proc-step">
         <span class="step-tag">paso 1<br>α</span>
@@ -1163,6 +1303,15 @@ h3.cyber { font-family: 'JetBrains Mono', monospace; font-weight: 700; }
       </div>
     </div>
 
+    <div data-step="6" class="intuitive-box">
+      <p class="imagine">Las 30 tazas del Cubita promediaron <strong>110 mg</strong> de cafeína. Las de Juan Valdez son <strong>95 mg</strong>. Si fueran iguales, ver una diferencia tan grande con 30 tazas pasaría aproximadamente <strong>1 vez en 7.000</strong> intentos.</p>
+      <p class="imagine">Es prácticamente imposible que sea coincidencia.</p>
+      <div class="so-what">
+        <span class="arrow">→</span>
+        <span class="conclusion">EL CUBITA SÍ ESTÁ MÁS CARGADO</span>
+      </div>
+    </div>
+
     <div data-step="6" class="procedure">
       <div class="proc-step">
         <span class="step-tag">paso 1<br>α</span>
@@ -1261,6 +1410,15 @@ h3.cyber { font-family: 'JetBrains Mono', monospace; font-weight: 700; }
       </div>
     </div>
 
+    <div data-step="6" class="intuitive-box">
+      <p class="imagine">Tú mediste 25 buses y promediaron <strong>10.2 min</strong> entre llegadas, no los 8 prometidos. Si la empresa estuviera cumpliendo, ver un retraso así con 25 buses pasaría menos de <strong>1 vez en 1.250</strong>.</p>
+      <p class="imagine">No es percepción tuya por estar de mal humor en la fila.</p>
+      <div class="so-what">
+        <span class="arrow">→</span>
+        <span class="conclusion">SÍ ESTÁN INCUMPLIENDO. PQR VÁLIDO.</span>
+      </div>
+    </div>
+
     <div data-step="6" class="procedure">
       <div class="proc-step">
         <span class="step-tag">paso 1<br>α</span>
@@ -1350,6 +1508,15 @@ h3.cyber { font-family: 'JetBrains Mono', monospace; font-weight: 700; }
       </div>
     </div>
 
+    <div data-step="6" class="intuitive-box">
+      <p class="imagine">Antes tu crush te respondía en <strong>15 min</strong> en promedio. Ahora demora <strong>38 min</strong>. Si nada hubiera cambiado, ver un cambio así con 20 mensajes pasaría menos de <strong>1 vez en 100.000</strong>.</p>
+      <p class="imagine">No estás siendo paranoico. Algo cambió de verdad.</p>
+      <div class="so-what">
+        <span class="arrow">→</span>
+        <span class="conclusion">SÍ ESTÁ RESPONDIENDO MÁS LENTO</span>
+      </div>
+    </div>
+
     <div data-step="6" class="procedure">
       <div class="proc-step">
         <span class="step-tag">paso 1<br>α</span>
@@ -1408,38 +1575,87 @@ h3.cyber { font-family: 'JetBrains Mono', monospace; font-weight: 700; }
   </div>
 </section>
 
-<!-- ============= EJ 5: SISTEMAS vs INDUSTRIAL ============= -->
+<!-- ============= EJ 5: BOLOS — LUCHO CHUZAS ============= -->
 <section class="scene" data-chapter="11" id="cap11">
   <div class="scene-inner">
-    <div data-step="1"><span class="chapter-tag">caso 05 / 07 — utp facultades</span></div>
+    <div data-step="1"><span class="chapter-tag">caso 05 / 07 — bolos en el centro comercial</span></div>
 
     <div style="display:flex;align-items:center;gap:20px;margin-bottom:16px;flex-wrap:wrap">
-      <span class="ex-emoji" style="color:var(--lime)">🎓</span>
-      <h2 class="cyber" data-step="2" style="flex:1;min-width:280px">¿Sistemas UTP <span class="gradient-text">saca mejores notas</span> que Industrial?</h2>
+      <span class="ex-emoji" style="color:var(--magenta)">🎳</span>
+      <h2 class="cyber" data-step="2" style="flex:1;min-width:280px">¿Lucho hace <span class="gradient-text">más chuzas</span> que la gente normal?</h2>
     </div>
 
-    <div data-step="3" class="cyber-card" style="font-size:16px;margin-bottom:18px">
-      Eterno debate del parche. Tomas las notas finales del último semestre. <strong>Sistemas (n=45)</strong>: promedio <strong style="color:var(--magenta)">3.92</strong> · DE 0.45. <strong>Industrial (n=50)</strong>: promedio <strong style="color:var(--cyan)">3.78</strong> · DE 0.52.
+    <div data-step="3" class="cyber-card" style="font-size:16px;margin-bottom:18px;line-height:1.7">
+      Lucho dice que es bueno en bolos. Tú dudas. Lo retas: <strong>18 partidas</strong>. Le sacó <strong style="color:var(--magenta)">7 chuzas</strong> (sacar las 10 bolos del primer tiro). Un jugador cualquiera saca chuza solo el <strong>17%</strong> de las veces (≈ 3 chuzas en 18). Lucho sacó 7 (≈39%). ¿Es realmente bueno o tuvo suerte?
     </div>
 
-    <div data-step="4" class="ex-grid">
+    <div data-step="4" class="cyber-card" style="margin-top:18px;padding:30px">
+      <div class="bowling-scene">
+        <div class="bowling-lane">
+          <div class="bowling-pins-row" style="justify-content:flex-start">
+            <div class="pin"></div>
+          </div>
+          <div class="bowling-pins-row" style="justify-content:flex-start">
+            <div class="pin"></div><div class="pin"></div>
+          </div>
+          <div class="bowling-pins-row" style="justify-content:flex-start">
+            <div class="pin"></div><div class="pin"></div><div class="pin"></div>
+          </div>
+          <div class="bowling-pins-row" style="justify-content:flex-start">
+            <div class="pin"></div><div class="pin"></div><div class="pin"></div><div class="pin"></div>
+          </div>
+          <div class="bowling-ball"></div>
+        </div>
+        <div>
+          <p style="font-family:'JetBrains Mono',monospace;color:var(--magenta);font-size:11px;letter-spacing:2px;margin-bottom:8px">// LAS 18 PARTIDAS DE LUCHO</p>
+          <div class="strike-grid">
+            <div class="strike-cell strike">🎳</div>
+            <div class="strike-cell miss">·</div>
+            <div class="strike-cell miss">·</div>
+            <div class="strike-cell strike">🎳</div>
+            <div class="strike-cell miss">·</div>
+            <div class="strike-cell miss">·</div>
+            <div class="strike-cell strike">🎳</div>
+            <div class="strike-cell miss">·</div>
+            <div class="strike-cell strike">🎳</div>
+            <div class="strike-cell miss">·</div>
+            <div class="strike-cell miss">·</div>
+            <div class="strike-cell strike">🎳</div>
+            <div class="strike-cell miss">·</div>
+            <div class="strike-cell miss">·</div>
+            <div class="strike-cell strike">🎳</div>
+            <div class="strike-cell miss">·</div>
+            <div class="strike-cell strike">🎳</div>
+            <div class="strike-cell miss">·</div>
+          </div>
+          <div class="bowling-readout">
+            <span><span class="key">chuzas</span><br><span class="val">7</span></span>
+            <span><span class="key">partidas</span><br><span class="val" style="color:var(--cyan);text-shadow:0 0 12px var(--cyan)">18</span></span>
+            <span><span class="key">% chuzas</span><br><span class="val" style="color:var(--lime);text-shadow:0 0 12px var(--lime)">38.9%</span></span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div data-step="5" class="ex-grid">
       <div class="h-card h0">
         <div class="pre">// historia aburrida</div>
-        <div class="formula">$H_0:\ \mu_{sis} = \mu_{ind}$</div>
-        <div class="desc">Sacan lo mismo en promedio. La diferencia es azar de las muestras.</div>
+        <div class="formula">$H_0:\ p = 0.17$</div>
+        <div class="desc">Lucho es como cualquiera. 17% de chuzas. Lo de las 7 fue suerte.</div>
       </div>
       <div class="h-card h1">
         <div class="pre">// la sospecha</div>
-        <div class="formula">$H_1:\ \mu_{sis} > \mu_{ind}$</div>
-        <div class="desc">Sistemas saca mejores notas que Industrial (test de una cola).</div>
+        <div class="formula">$H_1:\ p > 0.17$</div>
+        <div class="desc">Lucho es mejor de verdad. Hace chuzas más seguido que un jugador casual.</div>
       </div>
     </div>
 
-    <div data-step="5" class="cyber-card" style="margin-top:24px;padding:24px">
-      <p style="font-family:'JetBrains Mono',monospace;color:var(--cyan);font-size:11px;letter-spacing:2px;margin-bottom:10px">// PROMEDIOS DE NOTA (escala 0—5)</p>
-      <div class="notes-hist">
-        <div class="notes-bar sis" style="height:78%"><span class="num">3.92</span><span class="day">SIS</span></div>
-        <div class="notes-bar ind" style="height:75%"><span class="num">3.78</span><span class="day">IND</span></div>
+    <div data-step="6" class="intuitive-box">
+      <p class="imagine">Lucho hizo <strong>7 chuzas en 18 partidas</strong> (39%). Un jugador cualquiera saca chuza solo el 17% de las veces. Si Lucho fuera del montón, sacar tantas chuzas pasaría aproximadamente <strong>7 veces de cada 1.000</strong> intentos.</p>
+      <p class="imagine">Eso es muy raro. No fue suerte.</p>
+      <div class="so-what">
+        <span class="arrow">→</span>
+        <span class="conclusion">LUCHO SÍ ES BUENO EN BOLOS</span>
       </div>
     </div>
 
@@ -1451,57 +1667,52 @@ h3.cyber { font-family: 'JetBrains Mono', monospace; font-weight: 700; }
       <div class="proc-step">
         <span class="step-tag">paso 2<br>estadístico</span>
         <div class="step-body">
-          <p><strong>Test t de Welch</strong> para 2 muestras independientes:</p>
-          <div class="formula-display">$$t = \dfrac{\bar{x}_{sis} - \bar{x}_{ind}}{\sqrt{\dfrac{s_{sis}^2}{n_{sis}} + \dfrac{s_{ind}^2}{n_{ind}}}}$$</div>
+          <p><strong>Test z para una proporción:</strong></p>
+          <div class="formula-display">$$z = \dfrac{\hat{p} - p_0}{\sqrt{\dfrac{p_0(1-p_0)}{n}}}$$</div>
         </div>
       </div>
       <div class="proc-step">
         <span class="step-tag">paso 3<br>datos</span>
         <div class="step-body">
-          <div class="formula-display violet">$$\bar{x}_{sis} = 3.92,\ s_{sis} = 0.45,\ n_{sis} = 45$$</div>
-          <div class="formula-display violet">$$\bar{x}_{ind} = 3.78,\ s_{ind} = 0.52,\ n_{ind} = 50$$</div>
+          <div class="formula-display violet">$$\hat{p} = \dfrac{7}{18} \approx 0.389 \qquad p_0 = 0.17 \qquad n = 18$$</div>
         </div>
       </div>
       <div class="proc-step">
         <span class="step-tag">paso 4<br>cálculo</span>
         <div class="step-body">
-          <p>Primero el error estándar:</p>
-          <div class="formula-display">$$SE = \sqrt{\dfrac{0.45^2}{45} + \dfrac{0.52^2}{50}} = \sqrt{0.0045 + 0.0054}$$</div>
+          <div class="formula-display">$$z = \dfrac{0.389 - 0.17}{\sqrt{\dfrac{(0.17)(0.83)}{18}}}$$</div>
           <span class="arrow-down">↓</span>
-          <div class="formula-display">$$SE = \sqrt{0.0099} \approx 0.0995$$</div>
+          <div class="formula-display">$$z = \dfrac{0.219}{\sqrt{0.00784}} = \dfrac{0.219}{0.0885}$$</div>
           <span class="arrow-down">↓</span>
-          <p>Y luego el estadístico:</p>
-          <div class="formula-display">$$t = \dfrac{3.92 - 3.78}{0.0995} = \dfrac{0.14}{0.0995}$$</div>
-          <span class="arrow-down">↓</span>
-          <div class="formula-display magenta">$$\boxed{\;t \approx 1.41\;}$$</div>
+          <div class="formula-display magenta">$$\boxed{\;z \approx 2.47\;}$$</div>
         </div>
       </div>
       <div class="proc-step">
         <span class="step-tag">paso 5<br>p-value</span>
         <div class="step-body">
-          <p>Cola derecha, $gl \approx 92$ (Welch):</p>
-          <div class="formula-display">$$p = P(T_{92} > 1.41) \approx 0.081$$</div>
+          <p>Cola derecha (H₁ es $>$):</p>
+          <div class="formula-display">$$p = P(Z > 2.47) \approx 0.0068$$</div>
         </div>
       </div>
       <div class="proc-step">
         <span class="step-tag">paso 6<br>decisión</span>
         <div class="step-body">
-          <div class="formula-display lime">$$p = 0.081 \;>\; \alpha = 0.05$$</div>
-          <p style="color:var(--cyan);font-weight:700;margin-top:8px">► NO rechazamos H₀ — la diferencia de 0.14 puntos es perfectamente compatible con azar. Aguja muy cerca, pero no cruzó la zona roja.</p>
+          <div class="formula-display lime">$$p = 0.0068 \;<\; \alpha = 0.05$$</div>
+          <p style="color:var(--magenta);font-weight:700;margin-top:8px">► Rechazamos H₀ — Lucho SÍ es mejor que la gente promedio. La aguja se fue volada a la zona roja.</p>
         </div>
       </div>
     </div>
 
-    <div data-step="7" class="mini-verdict no-reject">
+    <div data-step="7" class="mini-verdict reject">
       <div class="lbl">// VEREDICTO</div>
-      <div class="verdict-txt">NO RECHAZAMOS H₀</div>
-      <div class="conclusion"><strong>p ≈ 8.1% &gt; 5%</strong> → la diferencia de 0.14 puntos es perfectamente compatible con azar. <em>El parche puede seguir discutiendo</em>: con estos datos no se puede afirmar que Sistemas saque más.</div>
+      <div class="verdict-txt">RECHAZAMOS H₀</div>
+      <div class="conclusion"><strong>p ≈ 0.68% &lt;&lt; 5%</strong> → es muy raro que un jugador casual saque 7 chuzas en 18. <em>Lucho sí es bueno en bolos.</em> Felicítalo y pídele clases.</div>
     </div>
 
     <div data-step="8" data-anim="zoom" class="cyber-card violet" style="margin-top:18px">
       <span class="corner c-tl" style="color:var(--violet)"></span><span class="corner c-tr" style="color:var(--violet)"></span>
       <span class="corner c-bl" style="color:var(--violet)"></span><span class="corner c-br" style="color:var(--violet)"></span>
-      💡 <strong>Detalle:</strong> con muestras más grandes (n = 200 c/u, misma diferencia) el resultado <em>sí</em> sería significativo. Tamaño de muestra → poder estadístico.
+      💡 <strong>Comparación:</strong> esto es exactamente lo mismo que el caso Pedro (proporción), pero con bolos. <em>El método sirve para CUALQUIER pregunta tipo sí/no.</em>
     </div>
   </div>
 </section>
@@ -1546,6 +1757,15 @@ h3.cyber { font-family: 'JetBrains Mono', monospace; font-weight: 700; }
         <div class="road"></div>
         <div class="dot didi" id="didiDot" style="left:100%">🛵</div>
         <span class="time didi">31 min</span>
+      </div>
+    </div>
+
+    <div data-step="6" class="intuitive-box">
+      <p class="imagine">Rappi promedió <strong>28 min</strong>, Didi <strong>31 min</strong>. Si en realidad llegaran igualito de rápido, ver una diferencia de 3 min con 40 pedidos cada app pasaría aproximadamente <strong>4 veces de cada 100</strong> (4%).</p>
+      <p class="imagine">Está justo en el borde, pero sí cruza el umbral. Aunque ojo: 3 minutos quizás no te importan en la vida real.</p>
+      <div class="so-what">
+        <span class="arrow">→</span>
+        <span class="conclusion">RAPPI SÍ LLEGA UN POQUITO MÁS RÁPIDO</span>
       </div>
     </div>
 
@@ -1619,7 +1839,7 @@ h3.cyber { font-family: 'JetBrains Mono', monospace; font-weight: 700; }
 
     <div style="display:flex;align-items:center;gap:20px;margin-bottom:16px;flex-wrap:wrap">
       <span class="ex-emoji" style="color:var(--magenta)">📸</span>
-      <h2 class="cyber" data-step="2" style="flex:1;min-width:280px">¿La gente <span class="gradient-text">sí cacha</span> el filtro de IG?</h2>
+      <h2 class="cyber" data-step="2" style="flex:1;min-width:280px">¿La gente <span class="gradient-text">sí nota</span> el filtro de IG?</h2>
     </div>
 
     <div data-step="3" class="cyber-card" style="font-size:16px;margin-bottom:18px">
@@ -1635,7 +1855,7 @@ h3.cyber { font-family: 'JetBrains Mono', monospace; font-weight: 700; }
       <div class="h-card h1">
         <div class="pre">// la sospecha</div>
         <div class="formula">$H_1:\ p > 0.5$</div>
-        <div class="desc">Sí se cacha. Aciertan más del 50% (test de una cola).</div>
+        <div class="desc">Sí se nota. Aciertan más del 50% (test de una cola).</div>
       </div>
     </div>
 
@@ -1646,6 +1866,15 @@ h3.cyber { font-family: 'JetBrains Mono', monospace; font-weight: 700; }
         <div class="ig-face filt"><span class="tag">FILTRO</span>✨</div>
       </div>
       <p style="margin-top:24px;text-align:center;font-family:'JetBrains Mono',monospace;font-size:14px">resultado: <strong style="color:var(--magenta)">128 / 200 = 64%</strong> acertaron</p>
+    </div>
+
+    <div data-step="6" class="intuitive-box">
+      <p class="imagine"><strong>128 de 200 personas (64%)</strong> acertaron cuál foto era la real. Si las dos fotos fueran indistinguibles, esperaríamos solo el 50% de acierto. Que tantos acertaran sería tan raro que pasaría menos de <strong>4 veces en 100.000</strong> intentos.</p>
+      <p class="imagine">Imposible que sea pura suerte.</p>
+      <div class="so-what">
+        <span class="arrow">→</span>
+        <span class="conclusion">LA GENTE SÍ NOTA EL FILTRO</span>
+      </div>
     </div>
 
     <div data-step="6" class="procedure">
@@ -1687,7 +1916,7 @@ h3.cyber { font-family: 'JetBrains Mono', monospace; font-weight: 700; }
         <span class="step-tag">paso 6<br>decisión</span>
         <div class="step-body">
           <div class="formula-display lime">$$p \approx 0.00004 \;\lll\; \alpha = 0.05$$</div>
-          <p style="color:var(--magenta);font-weight:700;margin-top:8px">► Rechazamos H₀ — la gente sí cacha el filtro de IG. Casi imposible que esos 128 acertaran al azar.</p>
+          <p style="color:var(--magenta);font-weight:700;margin-top:8px">► Rechazamos H₀ — la gente sí nota el filtro de IG. Casi imposible que esos 128 acertaran al azar.</p>
         </div>
       </div>
     </div>
@@ -2124,10 +2353,10 @@ const metaphors = {
     realH1: 'H₀ falsa<br>(Pedro hace trampa)',
     decNo: 'No rechazar<br>(le creemos a Pedro)',
     decRej: 'Rechazar<br>(decimos que es trampa)',
-    ok1: 'Pedro inocente y le creemos. Todo en orden, sigue el parche.',
+    ok1: 'Pedro inocente y le creemos. Todo en orden, sin drama.',
     t2: 'Pedro SÍ hace trampa pero le creemos. <strong>Te sigue robando, ingenuo.</strong>',
-    t1: 'Pedro era inocente y lo acusamos. <strong>Quedamos como malparcero.</strong>',
-    ok2: 'Pedro hace trampa y lo cachamos. Plata recuperada.'
+    t1: 'Pedro era inocente y lo acusamos. <strong>Quedamos mal con él sin razón.</strong>',
+    ok2: 'Pedro hace trampa y lo descubrimos. Plata recuperada.'
   },
   med: {
     realH0: 'H₀ verdadera<br>(realmente sano)',
