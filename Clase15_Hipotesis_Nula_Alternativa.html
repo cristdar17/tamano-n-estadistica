@@ -2879,64 +2879,6 @@ function vote(scope, option, btn) {
 }
 
 /* ============================================================
-   COIN SIM (Cap 3)
-   ============================================================ */
-let coinHeads = 0, coinTails = 0;
-const coinEl = document.getElementById('coin');
-
-function flipCoin(n) {
-  if (n === 1) { flipOnce(); return; }
-  coinEl.classList.remove('flipping'); void coinEl.offsetWidth; coinEl.classList.add('flipping');
-  setTimeout(() => coinEl.classList.remove('flipping'), 1200);
-  for (let i = 0; i < n; i++) { if (Math.random() < 0.5) coinHeads++; else coinTails++; }
-  const lastWasHead = Math.random() < (coinHeads / (coinHeads + coinTails));
-  setTimeout(() => coinEl.classList.toggle('show-tails', !lastWasHead), 1200);
-  updateCoinUI();
-}
-
-function flipOnce() {
-  coinEl.classList.remove('flipping'); void coinEl.offsetWidth; coinEl.classList.add('flipping');
-  setTimeout(() => coinEl.classList.remove('flipping'), 1200);
-  const isHead = Math.random() < 0.5;
-  if (isHead) coinHeads++; else coinTails++;
-  setTimeout(() => coinEl.classList.toggle('show-tails', !isHead), 1200);
-  updateCoinUI();
-}
-
-function updateCoinUI() {
-  const total = coinHeads + coinTails;
-  document.getElementById('cntHeads').textContent = coinHeads;
-  document.getElementById('cntTails').textContent = coinTails;
-  document.getElementById('cntProp').textContent = total > 0 ? Math.round(100 * coinHeads / total) + '%' : '—';
-  document.getElementById('barH').style.width = total > 0 ? (100 * coinHeads / total) + '%' : '50%';
-  document.getElementById('barT').style.width = total > 0 ? (100 * coinTails / total) + '%' : '50%';
-
-  const msg = document.getElementById('coinMsg');
-  if (total === 0) { msg.classList.remove('show'); return; }
-  const prop = coinHeads / total;
-  let txt = '';
-  if (total <= 10) txt = `► ${coinHeads}/${total} caras. Con tan pocos tiros, casi cualquier cosa pasa por azar.`;
-  else if (total <= 100) {
-    if (Math.abs(prop - 0.5) < 0.05) txt = `► ${coinHeads}/${total} (${Math.round(prop*100)}%). Pegado al 50% — moneda justa, consistente con H₀.`;
-    else if (Math.abs(prop - 0.5) > 0.15) txt = `► ${Math.round(prop*100)}% en ${total} tiros. Empieza a verse sospechoso.`;
-    else txt = `► ${Math.round(prop*100)}% caras. Algo desviado pero todavía podría ser azar.`;
-  } else {
-    if (Math.abs(prop - 0.5) < 0.03) txt = `► ${total} tiros, ${Math.round(prop*100)}%: la ley de los grandes números dice "es justa".`;
-    else if (Math.abs(prop - 0.5) > 0.10) txt = `► ${total} tiros y ${Math.round(prop*100)}%. Con esta cantidad ya sería rarísimo si fuera justa. ⚠`;
-    else txt = `► ${total} tiros, ${Math.round(prop*100)}%. Con muchos datos las pequeñas desviaciones sí cuentan.`;
-  }
-  msg.textContent = txt;
-  msg.classList.add('show');
-}
-
-function resetCoin() {
-  coinHeads = 0; coinTails = 0;
-  coinEl.classList.remove('show-tails');
-  updateCoinUI();
-  document.getElementById('coinMsg').classList.remove('show');
-}
-
-/* ============================================================
    SURPRISE METER (Cap 3)
    ============================================================ */
 function setMeterCustom(caseLabel, surprisePct) {
@@ -2953,49 +2895,6 @@ function setMeterCustom(caseLabel, surprisePct) {
 }
 // kept for backward compat if any old onclick refers to it
 function setMeter1(h, t, p) { setMeterCustom(h + '/' + t, p); }
-
-/* ============================================================
-   TWO WORLDS (Cap 2)
-   ============================================================ */
-const worldData = {
-  fair: { coins: [], heads: 0, tails: 0, prob: 0.5 },
-  loaded: { coins: [], heads: 0, tails: 0, prob: 0.8 }
-};
-
-function simWorld(which, n) {
-  const w = worldData[which];
-  for (let i = 0; i < n; i++) {
-    const isH = Math.random() < w.prob;
-    w.coins.push(isH ? 'h' : 't');
-    if (isH) w.heads++; else w.tails++;
-  }
-  if (w.coins.length > 30) w.coins = w.coins.slice(-30); // cap visible
-  renderWorld(which);
-}
-
-function renderWorld(which) {
-  const w = worldData[which];
-  const id = which === 'fair' ? 'worldFair' : 'worldLoaded';
-  const sumId = which === 'fair' ? 'worldFairSum' : 'worldLoadedSum';
-  const el = document.getElementById(id);
-  el.innerHTML = '';
-  w.coins.forEach((c, i) => {
-    const d = document.createElement('div');
-    d.className = 'world-coin ' + c;
-    d.textContent = c === 'h' ? 'C' : 'S';
-    d.style.animationDelay = (i * 30) + 'ms';
-    el.appendChild(d);
-  });
-  const total = w.heads + w.tails;
-  const sum = document.getElementById(sumId);
-  if (total === 0) sum.innerHTML = '— sin tiros aún —';
-  else sum.innerHTML = '<strong>' + w.heads + ' caras / ' + total + ' tiros (' + Math.round(100*w.heads/total) + '%)</strong>';
-}
-
-function resetWorld(which) {
-  worldData[which] = { coins: [], heads: 0, tails: 0, prob: which === 'fair' ? 0.5 : 0.8 };
-  renderWorld(which);
-}
 
 /* ============================================================
    1.000 UNIVERSOS — HISTOGRAMA CON COLAS (Cap 4)
