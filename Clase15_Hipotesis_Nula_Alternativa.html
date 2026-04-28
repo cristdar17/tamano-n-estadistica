@@ -611,6 +611,108 @@ h3.cyber { font-family: 'JetBrains Mono', monospace; font-weight: 700; }
 .procedure { opacity: .92; }
 .procedure::before { content: '🔬  PARA LOS CURIOSOS — LAS MATEMÁTICAS'; }
 
+/* ==================== GAME ARCADE ==================== */
+.game-stage {
+  max-width: 900px; margin: 0 auto;
+  background: radial-gradient(ellipse at top, rgba(255,46,147,.08), rgba(0,240,255,.04) 60%, transparent);
+  border: 2px solid rgba(255,46,147,.3);
+  border-radius: 18px;
+  padding: 40px 30px;
+  position: relative;
+  min-height: 480px;
+  box-shadow: 0 0 60px rgba(255,46,147,.1);
+}
+.game-hud {
+  display: flex; justify-content: space-between; align-items: center;
+  font-family: 'JetBrains Mono', monospace; margin-bottom: 18px;
+  padding-bottom: 16px; border-bottom: 1px solid rgba(255,255,255,.1);
+}
+.game-hud .level { color: var(--cyan); font-size: 12px; letter-spacing: 2px; }
+.game-hud .level .num { font-size: 24px; color: var(--magenta); font-weight: 800; }
+.game-hud .score { font-size: 12px; color: rgba(255,255,255,.6); letter-spacing: 2px; text-align: right; }
+.game-hud .score .num { font-size: 28px; color: var(--lime); font-weight: 800; text-shadow: 0 0 12px var(--lime); }
+.game-progress { display: flex; gap: 4px; margin: 0 0 24px; }
+.game-progress .seg { flex: 1; height: 4px; border-radius: 2px; background: rgba(255,255,255,.08); transition: all .3s; }
+.game-progress .seg.done { background: var(--lime); box-shadow: 0 0 6px var(--lime); }
+.game-progress .seg.current { background: var(--magenta); box-shadow: 0 0 10px var(--magenta); animation: hudPulse 1.5s linear infinite; }
+
+.game-intro { text-align: center; padding: 30px 20px; }
+.game-intro h2 { font-family: 'JetBrains Mono', monospace; font-size: clamp(28px, 4vw, 38px); font-weight: 800; margin-bottom: 18px; }
+.game-intro .sub { font-size: 16px; color: rgba(255,255,255,.78); line-height: 1.7; margin-bottom: 14px; max-width: 600px; margin-left: auto; margin-right: auto; }
+.game-intro .levels { display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px; max-width: 700px; margin: 30px auto; }
+@media (max-width: 700px) { .game-intro .levels { grid-template-columns: 1fr; } }
+.game-intro .level-card { padding: 18px; border-radius: 12px; border: 1px solid; }
+.game-intro .level-card .num { font-family: 'JetBrains Mono', monospace; font-size: 11px; letter-spacing: 2px; }
+.game-intro .level-card h3 { font-family: 'JetBrains Mono', monospace; font-size: 16px; margin: 8px 0; }
+.game-intro .level-card p { font-size: 13px; opacity: .8; margin: 0; }
+.game-intro .level-card.l1 { border-color: var(--cyan); background: rgba(0,240,255,.05); }
+.game-intro .level-card.l1 .num, .game-intro .level-card.l1 h3 { color: var(--cyan); }
+.game-intro .level-card.l2 { border-color: var(--magenta); background: rgba(255,46,147,.05); }
+.game-intro .level-card.l2 .num, .game-intro .level-card.l2 h3 { color: var(--magenta); }
+.game-intro .level-card.l3 { border-color: var(--lime); background: rgba(204,255,0,.05); }
+.game-intro .level-card.l3 .num, .game-intro .level-card.l3 h3 { color: var(--lime); }
+
+.game-trivia { padding: 14px 0; }
+.game-trivia .q-num { font-family: 'JetBrains Mono', monospace; font-size: 11px; color: var(--cyan); letter-spacing: 3px; text-align: center; margin-bottom: 12px; }
+.game-trivia .q-text { font-size: 21px; font-weight: 700; line-height: 1.4; text-align: center; margin-bottom: 26px; color: #fff; }
+.game-trivia .options { display: grid; gap: 12px; max-width: 580px; margin: 0 auto; }
+.game-trivia .option { font-family: 'Inter', sans-serif; font-size: 15px; padding: 14px 18px; border-radius: 10px; background: rgba(255,255,255,.04); border: 2px solid rgba(255,255,255,.15); color: #fff; cursor: pointer; text-align: left; transition: all .2s; display: flex; align-items: center; gap: 12px; }
+.game-trivia .option:hover { border-color: var(--cyan); background: rgba(0,240,255,.08); transform: translateX(4px); }
+.game-trivia .option.correct { border-color: var(--lime); background: rgba(204,255,0,.18); animation: optionPop .5s; }
+.game-trivia .option.wrong { border-color: #ff5252; background: rgba(255,82,82,.15); animation: optionShake .4s; }
+.game-trivia .option.dim { opacity: .35; pointer-events: none; }
+.game-trivia .option .letter { width: 30px; height: 30px; border-radius: 50%; display: flex; align-items: center; justify-content: center; background: rgba(255,46,147,.2); color: var(--magenta); font-family: 'JetBrains Mono', monospace; font-weight: 800; font-size: 13px; flex-shrink: 0; }
+@keyframes optionPop { 0%{transform:scale(1);} 50%{transform:scale(1.04);} 100%{transform:scale(1);} }
+@keyframes optionShake { 0%,100%{transform:translateX(0);} 25%{transform:translateX(-6px);} 75%{transform:translateX(6px);} }
+.game-trivia .feedback { margin-top: 22px; padding: 14px 20px; font-family: 'JetBrains Mono', monospace; font-size: 13px; font-weight: 700; text-align: center; border-radius: 10px; border-left: 3px solid; display: none; max-width: 580px; margin-left: auto; margin-right: auto; }
+.game-trivia .feedback.show { display: block; }
+.game-trivia .feedback.ok { background: rgba(204,255,0,.08); border-color: var(--lime); color: var(--lime); }
+.game-trivia .feedback.bad { background: rgba(255,82,82,.08); border-color: #ff5252; color: #ff5252; }
+
+.game-swipe { padding: 10px 0; min-height: 380px; position: relative; }
+.swipe-card { max-width: 480px; margin: 0 auto; padding: 26px 28px; border: 2px solid var(--cyan); border-radius: 18px; background: linear-gradient(135deg, rgba(0,240,255,.08), rgba(255,46,147,.04)); box-shadow: 0 0 40px rgba(0,240,255,.15); position: relative; transition: transform .4s ease-out, opacity .4s; }
+.swipe-card.exit-left { transform: translateX(-150%) rotate(-15deg); opacity: 0; }
+.swipe-card.exit-right { transform: translateX(150%) rotate(15deg); opacity: 0; }
+.swipe-card .card-tag { font-family: 'JetBrains Mono', monospace; font-size: 11px; color: var(--cyan); letter-spacing: 2px; text-transform: uppercase; margin-bottom: 12px; }
+.swipe-card .card-q { font-size: 17px; font-weight: 600; line-height: 1.5; color: #fff; margin-bottom: 12px; }
+.swipe-card .card-data { font-family: 'JetBrains Mono', monospace; font-size: 14px; background: rgba(0,0,0,.35); padding: 12px 16px; border-radius: 10px; color: var(--lime); text-align: center; margin-top: 12px; border: 1px dashed rgba(204,255,0,.3); }
+.swipe-controls { display: flex; gap: 14px; justify-content: center; margin-top: 24px; }
+.swipe-btn { flex: 1; max-width: 220px; padding: 16px 20px; border-radius: 12px; font-family: 'JetBrains Mono', monospace; font-weight: 800; font-size: 13px; letter-spacing: 1px; text-transform: uppercase; border: 2px solid; cursor: pointer; transition: all .2s; background: transparent; display: flex; flex-direction: column; align-items: center; gap: 6px; }
+.swipe-btn .icon { font-size: 22px; }
+.swipe-btn.no { color: var(--cyan); border-color: var(--cyan); }
+.swipe-btn.no:hover { background: rgba(0,240,255,.1); box-shadow: 0 0 24px var(--cyan); }
+.swipe-btn.yes { color: var(--magenta); border-color: var(--magenta); }
+.swipe-btn.yes:hover { background: rgba(255,46,147,.1); box-shadow: 0 0 24px var(--magenta); }
+.swipe-feedback { margin-top: 16px; padding: 12px 18px; border-radius: 10px; font-family: 'JetBrains Mono', monospace; font-size: 13px; font-weight: 700; text-align: center; border-left: 3px solid; max-width: 480px; margin-left: auto; margin-right: auto; display: none; }
+.swipe-feedback.show { display: block; }
+.swipe-feedback.ok { background: rgba(204,255,0,.08); border-color: var(--lime); color: var(--lime); }
+.swipe-feedback.bad { background: rgba(255,82,82,.08); border-color: #ff5252; color: #ff5252; }
+
+.game-case .case-intro { padding: 18px 22px; border-radius: 12px; background: rgba(255,46,147,.05); border-left: 4px solid var(--magenta); margin-bottom: 20px; font-size: 15px; line-height: 1.7; }
+.game-case .case-stage { font-family: 'JetBrains Mono', monospace; font-size: 11px; color: var(--magenta); letter-spacing: 3px; margin-bottom: 12px; text-align: center; }
+.game-case .case-question { font-size: 19px; font-weight: 600; text-align: center; margin-bottom: 20px; color: #fff; }
+
+.game-results { text-align: center; padding: 30px 20px; }
+.game-results .stars { font-size: 48px; margin-bottom: 14px; letter-spacing: 8px; }
+.game-results h2 { font-family: 'JetBrains Mono', monospace; font-size: clamp(24px, 4vw, 32px); font-weight: 800; margin-bottom: 12px; }
+.game-results .final-score { font-family: 'JetBrains Mono', monospace; font-size: clamp(48px, 8vw, 64px); font-weight: 800; background: linear-gradient(135deg, var(--magenta), var(--cyan)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; margin: 14px 0; line-height: 1; }
+.game-results .max-score { font-family: 'JetBrains Mono', monospace; font-size: 14px; color: rgba(255,255,255,.5); }
+.game-results .verdict-rank { font-family: 'JetBrains Mono', monospace; font-size: 14px; letter-spacing: 2px; margin-top: 18px; padding: 10px 22px; display: inline-block; border-radius: 50px; border: 2px solid; }
+.game-results .verdict-rank.god { color: var(--lime); border-color: var(--lime); box-shadow: 0 0 30px var(--lime); }
+.game-results .verdict-rank.detective { color: var(--magenta); border-color: var(--magenta); box-shadow: 0 0 30px var(--magenta); }
+.game-results .verdict-rank.aprendiz { color: var(--cyan); border-color: var(--cyan); }
+.game-results .leaderboard { margin-top: 28px; max-width: 380px; margin-left: auto; margin-right: auto; text-align: left; }
+.game-results .leaderboard h3 { font-family: 'JetBrains Mono', monospace; font-size: 12px; letter-spacing: 3px; color: var(--cyan); text-transform: uppercase; margin-bottom: 12px; text-align: center; }
+.game-results .lb-row { display: flex; justify-content: space-between; padding: 8px 14px; border-radius: 6px; font-family: 'JetBrains Mono', monospace; font-size: 13px; margin-bottom: 4px; background: rgba(255,255,255,.03); }
+.game-results .lb-row.you { background: rgba(255,46,147,.15); border: 1px solid var(--magenta); }
+.game-results .lb-row .pos { color: var(--cyan); font-weight: 700; }
+.game-results .lb-row .pts { color: var(--lime); font-weight: 700; }
+.game-results .actions { display: flex; gap: 12px; justify-content: center; margin-top: 24px; flex-wrap: wrap; }
+
+.confetti-burst { position: absolute; pointer-events: none; inset: 0; overflow: hidden; }
+.confetti-piece { position: absolute; width: 8px; height: 8px; animation: confettiFall 2s linear forwards; }
+@keyframes confettiFall { 0% { transform: translate(0, 0) rotate(0deg); opacity: 1; } 100% { transform: translate(var(--dx, 0px), 600px) rotate(720deg); opacity: 0; } }
+
 /* ===== BOWLING ===== */
 .bowling-scene {
   display: flex; gap: 24px; align-items: center; justify-content: center;
@@ -722,7 +824,7 @@ h3.cyber { font-family: 'JetBrains Mono', monospace; font-weight: 700; }
 <div class="hud-top">
   <div class="hud-logo">CLASE_15.exe</div>
   <div class="hud-progress" id="hudProgress"></div>
-  <div class="hud-counter" id="hudCounter">0 / 13</div>
+  <div class="hud-counter" id="hudCounter">0 / 19</div>
   <button class="hud-help-btn" onclick="toggleHelp()">[ H ] AYUDA</button>
 </div>
 
@@ -1200,7 +1302,7 @@ h3.cyber { font-family: 'JetBrains Mono', monospace; font-weight: 700; }
 <!-- ============= EJ 1: PEDRO (cierre) ============= -->
 <section class="scene" data-chapter="7" id="cap7">
   <div class="scene-inner">
-    <div data-step="1"><span class="chapter-tag">caso 01 / 07 — cafeteria utp</span></div>
+    <div data-step="1"><span class="chapter-tag">caso 01 / 12 — cafeteria utp</span></div>
 
     <div style="display:flex;align-items:center;gap:20px;margin-bottom:16px;flex-wrap:wrap">
       <span class="ex-emoji" style="color:var(--magenta)">🪙</span>
@@ -1302,7 +1404,7 @@ h3.cyber { font-family: 'JetBrains Mono', monospace; font-weight: 700; }
 <!-- ============= EJ 2: CUBITA vs JUAN VALDEZ ============= -->
 <section class="scene" data-chapter="8" id="cap8">
   <div class="scene-inner">
-    <div data-step="1"><span class="chapter-tag">caso 02 / 07 — cuba, pereira</span></div>
+    <div data-step="1"><span class="chapter-tag">caso 02 / 12 — cuba, pereira</span></div>
 
     <div style="display:flex;align-items:center;gap:20px;margin-bottom:16px;flex-wrap:wrap">
       <span class="ex-emoji" style="color:var(--cyan)">☕</span>
@@ -1411,7 +1513,7 @@ h3.cyber { font-family: 'JetBrains Mono', monospace; font-weight: 700; }
 <!-- ============= EJ 3: BUSETA RUTA 9 ============= -->
 <section class="scene" data-chapter="9" id="cap9">
   <div class="scene-inner">
-    <div data-step="1"><span class="chapter-tag">caso 03 / 07 — transporte pereira</span></div>
+    <div data-step="1"><span class="chapter-tag">caso 03 / 12 — transporte pereira</span></div>
 
     <div style="display:flex;align-items:center;gap:20px;margin-bottom:16px;flex-wrap:wrap">
       <span class="ex-emoji" style="color:var(--orange)">🚌</span>
@@ -1516,7 +1618,7 @@ h3.cyber { font-family: 'JetBrains Mono', monospace; font-weight: 700; }
 <!-- ============= EJ 4: CRUSH EN VISTO ============= -->
 <section class="scene" data-chapter="10" id="cap10">
   <div class="scene-inner">
-    <div data-step="1"><span class="chapter-tag">caso 04 / 07 — chats whatsapp</span></div>
+    <div data-step="1"><span class="chapter-tag">caso 04 / 12 — chats whatsapp</span></div>
 
     <div style="display:flex;align-items:center;gap:20px;margin-bottom:16px;flex-wrap:wrap">
       <span class="ex-emoji" style="color:var(--magenta)">💔</span>
@@ -1620,7 +1722,7 @@ h3.cyber { font-family: 'JetBrains Mono', monospace; font-weight: 700; }
 <!-- ============= EJ 5: BOLOS — LUCHO CHUZAS ============= -->
 <section class="scene" data-chapter="11" id="cap11">
   <div class="scene-inner">
-    <div data-step="1"><span class="chapter-tag">caso 05 / 07 — bolos en el centro comercial</span></div>
+    <div data-step="1"><span class="chapter-tag">caso 05 / 12 — bolos en el centro comercial</span></div>
 
     <div style="display:flex;align-items:center;gap:20px;margin-bottom:16px;flex-wrap:wrap">
       <span class="ex-emoji" style="color:var(--magenta)">🎳</span>
@@ -1762,7 +1864,7 @@ h3.cyber { font-family: 'JetBrains Mono', monospace; font-weight: 700; }
 <!-- ============= EJ 6: RAPPI vs DIDI ============= -->
 <section class="scene" data-chapter="12" id="cap12">
   <div class="scene-inner">
-    <div data-step="1"><span class="chapter-tag">caso 06 / 07 — delivery pereira</span></div>
+    <div data-step="1"><span class="chapter-tag">caso 06 / 12 — delivery pereira</span></div>
 
     <div style="display:flex;align-items:center;gap:20px;margin-bottom:16px;flex-wrap:wrap">
       <span class="ex-emoji" style="color:var(--cyan)">📱</span>
@@ -1877,7 +1979,7 @@ h3.cyber { font-family: 'JetBrains Mono', monospace; font-weight: 700; }
 <!-- ============= EJ 7: FILTRO IG ============= -->
 <section class="scene" data-chapter="13" id="cap13">
   <div class="scene-inner">
-    <div data-step="1"><span class="chapter-tag">caso 07 / 07 — instagram</span></div>
+    <div data-step="1"><span class="chapter-tag">caso 07 / 12 — instagram</span></div>
 
     <div style="display:flex;align-items:center;gap:20px;margin-bottom:16px;flex-wrap:wrap">
       <span class="ex-emoji" style="color:var(--magenta)">📸</span>
@@ -1970,9 +2072,582 @@ h3.cyber { font-family: 'JetBrains Mono', monospace; font-weight: 700; }
     </div>
 
     <div data-step="8" data-anim="glitch" style="text-align:center;margin-top:50px">
-      <div class="big-verdict gradient-text glow-magenta">FIN DE LA CLASE</div>
-      <p style="margin-top:18px;color:rgba(255,255,255,.78);font-size:17px">H₀ vs H₁ es <strong>EL método</strong>.<br>Lo demás (test t, test z, ANOVA, chi-cuadrado…) es solo cómo calcular el p-value en cada caso.</p>
-      <p style="margin-top:24px;color:var(--cyan);font-family:'JetBrains Mono',monospace;font-size:13px;letter-spacing:3px">► QUE EL DETECTIVE ESTADÍSTICO LOS ACOMPAÑE ◄</p>
+      <div class="big-verdict gradient-text glow-magenta">FIN BLOQUE EJEMPLOS</div>
+      <p style="margin-top:18px;color:rgba(255,255,255,.78);font-size:17px">H₀ vs H₁ es <strong>EL método</strong>. Test t, test z, ANOVA… son solo cómo se calcula el p-value en cada situación.</p>
+      <p style="margin-top:24px;color:var(--lime);font-family:'JetBrains Mono',monospace;font-size:13px;letter-spacing:3px">► AHORA: 5 EJEMPLOS BONUS + EL JUEGO ARCADE ◄</p>
+    </div>
+  </div>
+</section>
+
+<!-- ============= EJ 8: SPOTIFY WRAPPED ============= -->
+<section class="scene" data-chapter="14" id="cap14">
+  <div class="scene-inner">
+    <div data-step="1"><span class="chapter-tag">caso 08 / 12 — bonus · spotify wrapped</span></div>
+
+    <div style="display:flex;align-items:center;gap:20px;margin-bottom:16px;flex-wrap:wrap">
+      <span class="ex-emoji" style="color:var(--lime)">🎵</span>
+      <h2 class="cyber" data-step="2" style="flex:1;min-width:280px">¿Tu Spotify Wrapped <span class="gradient-text">cambió de verdad</span> este año?</h2>
+    </div>
+
+    <div data-step="3" class="cyber-card" style="font-size:16px;margin-bottom:18px;line-height:1.7">
+      Quieres saber si tu gusto musical cambió. Comparas tus <strong>top 50 canciones de 2025</strong> con tu <strong>top 50 de 2026</strong>. <strong style="color:var(--magenta)">35 canciones se repiten</strong> (70%). Si fuera "totalmente distinto" esperaríamos máximo 15 (≈ 30%).
+    </div>
+
+    <div data-step="4" class="ex-grid">
+      <div class="h-card h0">
+        <div class="pre">// historia aburrida</div>
+        <div class="formula">$H_0:\ p \leq 0.30$</div>
+        <div class="desc">Tu gusto sí cambió. Las pocas que se repiten son por azar.</div>
+      </div>
+      <div class="h-card h1">
+        <div class="pre">// la sospecha</div>
+        <div class="formula">$H_1:\ p > 0.30$</div>
+        <div class="desc">Tu gusto NO cambió. Sigues escuchando lo mismo.</div>
+      </div>
+    </div>
+
+    <div data-step="5" class="cyber-card" style="margin-top:24px;padding:24px">
+      <p style="font-family:'JetBrains Mono',monospace;color:var(--cyan);font-size:11px;letter-spacing:2px;margin-bottom:14px">// 50 CANCIONES · 🟪 35 SE REPITIERON · ⬜ 15 NUEVAS</p>
+      <div id="spotifyGrid" style="display:grid;grid-template-columns:repeat(10,1fr);gap:6px;max-width:520px;margin:0 auto"></div>
+      <script>
+        (function(){
+          var g=document.getElementById('spotifyGrid');
+          if(!g)return;
+          for(var i=0;i<50;i++){
+            var d=document.createElement('div');
+            d.style.cssText='aspect-ratio:1;border-radius:4px;'+(i<35?'background:var(--magenta);box-shadow:0 0 6px var(--magenta)':'background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.15)');
+            g.appendChild(d);
+          }
+        })();
+      </script>
+    </div>
+
+    <div data-step="6" class="intuitive-box">
+      <p class="imagine"><strong>35 de 50 canciones (70%) se repiten</strong> en tu top de un año al otro. Si tu gusto realmente cambiara mucho, esperaríamos máximo 15 (30%). Que se repitan tantas pasaría aproximadamente <strong>menos de 1 vez en 1 millón</strong> si tu gusto fuera diferente.</p>
+      <p class="imagine">No, tu Wrapped no cambió mucho.</p>
+      <div class="so-what">
+        <span class="arrow">→</span>
+        <span class="conclusion">SIGUES ESCUCHANDO LO MISMO</span>
+      </div>
+    </div>
+
+    <div data-step="6" class="procedure">
+      <div class="proc-step">
+        <span class="step-tag">paso 1<br>α</span>
+        <div class="step-body"><div class="formula-display"><span class="formula-label">nivel de significancia</span>$$\alpha = 0.05$$</div></div>
+      </div>
+      <div class="proc-step">
+        <span class="step-tag">paso 2<br>estadístico</span>
+        <div class="step-body">
+          <p>Test z para una proporción:</p>
+          <div class="formula-display">$$z = \dfrac{\hat{p} - p_0}{\sqrt{\dfrac{p_0(1-p_0)}{n}}}$$</div>
+        </div>
+      </div>
+      <div class="proc-step">
+        <span class="step-tag">paso 3<br>datos</span>
+        <div class="step-body">
+          <div class="formula-display violet">$$\hat{p} = \dfrac{35}{50} = 0.70 \qquad p_0 = 0.30 \qquad n = 50$$</div>
+        </div>
+      </div>
+      <div class="proc-step">
+        <span class="step-tag">paso 4<br>cálculo</span>
+        <div class="step-body">
+          <div class="formula-display">$$z = \dfrac{0.70 - 0.30}{\sqrt{\dfrac{(0.30)(0.70)}{50}}}$$</div>
+          <span class="arrow-down">↓</span>
+          <div class="formula-display">$$z = \dfrac{0.40}{\sqrt{0.0042}} = \dfrac{0.40}{0.0648}$$</div>
+          <span class="arrow-down">↓</span>
+          <div class="formula-display magenta">$$\boxed{\;z \approx 6.17\;}$$</div>
+        </div>
+      </div>
+      <div class="proc-step">
+        <span class="step-tag">paso 5<br>p-value</span>
+        <div class="step-body">
+          <p>Cola derecha:</p>
+          <div class="formula-display">$$p = P(Z > 6.17) < 10^{-9}$$</div>
+        </div>
+      </div>
+      <div class="proc-step">
+        <span class="step-tag">paso 6<br>decisión</span>
+        <div class="step-body">
+          <div class="formula-display lime">$$p \;\lll\; \alpha = 0.05$$</div>
+          <p style="color:var(--magenta);font-weight:700;margin-top:8px">► Rechazamos H₀ — tu gusto musical NO cambió. Spotify, dame algo nuevo.</p>
+        </div>
+      </div>
+    </div>
+
+    <div data-step="7" class="mini-verdict reject">
+      <div class="lbl">// VEREDICTO</div>
+      <div class="verdict-txt">RECHAZAMOS H₀</div>
+      <div class="conclusion">Estadísticamente imposible que tantas canciones se repitan si tu gusto cambiara. Sigues siendo fiel a los mismos artistas.</div>
+    </div>
+  </div>
+</section>
+
+<!-- ============= EJ 9: VALORANT ============= -->
+<section class="scene" data-chapter="15" id="cap15">
+  <div class="scene-inner">
+    <div data-step="1"><span class="chapter-tag">caso 09 / 12 — bonus · gaming</span></div>
+
+    <div style="display:flex;align-items:center;gap:20px;margin-bottom:16px;flex-wrap:wrap">
+      <span class="ex-emoji" style="color:var(--cyan)">🎮</span>
+      <h2 class="cyber" data-step="2" style="flex:1;min-width:280px">El nuevo del clan — ¿es bueno o <span class="gradient-text">suerte de principiante</span>?</h2>
+    </div>
+
+    <div data-step="3" class="cyber-card" style="font-size:16px;margin-bottom:18px;line-height:1.7">
+      Llega un nuevo jugador al clan de Valorant. Sus primeros 25 partidas: ganó <strong style="color:var(--magenta)">17 (68%)</strong>. Los miembros viejos tienen un win rate promedio de <strong>50%</strong>. ¿Es realmente bueno o es solo el efecto "noob luck"?
+    </div>
+
+    <div data-step="4" class="ex-grid">
+      <div class="h-card h0">
+        <div class="pre">// historia aburrida</div>
+        <div class="formula">$H_0:\ p = 0.50$</div>
+        <div class="desc">Es del montón. Las 17 victorias fueron suerte de principiante.</div>
+      </div>
+      <div class="h-card h1">
+        <div class="pre">// la sospecha</div>
+        <div class="formula">$H_1:\ p > 0.50$</div>
+        <div class="desc">Es realmente bueno. Su win rate es superior al promedio.</div>
+      </div>
+    </div>
+
+    <div data-step="5" class="cyber-card" style="margin-top:24px;padding:24px">
+      <p style="font-family:'JetBrains Mono',monospace;color:var(--cyan);font-size:11px;letter-spacing:2px;margin-bottom:14px">// LAS 25 PARTIDAS · ROJO = VICTORIA</p>
+      <div style="display:grid;grid-template-columns:repeat(13,1fr);gap:5px;max-width:540px;margin:0 auto">
+        <div style="aspect-ratio:1;border-radius:4px;background:var(--magenta);box-shadow:0 0 6px var(--magenta);display:flex;align-items:center;justify-content:center;font-size:12px">🏆</div>
+        <div style="aspect-ratio:1;border-radius:4px;background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.15);display:flex;align-items:center;justify-content:center;font-size:11px;color:rgba(255,255,255,.4)">L</div>
+        <div style="aspect-ratio:1;border-radius:4px;background:var(--magenta);box-shadow:0 0 6px var(--magenta);display:flex;align-items:center;justify-content:center;font-size:12px">🏆</div>
+        <div style="aspect-ratio:1;border-radius:4px;background:var(--magenta);box-shadow:0 0 6px var(--magenta);display:flex;align-items:center;justify-content:center;font-size:12px">🏆</div>
+        <div style="aspect-ratio:1;border-radius:4px;background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.15);display:flex;align-items:center;justify-content:center;font-size:11px;color:rgba(255,255,255,.4)">L</div>
+        <div style="aspect-ratio:1;border-radius:4px;background:var(--magenta);box-shadow:0 0 6px var(--magenta);display:flex;align-items:center;justify-content:center;font-size:12px">🏆</div>
+        <div style="aspect-ratio:1;border-radius:4px;background:var(--magenta);box-shadow:0 0 6px var(--magenta);display:flex;align-items:center;justify-content:center;font-size:12px">🏆</div>
+        <div style="aspect-ratio:1;border-radius:4px;background:var(--magenta);box-shadow:0 0 6px var(--magenta);display:flex;align-items:center;justify-content:center;font-size:12px">🏆</div>
+        <div style="aspect-ratio:1;border-radius:4px;background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.15);display:flex;align-items:center;justify-content:center;font-size:11px;color:rgba(255,255,255,.4)">L</div>
+        <div style="aspect-ratio:1;border-radius:4px;background:var(--magenta);box-shadow:0 0 6px var(--magenta);display:flex;align-items:center;justify-content:center;font-size:12px">🏆</div>
+        <div style="aspect-ratio:1;border-radius:4px;background:var(--magenta);box-shadow:0 0 6px var(--magenta);display:flex;align-items:center;justify-content:center;font-size:12px">🏆</div>
+        <div style="aspect-ratio:1;border-radius:4px;background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.15);display:flex;align-items:center;justify-content:center;font-size:11px;color:rgba(255,255,255,.4)">L</div>
+        <div style="aspect-ratio:1;border-radius:4px;background:var(--magenta);box-shadow:0 0 6px var(--magenta);display:flex;align-items:center;justify-content:center;font-size:12px">🏆</div>
+        <div style="aspect-ratio:1;border-radius:4px;background:var(--magenta);box-shadow:0 0 6px var(--magenta);display:flex;align-items:center;justify-content:center;font-size:12px">🏆</div>
+        <div style="aspect-ratio:1;border-radius:4px;background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.15);display:flex;align-items:center;justify-content:center;font-size:11px;color:rgba(255,255,255,.4)">L</div>
+        <div style="aspect-ratio:1;border-radius:4px;background:var(--magenta);box-shadow:0 0 6px var(--magenta);display:flex;align-items:center;justify-content:center;font-size:12px">🏆</div>
+        <div style="aspect-ratio:1;border-radius:4px;background:var(--magenta);box-shadow:0 0 6px var(--magenta);display:flex;align-items:center;justify-content:center;font-size:12px">🏆</div>
+        <div style="aspect-ratio:1;border-radius:4px;background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.15);display:flex;align-items:center;justify-content:center;font-size:11px;color:rgba(255,255,255,.4)">L</div>
+        <div style="aspect-ratio:1;border-radius:4px;background:var(--magenta);box-shadow:0 0 6px var(--magenta);display:flex;align-items:center;justify-content:center;font-size:12px">🏆</div>
+        <div style="aspect-ratio:1;border-radius:4px;background:var(--magenta);box-shadow:0 0 6px var(--magenta);display:flex;align-items:center;justify-content:center;font-size:12px">🏆</div>
+        <div style="aspect-ratio:1;border-radius:4px;background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.15);display:flex;align-items:center;justify-content:center;font-size:11px;color:rgba(255,255,255,.4)">L</div>
+        <div style="aspect-ratio:1;border-radius:4px;background:var(--magenta);box-shadow:0 0 6px var(--magenta);display:flex;align-items:center;justify-content:center;font-size:12px">🏆</div>
+        <div style="aspect-ratio:1;border-radius:4px;background:var(--magenta);box-shadow:0 0 6px var(--magenta);display:flex;align-items:center;justify-content:center;font-size:12px">🏆</div>
+        <div style="aspect-ratio:1;border-radius:4px;background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.15);display:flex;align-items:center;justify-content:center;font-size:11px;color:rgba(255,255,255,.4)">L</div>
+        <div style="aspect-ratio:1;border-radius:4px;background:var(--magenta);box-shadow:0 0 6px var(--magenta);display:flex;align-items:center;justify-content:center;font-size:12px">🏆</div>
+      </div>
+      <p style="margin-top:18px;text-align:center;font-family:'JetBrains Mono',monospace">17 victorias / 25 partidas = <strong style="color:var(--magenta)">68%</strong></p>
+    </div>
+
+    <div data-step="6" class="intuitive-box">
+      <p class="imagine">El nuevo ganó <strong>17 de 25 partidas (68%)</strong>. Si fuera del montón con 50% win rate, ganar tantas pasaría aproximadamente <strong>5 veces de cada 100</strong>. Está justo en el borde.</p>
+      <p class="imagine">Apenas cruza la zona roja. Probable que sea bueno, pero el caso no es contundente — necesita más partidas para confirmar.</p>
+      <div class="so-what">
+        <span class="arrow">→</span>
+        <span class="conclusion">SÍ — PERO POR POCO</span>
+      </div>
+    </div>
+
+    <div data-step="6" class="procedure">
+      <div class="proc-step">
+        <span class="step-tag">paso 1<br>α</span>
+        <div class="step-body"><div class="formula-display"><span class="formula-label">nivel de significancia</span>$$\alpha = 0.05$$</div></div>
+      </div>
+      <div class="proc-step">
+        <span class="step-tag">paso 2<br>estadístico</span>
+        <div class="step-body">
+          <div class="formula-display">$$z = \dfrac{\hat{p} - p_0}{\sqrt{\dfrac{p_0(1-p_0)}{n}}}$$</div>
+        </div>
+      </div>
+      <div class="proc-step">
+        <span class="step-tag">paso 3<br>datos</span>
+        <div class="step-body">
+          <div class="formula-display violet">$$\hat{p} = \dfrac{17}{25} = 0.68 \qquad p_0 = 0.50 \qquad n = 25$$</div>
+        </div>
+      </div>
+      <div class="proc-step">
+        <span class="step-tag">paso 4<br>cálculo</span>
+        <div class="step-body">
+          <div class="formula-display">$$z = \dfrac{0.68 - 0.50}{\sqrt{\dfrac{(0.5)(0.5)}{25}}} = \dfrac{0.18}{0.10}$$</div>
+          <span class="arrow-down">↓</span>
+          <div class="formula-display magenta">$$\boxed{\;z = 1.80\;}$$</div>
+        </div>
+      </div>
+      <div class="proc-step">
+        <span class="step-tag">paso 5<br>p-value</span>
+        <div class="step-body">
+          <p>Cola derecha:</p>
+          <div class="formula-display">$$p = P(Z > 1.80) \approx 0.036$$</div>
+        </div>
+      </div>
+      <div class="proc-step">
+        <span class="step-tag">paso 6<br>decisión</span>
+        <div class="step-body">
+          <div class="formula-display lime">$$p = 0.036 \;<\; \alpha = 0.05$$</div>
+          <p style="color:var(--magenta);font-weight:700;margin-top:8px">► Rechazamos H₀ — el nuevo SÍ es mejor. Aunque el resultado es borderline.</p>
+        </div>
+      </div>
+    </div>
+
+    <div data-step="7" class="mini-verdict reject">
+      <div class="lbl">// VEREDICTO</div>
+      <div class="verdict-txt">RECHAZAMOS H₀</div>
+      <div class="conclusion"><strong>p ≈ 3.6% &lt; 5%</strong> → tiene talento real, pero la diferencia es pequeña. Con 100 partidas más sabremos con seguridad.</div>
+    </div>
+  </div>
+</section>
+
+<!-- ============= EJ 10: LUNA LLENA Y LLUVIA ============= -->
+<section class="scene" data-chapter="16" id="cap16">
+  <div class="scene-inner">
+    <div data-step="1"><span class="chapter-tag">caso 10 / 12 — bonus · mitos populares</span></div>
+
+    <div style="display:flex;align-items:center;gap:20px;margin-bottom:16px;flex-wrap:wrap">
+      <span class="ex-emoji" style="color:var(--violet)">🌙</span>
+      <h2 class="cyber" data-step="2" style="flex:1;min-width:280px">¿Llueve más cuando hay <span class="gradient-text">luna llena</span>?</h2>
+    </div>
+
+    <div data-step="3" class="cyber-card" style="font-size:16px;margin-bottom:18px;line-height:1.7">
+      La abuela jura que la luna llena trae lluvia. Tomas <strong>2 años de datos</strong> en Pereira. Los días de luna llena (n=24) llovió en promedio <strong>9.8 mm</strong> con DE 6.2. Los días sin luna llena (n=706) llovió <strong>9.2 mm</strong> con DE 5.8. ¿La diferencia es real o es coincidencia?
+    </div>
+
+    <div data-step="4" class="ex-grid">
+      <div class="h-card h0">
+        <div class="pre">// historia aburrida</div>
+        <div class="formula">$H_0:\ \mu_{luna} = \mu_{resto}$</div>
+        <div class="desc">La luna no influye. La diferencia es ruido.</div>
+      </div>
+      <div class="h-card h1">
+        <div class="pre">// la sospecha</div>
+        <div class="formula">$H_1:\ \mu_{luna} \neq \mu_{resto}$</div>
+        <div class="desc">La abuela tiene razón: la luna llena trae más (o menos) lluvia.</div>
+      </div>
+    </div>
+
+    <div data-step="5" class="cyber-card" style="margin-top:24px;padding:30px;text-align:center">
+      <p style="font-family:'JetBrains Mono',monospace;color:var(--cyan);font-size:11px;letter-spacing:2px;margin-bottom:24px">// MM DE LLUVIA PROMEDIO</p>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:30px;align-items:end;max-width:500px;margin:0 auto">
+        <div>
+          <div style="font-size:50px">🌑</div>
+          <div style="height:140px;display:flex;align-items:flex-end;justify-content:center">
+            <div style="width:60px;height:92%;background:linear-gradient(180deg, var(--cyan), rgba(0,240,255,.3));border-radius:4px 4px 0 0;box-shadow:0 0 12px var(--cyan)"></div>
+          </div>
+          <p style="margin-top:8px;font-family:'JetBrains Mono',monospace;font-size:14px;color:var(--cyan)">RESTO: 9.2 mm</p>
+        </div>
+        <div>
+          <div style="font-size:50px">🌕</div>
+          <div style="height:140px;display:flex;align-items:flex-end;justify-content:center">
+            <div style="width:60px;height:98%;background:linear-gradient(180deg, var(--magenta), rgba(255,46,147,.3));border-radius:4px 4px 0 0;box-shadow:0 0 12px var(--magenta)"></div>
+          </div>
+          <p style="margin-top:8px;font-family:'JetBrains Mono',monospace;font-size:14px;color:var(--magenta)">LUNA LLENA: 9.8 mm</p>
+        </div>
+      </div>
+    </div>
+
+    <div data-step="6" class="intuitive-box no-reject">
+      <p class="imagine">Los días de luna llena llovió <strong>9.8 mm</strong> y el resto <strong>9.2 mm</strong>. Una diferencia de 0.6 mm. Si la luna no influyera nada, ver una diferencia así pasaría aproximadamente <strong>62 veces de cada 100</strong>. Súper común.</p>
+      <p class="imagine">La abuela está viendo patrones donde no los hay (sesgo de confirmación).</p>
+      <div class="so-what">
+        <span class="arrow">→</span>
+        <span class="conclusion">LA LUNA NO INFLUYE EN LA LLUVIA</span>
+      </div>
+    </div>
+
+    <div data-step="6" class="procedure">
+      <div class="proc-step">
+        <span class="step-tag">paso 1<br>α</span>
+        <div class="step-body"><div class="formula-display"><span class="formula-label">nivel de significancia</span>$$\alpha = 0.05$$</div></div>
+      </div>
+      <div class="proc-step">
+        <span class="step-tag">paso 2<br>estadístico</span>
+        <div class="step-body">
+          <p>Test t de Welch para 2 muestras:</p>
+          <div class="formula-display">$$t = \dfrac{\bar{x}_1 - \bar{x}_2}{\sqrt{\dfrac{s_1^2}{n_1} + \dfrac{s_2^2}{n_2}}}$$</div>
+        </div>
+      </div>
+      <div class="proc-step">
+        <span class="step-tag">paso 3<br>datos</span>
+        <div class="step-body">
+          <div class="formula-display violet">$$\bar{x}_{luna} = 9.8,\ s_{luna} = 6.2,\ n_{luna} = 24$$</div>
+          <div class="formula-display violet">$$\bar{x}_{resto} = 9.2,\ s_{resto} = 5.8,\ n_{resto} = 706$$</div>
+        </div>
+      </div>
+      <div class="proc-step">
+        <span class="step-tag">paso 4<br>cálculo</span>
+        <div class="step-body">
+          <div class="formula-display">$$SE = \sqrt{\dfrac{6.2^2}{24} + \dfrac{5.8^2}{706}} = \sqrt{1.602 + 0.0476}$$</div>
+          <span class="arrow-down">↓</span>
+          <div class="formula-display">$$SE \approx 1.285$$</div>
+          <span class="arrow-down">↓</span>
+          <div class="formula-display">$$t = \dfrac{9.8 - 9.2}{1.285} = \dfrac{0.6}{1.285}$$</div>
+          <span class="arrow-down">↓</span>
+          <div class="formula-display magenta">$$\boxed{\;t \approx 0.47\;}$$</div>
+        </div>
+      </div>
+      <div class="proc-step">
+        <span class="step-tag">paso 5<br>p-value</span>
+        <div class="step-body">
+          <p>Dos colas:</p>
+          <div class="formula-display">$$p = 2\cdot P(T > 0.47) \approx 0.64$$</div>
+        </div>
+      </div>
+      <div class="proc-step">
+        <span class="step-tag">paso 6<br>decisión</span>
+        <div class="step-body">
+          <div class="formula-display lime">$$p = 0.64 \;\gg\; \alpha = 0.05$$</div>
+          <p style="color:var(--cyan);font-weight:700;margin-top:8px">► NO rechazamos H₀ — la luna no influye en la lluvia. Mito desmentido.</p>
+        </div>
+      </div>
+    </div>
+
+    <div data-step="7" class="mini-verdict no-reject">
+      <div class="lbl">// VEREDICTO</div>
+      <div class="verdict-txt">NO RECHAZAMOS H₀</div>
+      <div class="conclusion"><strong>p ≈ 64%</strong> → la diferencia es totalmente compatible con azar. <em>Sorry abuela, la luna no manda lluvia.</em></div>
+    </div>
+
+    <div data-step="8" data-anim="zoom" class="cyber-card violet" style="margin-top:18px">
+      <span class="corner c-tl" style="color:var(--violet)"></span><span class="corner c-tr" style="color:var(--violet)"></span>
+      <span class="corner c-bl" style="color:var(--violet)"></span><span class="corner c-br" style="color:var(--violet)"></span>
+      💡 <strong>Sesgo de confirmación:</strong> recordamos las veces que coincidió y olvidamos las que no. Por eso necesitamos datos, no anécdotas.
+    </div>
+  </div>
+</section>
+
+<!-- ============= EJ 11: MEDICAMENTO ============= -->
+<section class="scene" data-chapter="17" id="cap17">
+  <div class="scene-inner">
+    <div data-step="1"><span class="chapter-tag">caso 11 / 12 — bonus · medicina</span></div>
+
+    <div style="display:flex;align-items:center;gap:20px;margin-bottom:16px;flex-wrap:wrap">
+      <span class="ex-emoji" style="color:var(--magenta)">💊</span>
+      <h2 class="cyber" data-step="2" style="flex:1;min-width:280px">¿El medicamento <span class="gradient-text">de marca</span> cura más rápido que el genérico?</h2>
+    </div>
+
+    <div data-step="3" class="cyber-card" style="font-size:16px;margin-bottom:18px;line-height:1.7">
+      Un farmacéutico estudia 2 grupos con la misma infección. <strong>Genérico (n=80)</strong>: cura en <strong style="color:var(--cyan)">5.4 días</strong> · DE 1.8. <strong>De marca (n=80)</strong>: cura en <strong style="color:var(--magenta)">5.1 días</strong> · DE 1.6. ¿Vale la pena pagar el triple?
+    </div>
+
+    <div data-step="4" class="ex-grid">
+      <div class="h-card h0">
+        <div class="pre">// historia aburrida</div>
+        <div class="formula">$H_0:\ \mu_{marca} = \mu_{gen}$</div>
+        <div class="desc">Curan igual de rápido. La diferencia es azar.</div>
+      </div>
+      <div class="h-card h1">
+        <div class="pre">// la sospecha</div>
+        <div class="formula">$H_1:\ \mu_{marca} < \mu_{gen}$</div>
+        <div class="desc">La marca cura más rápido (justifica el precio).</div>
+      </div>
+    </div>
+
+    <div data-step="5" class="cyber-card" style="margin-top:24px;padding:30px;text-align:center">
+      <p style="font-family:'JetBrains Mono',monospace;color:var(--cyan);font-size:11px;letter-spacing:2px;margin-bottom:18px">// DÍAS PROMEDIO HASTA CURAR</p>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:30px;align-items:center;max-width:500px;margin:0 auto">
+        <div style="padding:20px;border:2px solid var(--cyan);border-radius:12px;background:rgba(0,240,255,.05)">
+          <div style="font-size:40px">💊</div>
+          <p style="font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--cyan);margin-top:8px">GENÉRICO</p>
+          <p style="font-family:'JetBrains Mono',monospace;font-size:32px;font-weight:800;color:var(--cyan);margin-top:4px">5.4 d</p>
+        </div>
+        <div style="padding:20px;border:2px solid var(--magenta);border-radius:12px;background:rgba(255,46,147,.05)">
+          <div style="font-size:40px">✨</div>
+          <p style="font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--magenta);margin-top:8px">DE MARCA</p>
+          <p style="font-family:'JetBrains Mono',monospace;font-size:32px;font-weight:800;color:var(--magenta);margin-top:4px">5.1 d</p>
+        </div>
+      </div>
+    </div>
+
+    <div data-step="6" class="intuitive-box no-reject">
+      <p class="imagine">El de marca cura en <strong>5.1 días</strong> vs <strong>5.4 días</strong> del genérico. Una diferencia de <strong>0.3 días</strong> (7 horas). Si fueran iguales, ver una diferencia así con 80 personas en cada grupo pasaría aproximadamente <strong>13 veces de cada 100</strong>.</p>
+      <p class="imagine">Demasiado común para ser efecto real. El sobreprecio no se justifica.</p>
+      <div class="so-what">
+        <span class="arrow">→</span>
+        <span class="conclusion">CURAN IGUAL. COMPRA EL GENÉRICO.</span>
+      </div>
+    </div>
+
+    <div data-step="6" class="procedure">
+      <div class="proc-step">
+        <span class="step-tag">paso 1<br>α</span>
+        <div class="step-body"><div class="formula-display"><span class="formula-label">nivel de significancia</span>$$\alpha = 0.05$$</div></div>
+      </div>
+      <div class="proc-step">
+        <span class="step-tag">paso 2<br>estadístico</span>
+        <div class="step-body">
+          <p>Test t de Welch para 2 muestras:</p>
+          <div class="formula-display">$$t = \dfrac{\bar{x}_1 - \bar{x}_2}{\sqrt{\dfrac{s_1^2}{n_1} + \dfrac{s_2^2}{n_2}}}$$</div>
+        </div>
+      </div>
+      <div class="proc-step">
+        <span class="step-tag">paso 3<br>datos</span>
+        <div class="step-body">
+          <div class="formula-display violet">$$\bar{x}_{marca}=5.1,\ s=1.6,\ n=80$$</div>
+          <div class="formula-display violet">$$\bar{x}_{gen}=5.4,\ s=1.8,\ n=80$$</div>
+        </div>
+      </div>
+      <div class="proc-step">
+        <span class="step-tag">paso 4<br>cálculo</span>
+        <div class="step-body">
+          <div class="formula-display">$$SE = \sqrt{\dfrac{1.6^2}{80} + \dfrac{1.8^2}{80}} = \sqrt{0.032 + 0.0405}$$</div>
+          <span class="arrow-down">↓</span>
+          <div class="formula-display">$$SE = \sqrt{0.0725} \approx 0.269$$</div>
+          <span class="arrow-down">↓</span>
+          <div class="formula-display">$$t = \dfrac{5.1 - 5.4}{0.269} = \dfrac{-0.3}{0.269}$$</div>
+          <span class="arrow-down">↓</span>
+          <div class="formula-display magenta">$$\boxed{\;t \approx -1.12\;}$$</div>
+        </div>
+      </div>
+      <div class="proc-step">
+        <span class="step-tag">paso 5<br>p-value</span>
+        <div class="step-body">
+          <p>Cola izquierda:</p>
+          <div class="formula-display">$$p = P(T < -1.12) \approx 0.13$$</div>
+        </div>
+      </div>
+      <div class="proc-step">
+        <span class="step-tag">paso 6<br>decisión</span>
+        <div class="step-body">
+          <div class="formula-display lime">$$p = 0.13 \;>\; \alpha = 0.05$$</div>
+          <p style="color:var(--cyan);font-weight:700;margin-top:8px">► NO rechazamos H₀ — no hay evidencia de que la marca cure más rápido.</p>
+        </div>
+      </div>
+    </div>
+
+    <div data-step="7" class="mini-verdict no-reject">
+      <div class="lbl">// VEREDICTO</div>
+      <div class="verdict-txt">NO RECHAZAMOS H₀</div>
+      <div class="conclusion"><strong>p ≈ 13%</strong> → la diferencia de 0.3 días es perfectamente compatible con azar. <em>El genérico es la opción inteligente.</em></div>
+    </div>
+  </div>
+</section>
+
+<!-- ============= EJ 12: CHOCOLATES ============= -->
+<section class="scene" data-chapter="18" id="cap18">
+  <div class="scene-inner">
+    <div data-step="1"><span class="chapter-tag">caso 12 / 12 — bonus · control de calidad</span></div>
+
+    <div style="display:flex;align-items:center;gap:20px;margin-bottom:16px;flex-wrap:wrap">
+      <span class="ex-emoji" style="color:var(--lime)">🍫</span>
+      <h2 class="cyber" data-step="2" style="flex:1;min-width:280px">¿La caja de chocolates trae los <span class="gradient-text">24 prometidos</span>?</h2>
+    </div>
+
+    <div data-step="3" class="cyber-card" style="font-size:16px;margin-bottom:18px;line-height:1.7">
+      La marca dice "24 unidades por caja". Compras <strong>40 cajas</strong> y cuentas. El promedio te da <strong style="color:var(--magenta)">22.5 chocolates</strong> con DE 1.8. ¿Te están estafando?
+    </div>
+
+    <div data-step="4" class="ex-grid">
+      <div class="h-card h0">
+        <div class="pre">// historia aburrida</div>
+        <div class="formula">$H_0:\ \mu = 24$</div>
+        <div class="desc">La marca cumple. Las cajas con menos fueron por error puntual.</div>
+      </div>
+      <div class="h-card h1">
+        <div class="pre">// la sospecha</div>
+        <div class="formula">$H_1:\ \mu < 24$</div>
+        <div class="desc">Estafa sistemática. En promedio meten menos de lo prometido.</div>
+      </div>
+    </div>
+
+    <div data-step="5" class="cyber-card" style="margin-top:24px;padding:30px;text-align:center">
+      <p style="font-family:'JetBrains Mono',monospace;color:var(--cyan);font-size:11px;letter-spacing:2px;margin-bottom:18px">// PROMETIDO vs REAL</p>
+      <div style="display:flex;gap:30px;justify-content:center;align-items:center;flex-wrap:wrap">
+        <div>
+          <div style="font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--cyan);letter-spacing:2px">PROMESA</div>
+          <div style="font-family:'JetBrains Mono',monospace;font-size:60px;font-weight:800;color:var(--cyan);text-shadow:0 0 16px var(--cyan)">24</div>
+        </div>
+        <div style="font-size:32px;color:var(--magenta)">→</div>
+        <div>
+          <div style="font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--magenta);letter-spacing:2px">REAL (avg de 40)</div>
+          <div style="font-family:'JetBrains Mono',monospace;font-size:60px;font-weight:800;color:var(--magenta);text-shadow:0 0 16px var(--magenta)">22.5</div>
+        </div>
+      </div>
+      <p style="margin-top:18px;font-family:'JetBrains Mono',monospace;font-size:14px;color:var(--lime)">faltan 1.5 chocolates por caja en promedio</p>
+    </div>
+
+    <div data-step="6" class="intuitive-box">
+      <p class="imagine">La promesa: <strong>24 chocolates</strong>. La realidad (promedio de 40 cajas): <strong>22.5</strong>. Faltan 1.5 chocolates por caja. Si la marca cumpliera, ver una falta así con 40 cajas pasaría <strong>menos de 1 vez en 1 millón</strong>.</p>
+      <p class="imagine">Imposible que sea error de medición. Te están timando.</p>
+      <div class="so-what">
+        <span class="arrow">→</span>
+        <span class="conclusion">SÍ TE ESTÁN ESTAFANDO. SUFICIENTE PARA PROFECO.</span>
+      </div>
+    </div>
+
+    <div data-step="6" class="procedure">
+      <div class="proc-step">
+        <span class="step-tag">paso 1<br>α</span>
+        <div class="step-body"><div class="formula-display"><span class="formula-label">nivel de significancia</span>$$\alpha = 0.05$$</div></div>
+      </div>
+      <div class="proc-step">
+        <span class="step-tag">paso 2<br>estadístico</span>
+        <div class="step-body">
+          <p>Test t para una media:</p>
+          <div class="formula-display">$$t = \dfrac{\bar{x} - \mu_0}{s/\sqrt{n}}$$</div>
+        </div>
+      </div>
+      <div class="proc-step">
+        <span class="step-tag">paso 3<br>datos</span>
+        <div class="step-body">
+          <div class="formula-display violet">$$\bar{x} = 22.5 \qquad s = 1.8 \qquad n = 40 \qquad \mu_0 = 24$$</div>
+        </div>
+      </div>
+      <div class="proc-step">
+        <span class="step-tag">paso 4<br>cálculo</span>
+        <div class="step-body">
+          <div class="formula-display">$$t = \dfrac{22.5 - 24}{1.8/\sqrt{40}} = \dfrac{-1.5}{0.285}$$</div>
+          <span class="arrow-down">↓</span>
+          <div class="formula-display magenta">$$\boxed{\;t \approx -5.27\;}$$</div>
+        </div>
+      </div>
+      <div class="proc-step">
+        <span class="step-tag">paso 5<br>p-value</span>
+        <div class="step-body">
+          <p>Cola izquierda, $gl=39$:</p>
+          <div class="formula-display">$$p = P(T_{39} < -5.27) < 10^{-5}$$</div>
+        </div>
+      </div>
+      <div class="proc-step">
+        <span class="step-tag">paso 6<br>decisión</span>
+        <div class="step-body">
+          <div class="formula-display lime">$$p \;\lll\; \alpha = 0.05$$</div>
+          <p style="color:var(--magenta);font-weight:700;margin-top:8px">► Rechazamos H₀ — están metiendo menos de los 24 prometidos.</p>
+        </div>
+      </div>
+    </div>
+
+    <div data-step="7" class="mini-verdict reject">
+      <div class="lbl">// VEREDICTO</div>
+      <div class="verdict-txt">RECHAZAMOS H₀</div>
+      <div class="conclusion">Estafa sistemática confirmada. Esto es lo que hace control de calidad e instituciones de defensa al consumidor.</div>
+    </div>
+
+    <div data-step="8" data-anim="glitch" style="text-align:center;margin-top:50px">
+      <div class="big-verdict gradient-text glow-magenta">FIN DE LA TEORÍA</div>
+      <p style="margin-top:18px;color:rgba(255,255,255,.78);font-size:17px">12 ejemplos. Mismo método. <strong>H₀ vs H₁ es el martillo universal.</strong></p>
+      <p style="margin-top:24px;color:var(--lime);font-family:'JetBrains Mono',monospace;font-size:14px;letter-spacing:3px">► Y AHORA… EL JUEGO 🎮 ◄</p>
+    </div>
+  </div>
+</section>
+
+<!-- ============= CAP 19: GAME ARCADE ============= -->
+<section class="scene" data-chapter="19" id="cap19">
+  <div class="scene-inner">
+    <div data-step="1"><span class="chapter-tag">acto final // detective estadistico arcade</span></div>
+
+    <h1 class="cyber" data-step="2" data-anim="glitch" style="text-align:center;margin-bottom:18px;font-size:clamp(2rem,5vw,3.5rem)">
+      DETECTIVE <span class="gradient-text glow-magenta">ESTADÍSTICO</span><br>
+      <span class="gradient-text-2">🕵️ ARCADE 🕵️</span>
+    </h1>
+
+    <p data-step="3" style="text-align:center;font-size:16px;color:rgba(255,255,255,.78);margin-bottom:24px">
+      Pon a prueba lo que aprendiste. 3 niveles, puntaje y ranking. ¿Eres detective novato, profesional o leyenda?
+    </p>
+
+    <div data-step="4" class="game-stage" id="gameStage">
+      <!-- rendered by JS -->
     </div>
   </div>
 </section>
@@ -1992,7 +2667,7 @@ h3.cyber { font-family: 'JetBrains Mono', monospace; font-weight: 700; }
 /* ============================================================
    STEP MANAGER
    ============================================================ */
-const TOTAL_CHAPTERS = 13;
+const TOTAL_CHAPTERS = 19;
 let currentChapter = 1;
 let currentStep = 0;
 let stepsPerChapter = {};
@@ -2177,7 +2852,7 @@ document.addEventListener('keydown', (e) => {
     case '1': case '2': case '3': case '4': case '5': case '6': case '7': case '8': case '9':
       if (started) { gotoChapter(parseInt(key)); e.preventDefault(); }
       break;
-    case '0': if (started) { gotoChapter(13); e.preventDefault(); } break;
+    case '0': if (started) { gotoChapter(TOTAL_CHAPTERS); e.preventDefault(); } break;
   }
 });
 
@@ -2665,7 +3340,467 @@ window.addEventListener('DOMContentLoaded', () => {
   resetUniverses();
   updateHud();
   whenKatexReady(() => renderMath(document.body));
+  initGame();
 });
+
+/* ============================================================
+   GAME — DETECTIVE ESTADÍSTICO ARCADE (Cap 19)
+   ============================================================ */
+const TRIVIA = [
+  {
+    q: '¿Qué es la hipótesis nula (H₀)?',
+    options: [
+      'La sospecha que queremos demostrar',
+      'La historia aburrida — "aquí no pasa nada"',
+      'El error que cometemos al rechazarla',
+      'El nivel de significancia α'
+    ],
+    correct: 1,
+    explain: 'H₀ = lo aburrido, lo que asumimos cierto hasta que la evidencia diga otra cosa.'
+  },
+  {
+    q: 'Si el p-value = 0.03 y α = 0.05, ¿qué decides?',
+    options: [
+      'No rechazar H₀',
+      'Rechazar H₀',
+      'Repetir el experimento',
+      'Aceptar H₀ como verdadera'
+    ],
+    correct: 1,
+    explain: 'p < α → rechazas H₀. La aguja cruzó la zona roja del medidor.'
+  },
+  {
+    q: 'Error tipo I = ?',
+    options: [
+      'Acusar al inocente (rechazar H₀ siendo verdadera)',
+      'Dejar libre al culpable (no rechazar siendo falsa)',
+      'Calcular mal el p-value',
+      'Usar el test equivocado'
+    ],
+    correct: 0,
+    explain: 'Tipo I = falso positivo. Es lo que controlas con α (típicamente 5%).'
+  },
+  {
+    q: 'Si la aguja del medidor está en 70%, ¿hay suficiente evidencia para rechazar H₀?',
+    options: [
+      'Sí, está alto',
+      'No, todavía no cruza el umbral del 95%',
+      'Depende del α',
+      'Solo si el tamaño de muestra es grande'
+    ],
+    correct: 1,
+    explain: 'El umbral está en 95%. A 70% la aguja todavía está en zona "raro" pero no "rarísimo".'
+  },
+  {
+    q: 'Pedro lanza 10 monedas y saca 7 caras (p ≈ 0.17). Después lanza 100 y saca 70 (p ≈ 0.0001). ¿Por qué cambia tanto el p-value?',
+    options: [
+      'Porque la proporción es distinta',
+      'Por el tamaño de muestra — con más datos las desviaciones son más raras',
+      'Por error de cálculo',
+      'Porque cambió el α'
+    ],
+    correct: 1,
+    explain: 'Misma proporción (70%), pero más datos = más evidencia. El tamaño de muestra mueve la aguja.'
+  }
+];
+
+const SWIPE_CARDS = [
+  { tag: 'CASO MONEDA', q: 'Tiraste una moneda 100 veces y sacaste 65 caras.', data: 'p-value = 0.003', correct: 'reject', explain: '0.003 < 0.05 → rechazar.' },
+  { tag: 'CASO ENCUESTA', q: 'Una encuesta dice que el 50% prefiere A vs B. Tu muestra de 30 da 17 (56.7%).', data: 'p-value = 0.43', correct: 'no-reject', explain: '0.43 > 0.05 → no rechazar. Diferencia compatible con azar.' },
+  { tag: 'CASO BOLOS', q: 'El nuevo del bowling sacó 8 chuzas en 10 partidas. El promedio mundial es 17%.', data: 'z = 5.4 — p < 0.001', correct: 'reject', explain: 'Imposible que sea suerte. Es bueno de verdad.' },
+  { tag: 'CASO DIETA', q: 'Una dieta promete bajar 5 kg. Mediste 40 personas: bajaron 4.2 kg con DE 3.5.', data: 'p-value = 0.08', correct: 'no-reject', explain: 'Just over 5%, sin evidencia suficiente. Diferencia podría ser azar.' },
+  { tag: 'CASO LLUVIA', q: 'Un horóscopo dice que llueve más en luna llena. 2 años de datos.', data: 'p-value = 0.64', correct: 'no-reject', explain: 'p enorme — los datos NO contradicen la H₀ (no hay relación).' },
+  { tag: 'CASO MARCA', q: 'Una caja "12 oz" pesa promedio 11.4 oz en 50 muestras (DE 0.8).', data: 'p-value < 0.0001', correct: 'reject', explain: 'Estafa confirmada. Pesa significativamente menos de lo prometido.' },
+  { tag: 'CASO ESTUDIO', q: 'Un grupo que estudió con música sacó 3.8 vs 3.7 sin música (n=20 cada uno).', data: 'p-value = 0.31', correct: 'no-reject', explain: 'Diferencia mínima compatible con azar. La música no influye.' },
+  { tag: 'CASO IG', q: 'En un test ciego, 142 de 200 personas (71%) acertaron cuál era foto con filtro.', data: 'p-value < 0.0001', correct: 'reject', explain: '71% es muchísimo más que el 50% esperado por azar. Sí se nota.' }
+];
+
+const CASE_STAGES = [
+  {
+    stage: 'paso 1 / 3 — H₀ y H₁',
+    q: 'Una marca de jugo dice tener 250 ml por botella. Compras 25 botellas y promedian 244 ml (DE 8). ¿Cómo plantear las hipótesis?',
+    options: [
+      'H₀: μ = 250 · H₁: μ ≠ 250',
+      'H₀: μ = 250 · H₁: μ < 250',
+      'H₀: μ < 250 · H₁: μ = 250',
+      'H₀: μ = 244 · H₁: μ = 250'
+    ],
+    correct: 1,
+    explain: 'La sospecha es que dan menos (timo), por eso H₁ es μ < 250 (una cola).'
+  },
+  {
+    stage: 'paso 2 / 3 — el test',
+    q: 'Es 1 muestra, σ desconocida, n=25. ¿Qué test usas?',
+    options: [
+      'Test z para proporción',
+      'Test t para una media (1 muestra)',
+      'Test t de Welch (2 muestras)',
+      'Test chi-cuadrado'
+    ],
+    correct: 1,
+    explain: 'Es UNA media de UNA muestra con desviación estándar muestral → test t.'
+  },
+  {
+    stage: 'paso 3 / 3 — decisión',
+    q: 'Calculas: t = (244 − 250) / (8/√25) = −3.75, p ≈ 0.0005. ¿Qué decides?',
+    options: [
+      'No rechazar H₀ (la marca cumple)',
+      'Rechazar H₀ — la marca está timando',
+      'Repetir con más botellas',
+      'No se puede decidir'
+    ],
+    correct: 1,
+    explain: 'p = 0.0005 << 0.05 → la marca NO está dando los 250 ml prometidos.'
+  }
+];
+
+const MAX_TRIVIA_PTS = 10;     // 5 × 10 = 50
+const MAX_SWIPE_PTS = 12;      // 8 × 12 = 96 ≈ 100
+const MAX_CASE_PTS = 18;       // 3 × 18 = 54 (extra hard)
+const MAX_TOTAL = TRIVIA.length * MAX_TRIVIA_PTS + SWIPE_CARDS.length * MAX_SWIPE_PTS + CASE_STAGES.length * MAX_CASE_PTS;
+
+const game = {
+  level: 0,        // 0 intro · 1 trivia · 2 swipe · 3 case · 4 results
+  qIdx: 0,
+  score: 0,
+  triviaCorrect: 0,
+  swipeCorrect: 0,
+  caseCorrect: 0,
+  locked: false
+};
+
+function initGame() {
+  if (!document.getElementById('gameStage')) return;
+  renderGame();
+}
+
+function renderGame() {
+  const el = document.getElementById('gameStage');
+  if (!el) return;
+  if (game.level === 0) renderGameIntro(el);
+  else if (game.level === 1) renderTrivia(el);
+  else if (game.level === 2) renderSwipe(el);
+  else if (game.level === 3) renderCase(el);
+  else if (game.level === 4) renderResults(el);
+  whenKatexReady(() => renderMath(el));
+}
+
+function gameHudHTML(levelNum, levelName) {
+  return `<div class="game-hud">
+    <div class="level">NIVEL <span class="num">${levelNum}</span> / 3 · ${levelName}</div>
+    <div class="score">PUNTOS<br><span class="num">${game.score}</span></div>
+  </div>`;
+}
+
+function renderGameIntro(el) {
+  el.innerHTML = `
+    <div class="game-intro">
+      <h2 class="cyber"><span class="gradient-text">¿LISTO, DETECTIVE?</span></h2>
+      <p class="sub">3 niveles. Puntaje máximo: <strong style="color:var(--lime)">${MAX_TOTAL} puntos</strong>. Al final te damos una <strong>nota de 0 a 5</strong>.</p>
+      <div class="levels">
+        <div class="level-card l1"><div class="num">// NIVEL 1</div><h3>TRIVIA</h3><p>5 preguntas conceptuales. +10 pts c/u.</p></div>
+        <div class="level-card l2"><div class="num">// NIVEL 2</div><h3>SWIPE CASOS</h3><p>8 mini-casos. ¿Rechazar o no? +12 pts c/u.</p></div>
+        <div class="level-card l3"><div class="num">// NIVEL 3</div><h3>CASO COMPLETO</h3><p>Plantea, calcula y decide. +18 pts c/u.</p></div>
+      </div>
+      <button class="cyber-btn magenta" style="font-size:16px;padding:16px 36px" onclick="startGame()">▶ COMENZAR ARCADE</button>
+    </div>`;
+}
+
+function startGame() {
+  game.level = 1; game.qIdx = 0; game.score = 0;
+  game.triviaCorrect = 0; game.swipeCorrect = 0; game.caseCorrect = 0;
+  game.locked = false;
+  renderGame();
+}
+
+function renderTrivia(el) {
+  const q = TRIVIA[game.qIdx];
+  const segs = TRIVIA.map((_, i) => `<div class="seg ${i < game.qIdx ? 'done' : i === game.qIdx ? 'current' : ''}"></div>`).join('');
+  el.innerHTML = `
+    ${gameHudHTML(1, 'TRIVIA')}
+    <div class="game-progress">${segs}</div>
+    <div class="game-trivia">
+      <div class="q-num">PREGUNTA ${game.qIdx + 1} / ${TRIVIA.length}</div>
+      <div class="q-text">${q.q}</div>
+      <div class="options" id="triviaOptions">
+        ${q.options.map((opt, i) => `<button class="option" onclick="answerTrivia(${i})"><span class="letter">${'ABCD'[i]}</span><span>${opt}</span></button>`).join('')}
+      </div>
+      <div class="feedback" id="triviaFeedback"></div>
+    </div>`;
+}
+
+function answerTrivia(i) {
+  if (game.locked) return;
+  game.locked = true;
+  const q = TRIVIA[game.qIdx];
+  const opts = document.querySelectorAll('#triviaOptions .option');
+  opts.forEach((b, k) => {
+    if (k === q.correct) b.classList.add('correct');
+    if (k === i && i !== q.correct) b.classList.add('wrong');
+    if (k !== i && k !== q.correct) b.classList.add('dim');
+  });
+  const fb = document.getElementById('triviaFeedback');
+  if (i === q.correct) {
+    game.score += MAX_TRIVIA_PTS; game.triviaCorrect++;
+    fb.className = 'feedback ok show';
+    fb.innerHTML = `✓ ¡CORRECTO! +${MAX_TRIVIA_PTS} pts · ${q.explain}`;
+    burstConfetti();
+  } else {
+    fb.className = 'feedback bad show';
+    fb.innerHTML = `✗ INCORRECTO · ${q.explain}`;
+  }
+  // update score in hud
+  const scoreEl = document.querySelector('.game-hud .score .num');
+  if (scoreEl) scoreEl.textContent = game.score;
+  setTimeout(() => {
+    game.locked = false;
+    game.qIdx++;
+    if (game.qIdx >= TRIVIA.length) { game.level = 2; game.qIdx = 0; }
+    renderGame();
+  }, 2400);
+}
+
+function renderSwipe(el) {
+  const c = SWIPE_CARDS[game.qIdx];
+  const segs = SWIPE_CARDS.map((_, i) => `<div class="seg ${i < game.qIdx ? 'done' : i === game.qIdx ? 'current' : ''}"></div>`).join('');
+  el.innerHTML = `
+    ${gameHudHTML(2, 'SWIPE CASOS')}
+    <div class="game-progress">${segs}</div>
+    <div class="game-swipe">
+      <div class="swipe-card" id="swipeCard">
+        <div class="card-tag">${c.tag} · ${game.qIdx + 1} / ${SWIPE_CARDS.length}</div>
+        <div class="card-q">${c.q}</div>
+        <div class="card-data">${c.data}</div>
+      </div>
+      <div class="swipe-controls">
+        <button class="swipe-btn no" onclick="answerSwipe('no-reject')"><span class="icon">←</span>NO RECHAZAR<br><span style="opacity:.6;font-size:10px">(p ≥ 0.05)</span></button>
+        <button class="swipe-btn yes" onclick="answerSwipe('reject')">RECHAZAR<span class="icon">→</span><br><span style="opacity:.6;font-size:10px">(p &lt; 0.05)</span></button>
+      </div>
+      <div class="swipe-feedback" id="swipeFeedback"></div>
+    </div>`;
+}
+
+function answerSwipe(decision) {
+  if (game.locked) return;
+  game.locked = true;
+  const c = SWIPE_CARDS[game.qIdx];
+  const card = document.getElementById('swipeCard');
+  const fb = document.getElementById('swipeFeedback');
+  const correct = (decision === c.correct);
+  if (correct) {
+    game.score += MAX_SWIPE_PTS; game.swipeCorrect++;
+    fb.className = 'swipe-feedback ok show';
+    fb.innerHTML = `✓ ¡CORRECTO! +${MAX_SWIPE_PTS} pts · ${c.explain}`;
+    burstConfetti();
+  } else {
+    fb.className = 'swipe-feedback bad show';
+    fb.innerHTML = `✗ INCORRECTO · La respuesta era ${c.correct === 'reject' ? 'RECHAZAR' : 'NO RECHAZAR'} · ${c.explain}`;
+  }
+  card.classList.add(decision === 'reject' ? 'exit-right' : 'exit-left');
+  const scoreEl = document.querySelector('.game-hud .score .num');
+  if (scoreEl) scoreEl.textContent = game.score;
+  setTimeout(() => {
+    game.locked = false;
+    game.qIdx++;
+    if (game.qIdx >= SWIPE_CARDS.length) { game.level = 3; game.qIdx = 0; }
+    renderGame();
+  }, 2200);
+}
+
+function renderCase(el) {
+  const s = CASE_STAGES[game.qIdx];
+  const segs = CASE_STAGES.map((_, i) => `<div class="seg ${i < game.qIdx ? 'done' : i === game.qIdx ? 'current' : ''}"></div>`).join('');
+  const intro = game.qIdx === 0
+    ? `<div class="case-intro">📦 <strong>Una marca de jugo</strong> dice tener 250 ml por botella. Compras <strong>25 botellas</strong>, las pesas y promedian <strong style="color:var(--magenta)">244 ml</strong> con desviación estándar de <strong>8 ml</strong>. ¿Te están timando? Resuelve paso a paso.</div>`
+    : '';
+  el.innerHTML = `
+    ${gameHudHTML(3, 'CASO COMPLETO')}
+    <div class="game-progress">${segs}</div>
+    <div class="game-case">
+      ${intro}
+      <div class="case-stage">${s.stage}</div>
+      <div class="case-question">${s.q}</div>
+      <div class="game-trivia">
+        <div class="options" id="caseOptions">
+          ${s.options.map((opt, i) => `<button class="option" onclick="answerCase(${i})"><span class="letter">${'ABCD'[i]}</span><span>${opt}</span></button>`).join('')}
+        </div>
+        <div class="feedback" id="caseFeedback"></div>
+      </div>
+    </div>`;
+}
+
+function answerCase(i) {
+  if (game.locked) return;
+  game.locked = true;
+  const s = CASE_STAGES[game.qIdx];
+  const opts = document.querySelectorAll('#caseOptions .option');
+  opts.forEach((b, k) => {
+    if (k === s.correct) b.classList.add('correct');
+    if (k === i && i !== s.correct) b.classList.add('wrong');
+    if (k !== i && k !== s.correct) b.classList.add('dim');
+  });
+  const fb = document.getElementById('caseFeedback');
+  if (i === s.correct) {
+    game.score += MAX_CASE_PTS; game.caseCorrect++;
+    fb.className = 'feedback ok show';
+    fb.innerHTML = `✓ ¡CORRECTO! +${MAX_CASE_PTS} pts · ${s.explain}`;
+    burstConfetti();
+  } else {
+    fb.className = 'feedback bad show';
+    fb.innerHTML = `✗ INCORRECTO · ${s.explain}`;
+  }
+  const scoreEl = document.querySelector('.game-hud .score .num');
+  if (scoreEl) scoreEl.textContent = game.score;
+  setTimeout(() => {
+    game.locked = false;
+    game.qIdx++;
+    if (game.qIdx >= CASE_STAGES.length) { game.level = 4; game.qIdx = 0; }
+    renderGame();
+  }, 2600);
+}
+
+function getGrade(score) {
+  // 0-5 scale based on % of MAX_TOTAL
+  const pct = score / MAX_TOTAL;
+  return Math.round(pct * 5 * 10) / 10; // 1 decimal
+}
+
+function getRank(grade) {
+  if (grade >= 4.5) return { name: 'LEYENDA ESTADÍSTICA', cls: 'god', stars: '⭐⭐⭐⭐⭐', msg: 'Perfecto. Eres un detective élite.' };
+  if (grade >= 4.0) return { name: 'DETECTIVE PROFESIONAL', cls: 'detective', stars: '⭐⭐⭐⭐', msg: 'Excelente. Sabes lo que haces.' };
+  if (grade >= 3.0) return { name: 'DETECTIVE EN ENTRENAMIENTO', cls: 'detective', stars: '⭐⭐⭐', msg: 'Aprobaste. Hay base sólida.' };
+  if (grade >= 2.0) return { name: 'APRENDIZ', cls: 'aprendiz', stars: '⭐⭐', msg: 'Reprobado, pero ya estás cerca. Repasa los conceptos.' };
+  return { name: 'NOVATO', cls: 'aprendiz', stars: '⭐', msg: 'Reprobado. Vuelve a la teoría y dale otra vuelta.' };
+}
+
+function saveScore(name, score) {
+  try {
+    const lb = JSON.parse(localStorage.getItem('clase15_lb') || '[]');
+    lb.push({ name, score, date: Date.now() });
+    lb.sort((a, b) => b.score - a.score);
+    localStorage.setItem('clase15_lb', JSON.stringify(lb.slice(0, 10)));
+    return lb;
+  } catch(e) { return []; }
+}
+
+function loadLeaderboard() {
+  try { return JSON.parse(localStorage.getItem('clase15_lb') || '[]'); } catch(e) { return []; }
+}
+
+function renderResults(el) {
+  const grade = getGrade(game.score);
+  const rank = getRank(grade);
+  const totalCorrect = game.triviaCorrect + game.swipeCorrect + game.caseCorrect;
+  const totalQ = TRIVIA.length + SWIPE_CARDS.length + CASE_STAGES.length;
+
+  el.innerHTML = `
+    <div class="game-results">
+      <div class="stars">${rank.stars}</div>
+      <h2 class="cyber"><span class="gradient-text">RESULTADO</span></h2>
+      <div class="final-score">${grade.toFixed(1)} <span style="font-size:.5em;opacity:.6">/ 5.0</span></div>
+      <div class="max-score">${game.score} / ${MAX_TOTAL} puntos · ${totalCorrect}/${totalQ} respuestas correctas</div>
+      <div class="verdict-rank ${rank.cls}">${rank.name}</div>
+      <p style="margin-top:18px;color:rgba(255,255,255,.78);max-width:480px;margin-left:auto;margin-right:auto;font-size:15px">${rank.msg}</p>
+
+      <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-top:24px;max-width:520px;margin-left:auto;margin-right:auto">
+        <div style="padding:12px;border-radius:8px;background:rgba(0,240,255,.06);border:1px solid rgba(0,240,255,.3)">
+          <div style="font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--cyan);letter-spacing:2px">TRIVIA</div>
+          <div style="font-family:'JetBrains Mono',monospace;font-size:24px;font-weight:800;color:var(--cyan);margin-top:4px">${game.triviaCorrect}/${TRIVIA.length}</div>
+        </div>
+        <div style="padding:12px;border-radius:8px;background:rgba(255,46,147,.06);border:1px solid rgba(255,46,147,.3)">
+          <div style="font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--magenta);letter-spacing:2px">SWIPE</div>
+          <div style="font-family:'JetBrains Mono',monospace;font-size:24px;font-weight:800;color:var(--magenta);margin-top:4px">${game.swipeCorrect}/${SWIPE_CARDS.length}</div>
+        </div>
+        <div style="padding:12px;border-radius:8px;background:rgba(204,255,0,.06);border:1px solid rgba(204,255,0,.3)">
+          <div style="font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--lime);letter-spacing:2px">CASO</div>
+          <div style="font-family:'JetBrains Mono',monospace;font-size:24px;font-weight:800;color:var(--lime);margin-top:4px">${game.caseCorrect}/${CASE_STAGES.length}</div>
+        </div>
+      </div>
+
+      <div class="leaderboard" id="lbContainer">
+        <h3>// TOP DETECTIVES</h3>
+        <div id="lbList"></div>
+        <div style="display:flex;gap:8px;margin-top:14px">
+          <input type="text" id="playerName" placeholder="tu nombre" maxlength="14" style="flex:1;padding:10px 14px;border-radius:8px;background:rgba(0,0,0,.4);border:1px solid var(--cyan);color:#fff;font-family:'JetBrains Mono',monospace;font-size:13px">
+          <button class="cyber-btn cyan" style="padding:10px 18px" onclick="submitScore()">GUARDAR</button>
+        </div>
+      </div>
+
+      <div class="actions">
+        <button class="cyber-btn magenta" onclick="startGame()">↺ JUGAR DE NUEVO</button>
+        <button class="cyber-btn" onclick="game.level=0;renderGame()">◀ MENÚ</button>
+      </div>
+    </div>
+    <div class="confetti-burst" id="finalConfetti"></div>`;
+
+  refreshLeaderboard(null);
+  if (grade >= 3.0) bigConfettiBurst();
+}
+
+function refreshLeaderboard(highlightIdx) {
+  const list = document.getElementById('lbList');
+  if (!list) return;
+  const lb = loadLeaderboard();
+  if (lb.length === 0) {
+    list.innerHTML = '<div style="text-align:center;font-family:\'JetBrains Mono\',monospace;font-size:12px;color:rgba(255,255,255,.4);padding:14px">— sin ranking aún —</div>';
+    return;
+  }
+  list.innerHTML = lb.slice(0, 5).map((r, i) => `
+    <div class="lb-row ${i === highlightIdx ? 'you' : ''}">
+      <span><span class="pos">#${i+1}</span> ${r.name}</span>
+      <span class="pts">${r.score} pts · ${getGrade(r.score).toFixed(1)}</span>
+    </div>`).join('');
+}
+
+function submitScore() {
+  const inp = document.getElementById('playerName');
+  let name = (inp.value || 'Anónimo').trim().substring(0, 14);
+  if (!name) name = 'Anónimo';
+  const lb = saveScore(name, game.score);
+  const myIdx = lb.findIndex(r => r.name === name && r.score === game.score);
+  refreshLeaderboard(myIdx);
+  inp.disabled = true;
+  inp.value = '✓ guardado';
+}
+
+/* ============================================================
+   CONFETTI
+   ============================================================ */
+function burstConfetti() {
+  // small per-correct burst
+  const colors = ['#ff2e93','#00f0ff','#ccff00','#b388ff'];
+  const stage = document.getElementById('gameStage');
+  if (!stage) return;
+  for (let i = 0; i < 14; i++) {
+    const p = document.createElement('div');
+    p.className = 'confetti-piece';
+    p.style.background = colors[i % colors.length];
+    p.style.left = (40 + Math.random() * 20) + '%';
+    p.style.top = '40%';
+    p.style.setProperty('--dx', ((Math.random() - 0.5) * 200) + 'px');
+    p.style.animationDuration = (1 + Math.random()) + 's';
+    stage.appendChild(p);
+    setTimeout(() => p.remove(), 2000);
+  }
+}
+
+function bigConfettiBurst() {
+  const colors = ['#ff2e93','#00f0ff','#ccff00','#b388ff','#ffab40'];
+  const stage = document.getElementById('gameStage');
+  if (!stage) return;
+  for (let i = 0; i < 80; i++) {
+    const p = document.createElement('div');
+    p.className = 'confetti-piece';
+    p.style.background = colors[i % colors.length];
+    p.style.left = Math.random() * 100 + '%';
+    p.style.top = '20%';
+    p.style.setProperty('--dx', ((Math.random() - 0.5) * 400) + 'px');
+    p.style.animationDuration = (1.5 + Math.random() * 1.5) + 's';
+    p.style.animationDelay = (Math.random() * 0.5) + 's';
+    stage.appendChild(p);
+    setTimeout(() => p.remove(), 3000);
+  }
+}
 </script>
 
 </body>
