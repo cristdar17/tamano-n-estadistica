@@ -710,7 +710,10 @@ h3.cyber { font-family: 'JetBrains Mono', monospace; font-weight: 700; }
 <div class="welcome-overlay" id="welcome">
   <div class="chapter-tag">CLASE 15 / ESTADÍSTICA · UTP</div>
   <h1 class="cyber"><span class="gradient-text">¿VERDAD</span> o <span class="gradient-text-2">SUERTE?</span></h1>
-  <p class="sub">Pedro, tu amigo de la UTP, te ganó <strong style="color:var(--magenta)">8 apuestas seguidas</strong> tirando una moneda en la cafetería. ¿Te robó… o tuviste mala suerte?<br><br>Hoy aprendes el método que <em>los científicos, médicos y la gente de marketing</em> usan para responder este tipo de preguntas. Sin adivinar.</p>
+  <p class="sub">Hoy investigamos <strong>2 casos en paralelo</strong> con el mismo método:<br>
+  🪙 <strong>Pedro</strong> te ganó <strong style="color:var(--magenta)">8 caras de 10</strong> tirando una moneda. ¿Trampa o suerte?<br>
+  🎳 <strong>Lucho</strong> es <em>su primer día</em> en bolos y sacó <strong style="color:var(--magenta)">7 chuzas en 18</strong>. ¿Talento o suerte de principiante?<br><br>
+  El mismo método estadístico responde <em>ambos</em>. Sin adivinar.</p>
   <div class="keys-hint">presiona <kbd style="font-family:inherit;background:rgba(255,46,147,.15);border:1px solid var(--magenta);color:var(--magenta);padding:3px 9px;border-radius:4px">H</kbd> para ver las teclas</div>
   <button class="cyber-btn magenta start-btn" onclick="startClass()">▶ INICIAR CLASE</button>
 </div>
@@ -744,46 +747,62 @@ h3.cyber { font-family: 'JetBrains Mono', monospace; font-weight: 700; }
   </div>
 </div>
 
-<!-- ============= CAP 1: EL CASO ============= -->
+<!-- ============= CAP 1: LOS DOS CASOS ============= -->
 <section class="scene" data-chapter="1" id="cap1">
   <div class="scene-inner">
-    <div data-step="1"><span class="chapter-tag">acto 01 // el caso</span></div>
+    <div data-step="1"><span class="chapter-tag">acto 01 // los 2 casos del día</span></div>
 
-    <h1 class="cyber" data-step="2" data-anim="glitch" style="margin-bottom:30px">
-      Tu amigo <span class="gradient-text glow-magenta">Pedro</span><br>te acaba de ganar <span class="gradient-text-2">8 apuestas seguidas</span>
+    <h1 class="cyber" data-step="2" data-anim="glitch" style="margin-bottom:24px;font-size:clamp(2rem,4.5vw,3.4rem)">
+      <span class="gradient-text glow-magenta">2 historias.</span> 1 misma duda.<br>
+      <span class="gradient-text-2">¿Es <em>real</em> o fue suerte?</span>
     </h1>
 
-    <div data-step="3" class="cyber-card violet" style="font-size:18px;line-height:1.7">
-      <span class="corner c-tl" style="color:var(--violet)"></span><span class="corner c-tr" style="color:var(--violet)"></span>
-      <span class="corner c-bl" style="color:var(--violet)"></span><span class="corner c-br" style="color:var(--violet)"></span>
-      <p>📍 <strong>Cafetería de la UTP</strong>, 10:30am, grupo de siempre. Pedro saca una moneda.</p>
-      <p style="margin-top:10px">📍 "Cara o sello, 5.000 pesos cada uno." Tirada tras tirada… <strong style="color:var(--magenta)">8 caras de 10 tiros</strong>. Te dejó sin almuerzo.</p>
-      <p style="margin-top:10px">📍 Todos los amigos están en silencio. Pedro está tranquilo.</p>
+    <p data-step="3" style="font-size:16px;color:rgba(255,255,255,.78);margin-bottom:24px;text-align:center">
+      Hoy te va a pasar dos veces lo mismo: alguien hizo algo medio raro y tú dudas. Investigamos los dos casos en paralelo con el mismo método.
+    </p>
+
+    <div data-step="4" class="grid md:grid-cols-2 gap-5 mb-6" style="display:grid;grid-template-columns:1fr 1fr;gap:18px">
+      <div class="cyber-card magenta">
+        <span class="corner c-tl" style="color:var(--magenta)"></span><span class="corner c-tr" style="color:var(--magenta)"></span>
+        <span class="corner c-bl" style="color:var(--magenta)"></span><span class="corner c-br" style="color:var(--magenta)"></span>
+        <div style="font-size:50px;margin-bottom:10px;text-align:center">🪙</div>
+        <h3 class="cyber" style="font-size:20px;color:var(--magenta);margin-bottom:8px;text-align:center">CASO PEDRO</h3>
+        <p style="font-size:14px;color:rgba(255,255,255,.85);line-height:1.6">Pedro tiró una moneda 10 veces apostando 5.000 pesos cada vez. Sacó <strong style="color:var(--magenta)">8 caras</strong>. Te dejó sin almuerzo.</p>
+        <p style="margin-top:10px;font-size:14px;color:var(--magenta);font-family:'JetBrains Mono',monospace">¿Hace trampa o tuviste mala suerte?</p>
+      </div>
+      <div class="cyber-card cyan">
+        <span class="corner c-tl" style="color:var(--cyan)"></span><span class="corner c-tr" style="color:var(--cyan)"></span>
+        <span class="corner c-bl" style="color:var(--cyan)"></span><span class="corner c-br" style="color:var(--cyan)"></span>
+        <div style="font-size:50px;margin-bottom:10px;text-align:center">🎳</div>
+        <h3 class="cyber" style="font-size:20px;color:var(--cyan);margin-bottom:8px;text-align:center">CASO LUCHO</h3>
+        <p style="font-size:14px;color:rgba(255,255,255,.85);line-height:1.6"><strong>Su primer día</strong> en bolos. En 18 partidas hizo <strong style="color:var(--cyan)">7 chuzas</strong> (38.9%). Un casual hace solo el 17%.</p>
+        <p style="margin-top:10px;font-size:14px;color:var(--cyan);font-family:'JetBrains Mono',monospace">¿Tiene talento o es suerte de principiante?</p>
+      </div>
     </div>
 
-    <div data-step="4" class="vote-stage">
-      <div class="vote-question">► ANTES DE CONTINUAR — ¿QUÉ CREES?</div>
+    <div data-step="5" class="vote-stage">
+      <div class="vote-question">► ANTES DE CONTINUAR — APUESTA TU INTUICIÓN</div>
       <div class="vote-buttons">
-        <div class="vote-btn option-a" onclick="vote('cap1', 'inocente', this)">
+        <div class="vote-btn option-a" onclick="vote('cap1', 'suerte', this)">
           <span class="emoji">🤷</span>
-          <span>FUE SUERTE</span>
+          <span>LOS DOS<br>FUE SUERTE</span>
           <span class="count" data-count="0">0 votos</span>
         </div>
-        <div class="vote-btn option-b" onclick="vote('cap1', 'culpable', this)">
+        <div class="vote-btn option-b" onclick="vote('cap1', 'real', this)">
           <span class="emoji">🕵️</span>
-          <span>HACE TRAMPA</span>
+          <span>LOS DOS<br>SON REALES</span>
           <span class="count" data-count="0">0 votos</span>
         </div>
       </div>
-      <div class="vote-feedback" id="voteFb-cap1">Bien. Apuntaste tu intuición. Vamos a ver qué dicen los datos.</div>
+      <div class="vote-feedback" id="voteFb-cap1">Apuntado. Veamos qué dicen los datos para CADA UNO.</div>
     </div>
 
-    <div data-step="5" data-anim="zoom" class="cyber-card cyan" style="margin-top:30px;text-align:center">
-      <span class="corner c-tl" style="color:var(--cyan)"></span><span class="corner c-tr" style="color:var(--cyan)"></span>
-      <span class="corner c-bl" style="color:var(--cyan)"></span><span class="corner c-br" style="color:var(--cyan)"></span>
-      <p style="font-size:18px">El problema con "yo creo que…" es que <strong style="color:var(--cyan)">todos creemos cosas distintas</strong>.</p>
+    <div data-step="6" data-anim="zoom" class="cyber-card violet" style="margin-top:24px;text-align:center">
+      <span class="corner c-tl" style="color:var(--violet)"></span><span class="corner c-tr" style="color:var(--violet)"></span>
+      <span class="corner c-bl" style="color:var(--violet)"></span><span class="corner c-br" style="color:var(--violet)"></span>
+      <p style="font-size:17px">Spoiler: los dos casos parecen distintos pero <strong style="color:var(--violet)">se resuelven igual</strong>.</p>
       <p style="margin-top:14px;font-size:20px;font-weight:700">Hoy aprendes el <span class="gradient-text">método científico</span> que decide por ti.</p>
-      <p style="margin-top:10px;color:var(--cyan);font-family:'JetBrains Mono',monospace;font-size:13px;letter-spacing:2px">► EL METODO: H₀ vs H₁ ◄</p>
+      <p style="margin-top:10px;color:var(--cyan);font-family:'JetBrains Mono',monospace;font-size:13px;letter-spacing:2px">► H₀ vs H₁ — UN MÉTODO, MIL APLICACIONES ◄</p>
     </div>
   </div>
 </section>
@@ -798,7 +817,7 @@ h3.cyber { font-family: 'JetBrains Mono', monospace; font-weight: 700; }
     </h2>
 
     <p data-step="3" style="font-size:17px;color:rgba(255,255,255,.78);margin-bottom:30px">
-      Frente al "caso Pedro" hay <strong>solo dos versiones</strong> de lo que pasó. Y un buen detective las considera ambas, sin trampear.
+      Frente a <strong>cada caso</strong> (Pedro y Lucho) hay solo dos versiones de lo que pudo pasar. Un buen detective las considera ambas, sin trampear.
     </p>
 
     <div data-step="4" class="grid md:grid-cols-2 gap-5 mb-6" style="display:grid;grid-template-columns:1fr 1fr;gap:20px">
@@ -806,18 +825,18 @@ h3.cyber { font-family: 'JetBrains Mono', monospace; font-weight: 700; }
         <span class="corner c-tl" style="color:var(--cyan)"></span><span class="corner c-tr" style="color:var(--cyan)"></span>
         <span class="corner c-bl" style="color:var(--cyan)"></span><span class="corner c-br" style="color:var(--cyan)"></span>
         <div style="font-family:'JetBrains Mono',monospace;font-size:11px;letter-spacing:3px;color:var(--cyan);text-transform:uppercase">// HISTORIA ABURRIDA</div>
-        <h3 class="cyber" style="font-size:30px;color:var(--cyan);text-shadow:0 0 14px var(--cyan);margin:8px 0">"Aquí no pasa nada"</h3>
-        <p style="font-size:16px;font-weight:600;margin-bottom:10px">Pedro tuvo <strong>SUERTE</strong>.</p>
-        <p style="color:rgba(255,255,255,.78);font-size:14px">La moneda es normal, las 8 caras fueron pura coincidencia. Como cuando ganas 3 veces seguidas en piedra-papel-tijera. Pasa.</p>
+        <h3 class="cyber" style="font-size:28px;color:var(--cyan);text-shadow:0 0 14px var(--cyan);margin:8px 0">"Aquí no pasa nada"</h3>
+        <p style="font-size:14px;color:rgba(255,255,255,.85);margin-bottom:6px">🪙 <strong>Pedro tuvo suerte.</strong> Moneda normal, 8 caras fueron coincidencia.</p>
+        <p style="font-size:14px;color:rgba(255,255,255,.85)">🎳 <strong>Lucho tuvo suerte de principiante.</strong> Es del montón, las 7 chuzas fueron casualidad.</p>
       </div>
 
       <div class="cyber-card magenta">
         <span class="corner c-tl" style="color:var(--magenta)"></span><span class="corner c-tr" style="color:var(--magenta)"></span>
         <span class="corner c-bl" style="color:var(--magenta)"></span><span class="corner c-br" style="color:var(--magenta)"></span>
         <div style="font-family:'JetBrains Mono',monospace;font-size:11px;letter-spacing:3px;color:var(--magenta);text-transform:uppercase">// LA SOSPECHA</div>
-        <h3 class="cyber" style="font-size:30px;color:var(--magenta);text-shadow:0 0 14px var(--magenta);margin:8px 0">"Aquí pasa algo"</h3>
-        <p style="font-size:16px;font-weight:600;margin-bottom:10px">Pedro hace <strong>TRAMPA</strong>.</p>
-        <p style="color:rgba(255,255,255,.78);font-size:14px">La moneda está cargada, o Pedro tiene una técnica para que caiga cara. Lo de las 8 caras NO fue casualidad.</p>
+        <h3 class="cyber" style="font-size:28px;color:var(--magenta);text-shadow:0 0 14px var(--magenta);margin:8px 0">"Aquí pasa algo"</h3>
+        <p style="font-size:14px;color:rgba(255,255,255,.85);margin-bottom:6px">🪙 <strong>Pedro hace trampa.</strong> La moneda está cargada o tiene técnica.</p>
+        <p style="font-size:14px;color:rgba(255,255,255,.85)">🎳 <strong>Lucho tiene talento real.</strong> Es mejor que el promedio, no fue suerte.</p>
       </div>
     </div>
 
@@ -865,17 +884,19 @@ h3.cyber { font-family: 'JetBrains Mono', monospace; font-weight: 700; }
     </h2>
 
     <p data-step="3" style="font-size:17px;color:rgba(255,255,255,.78);margin-bottom:24px;line-height:1.7">
-      El detective <strong>no</strong> dice "creo que Pedro hace trampa". Dice algo más preciso:<br>
-      <strong style="color:var(--cyan)">"Si la moneda fuera justa (H₀), ¿qué tan raro sería ver 8 caras de 10?"</strong>
+      El detective <strong>no</strong> dice "creo que hace trampa". Dice algo más preciso, y la misma pregunta sirve para los dos casos:<br>
+      🪙 <strong style="color:var(--magenta)">"Si Pedro fuera honesto (H₀), ¿qué tan raro sería ver 8 caras de 10?"</strong><br>
+      🎳 <strong style="color:var(--cyan)">"Si Lucho fuera del montón (H₀), ¿qué tan raro sería ver 7 chuzas de 18?"</strong>
     </p>
 
     <div data-step="4" class="cyber-card cyan" style="margin-bottom:30px;font-size:15px;line-height:1.7">
       <span class="corner c-tl" style="color:var(--cyan)"></span><span class="corner c-tr" style="color:var(--cyan)"></span>
       <span class="corner c-bl" style="color:var(--cyan)"></span><span class="corner c-br" style="color:var(--cyan)"></span>
-      <p style="font-family:'JetBrains Mono',monospace;color:var(--cyan);font-size:11px;letter-spacing:2px;margin-bottom:10px">// LA INTUICIÓN</p>
-      <p>📌 <strong>7 caras de 10</strong> → "uy, raro pero pasa". Tu primo ganó 7 veces seguidas piedra-papel-tijera una vez, ¿no?</p>
-      <p style="margin-top:8px">📌 <strong>70 caras de 100</strong> → "¡eso ya es DEMASIADO!". Misma proporción que 7/10, pero con tantos tiros sería rarísimo.</p>
-      <p style="margin-top:8px">📌 <strong>700 caras de 1.000</strong> → "imposible que sea azar". Acá ya nadie duda.</p>
+      <p style="font-family:'JetBrains Mono',monospace;color:var(--cyan);font-size:11px;letter-spacing:2px;margin-bottom:10px">// LA INTUICIÓN — el tamaño de muestra cambia todo</p>
+      <p>📌 <strong>7 caras de 10</strong> → "uy, raro pero pasa". Pasa azar.</p>
+      <p style="margin-top:8px">📌 <strong>70 caras de 100</strong> → "¡eso ya es DEMASIADO!". Misma proporción, mucho más raro.</p>
+      <p style="margin-top:8px">📌 <strong>700 caras de 1.000</strong> → "imposible que sea azar".</p>
+      <p style="margin-top:10px;color:var(--lime);font-family:'JetBrains Mono',monospace;font-size:13px">► con MÁS datos, las desviaciones SE VEN más raras (aunque la proporción sea la misma)</p>
     </div>
 
     <div data-step="5" style="margin-top:14px">
@@ -900,9 +921,10 @@ h3.cyber { font-family: 'JetBrains Mono', monospace; font-weight: 700; }
           <div class="label" id="meter1Lbl">elige un caso ↓</div>
         </div>
         <div style="display:flex;gap:10px;justify-content:center;margin-top:18px;flex-wrap:wrap">
-          <button class="cyber-btn" onclick="setMeter1(7,10,17)">caso A: 7/10 caras</button>
-          <button class="cyber-btn magenta" onclick="setMeter1(8,10,94.5)">caso B: 8/10 (Pedro)</button>
-          <button class="cyber-btn lime" onclick="setMeter1(70,100,99.99)">caso C: 70/100 caras</button>
+          <button class="cyber-btn" onclick="setMeterCustom('7/10 caras (azar normal)', 17)">🪙 7/10 caras</button>
+          <button class="cyber-btn magenta" onclick="setMeterCustom('8/10 caras — Pedro', 94.5)">🪙 PEDRO 8/10</button>
+          <button class="cyber-btn cyan" onclick="setMeterCustom('7/18 chuzas — Lucho', 99.3)">🎳 LUCHO 7/18</button>
+          <button class="cyber-btn lime" onclick="setMeterCustom('70/100 caras', 99.99)">🪙 70/100 caras</button>
         </div>
       </div>
     </div>
@@ -1102,22 +1124,32 @@ h3.cyber { font-family: 'JetBrains Mono', monospace; font-weight: 700; }
     <div data-step="1"><span class="chapter-tag">acto 06 // veredicto pedro</span></div>
 
     <h2 class="cyber" data-step="2" style="margin-bottom:14px">
-      Volvamos al caso. <span class="gradient-text">¿Pedro hace trampa?</span>
+      Volvamos a los 2 casos. <span class="gradient-text">¿Quién es real?</span>
     </h2>
 
-    <div data-step="3" class="cyber-card cyan" style="font-size:16px;margin-bottom:24px">
-      <span class="corner c-tl" style="color:var(--cyan)"></span><span class="corner c-tr" style="color:var(--cyan)"></span>
-      <span class="corner c-bl" style="color:var(--cyan)"></span><span class="corner c-br" style="color:var(--cyan)"></span>
-      <p><strong>Recap:</strong> Pedro sacó <strong style="color:var(--magenta)">8 caras de 10 tiros</strong>.</p>
-      <p style="margin-top:8px">► Si fuera moneda justa, eso o algo más extremo pasaría el <strong>5.5%</strong> de las veces.</p>
-      <p style="margin-top:8px">► Es <em>casi</em> el umbral del 5%, pero <strong>no lo cruza</strong>. Aguja muy cerca de la zona roja, pero sin entrar.</p>
+    <div data-step="3" class="grid md:grid-cols-2 gap-4" style="display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:18px">
+      <div class="cyber-card magenta" style="padding:18px">
+        <span class="corner c-tl" style="color:var(--magenta)"></span><span class="corner c-tr" style="color:var(--magenta)"></span>
+        <span class="corner c-bl" style="color:var(--magenta)"></span><span class="corner c-br" style="color:var(--magenta)"></span>
+        <div style="font-size:30px;text-align:center">🪙</div>
+        <p style="font-family:'JetBrains Mono',monospace;font-size:11px;letter-spacing:2px;color:var(--magenta);margin-top:6px">// CASO PEDRO</p>
+        <p style="font-size:14px;margin-top:6px">8/10 caras → aguja en <strong>94.5%</strong>. <em>Cerca pero NO cruza el 95%.</em> Borderline. Necesita más datos.</p>
+      </div>
+      <div class="cyber-card cyan" style="padding:18px">
+        <span class="corner c-tl" style="color:var(--cyan)"></span><span class="corner c-tr" style="color:var(--cyan)"></span>
+        <span class="corner c-bl" style="color:var(--cyan)"></span><span class="corner c-br" style="color:var(--cyan)"></span>
+        <div style="font-size:30px;text-align:center">🎳</div>
+        <p style="font-family:'JetBrains Mono',monospace;font-size:11px;letter-spacing:2px;color:var(--cyan);margin-top:6px">// CASO LUCHO</p>
+        <p style="font-size:14px;margin-top:6px">7/18 chuzas → aguja en <strong>99.3%</strong>. <em>Ya cruzó la zona roja.</em> Veredicto claro.</p>
+      </div>
     </div>
 
     <div data-step="4" class="cyber-card violet" style="margin-bottom:24px">
       <span class="corner c-tl" style="color:var(--violet)"></span><span class="corner c-tr" style="color:var(--violet)"></span>
       <span class="corner c-bl" style="color:var(--violet)"></span><span class="corner c-br" style="color:var(--violet)"></span>
-      <p style="font-size:17px"><strong>"¿Y si dejamos que Pedro siga tirando?"</strong></p>
-      <p style="margin-top:8px;color:rgba(255,255,255,.78);font-size:15px">Cada nuevo tiro <strong>suma evidencia</strong>. Si la moneda está cargada, mientras más tiros, más se va a notar. Veamos.</p>
+      <p style="font-size:17px"><strong>🎳 LUCHO ya está rechazado.</strong> Su aguja cruzó el 95% — talento real, no fue suerte.</p>
+      <p style="margin-top:10px;font-size:17px"><strong>🪙 PEDRO está en duda.</strong> ¿Y si lo dejamos seguir tirando?</p>
+      <p style="margin-top:8px;color:rgba(255,255,255,.78);font-size:14px">Cada nuevo tiro suma evidencia. Si la moneda está cargada, con más datos se notaría más. Veamos.</p>
     </div>
 
     <div data-step="5" class="cyber-card" style="padding:30px">
@@ -2232,18 +2264,20 @@ function resetCoin() {
 /* ============================================================
    SURPRISE METER (Cap 3)
    ============================================================ */
-function setMeter1(heads, total, surprisePct) {
+function setMeterCustom(caseLabel, surprisePct) {
   const needle = document.getElementById('meter1Needle');
   needle.style.left = surprisePct + '%';
   document.getElementById('meter1Pct').textContent = surprisePct + '% rareza';
   document.getElementById('meter1Big').textContent = surprisePct + '%';
   let lbl = '';
-  if (surprisePct < 50) lbl = 'normalísimo · ' + heads + '/' + total + ' caras';
-  else if (surprisePct < 90) lbl = 'algo raro · ' + heads + '/' + total + ' caras';
-  else if (surprisePct < 95) lbl = 'muy raro · ' + heads + '/' + total + ' caras';
-  else lbl = '⚠ rarísimo · ' + heads + '/' + total + ' caras';
+  if (surprisePct < 50) lbl = 'normalísimo · ' + caseLabel;
+  else if (surprisePct < 90) lbl = 'algo raro · ' + caseLabel;
+  else if (surprisePct < 95) lbl = 'muy raro · ' + caseLabel;
+  else lbl = '⚠ rarísimo · ' + caseLabel;
   document.getElementById('meter1Lbl').textContent = lbl;
 }
+// kept for backward compat if any old onclick refers to it
+function setMeter1(h, t, p) { setMeterCustom(h + '/' + t, p); }
 
 /* ============================================================
    TWO WORLDS (Cap 2)
