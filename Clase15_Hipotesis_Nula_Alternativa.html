@@ -691,42 +691,16 @@ h3.cyber { font-family: 'JetBrains Mono', monospace; font-weight: 700; }
       <p style="margin-top:10px;color:var(--violet);font-family:'JetBrains Mono',monospace;font-size:13px;letter-spacing:1px">presunción de inocencia = parte de "lo aburrido"</p>
     </div>
 
-    <div data-step="6" style="margin-top:30px">
-      <h3 class="cyber" style="font-size:22px;color:var(--lime);margin-bottom:16px">// MIRA LOS 2 MUNDOS LADO A LADO</h3>
-      <p style="color:rgba(255,255,255,.7);margin-bottom:20px;font-size:15px">Tira 10 monedas en cada mundo. Compara cómo se ve "lo aburrido" vs "la sospecha".</p>
-      <div class="worlds">
-        <div class="world fair">
-          <h4>// MUNDO 1: MONEDA JUSTA</h4>
-          <div class="big">probabilidad cara = 50%</div>
-          <div class="world-coins" id="worldFair"></div>
-          <div class="world-controls">
-            <button class="cyber-btn" style="font-size:11px;padding:8px 14px" onclick="simWorld('fair', 10)">+ 10 tiros</button>
-            <button class="cyber-btn" style="font-size:11px;padding:8px 14px" onclick="resetWorld('fair')">↺</button>
-          </div>
-          <div class="world-summary" id="worldFairSum">— sin tiros aún —</div>
-        </div>
-        <div class="world loaded">
-          <h4>// MUNDO 2: MONEDA CARGADA</h4>
-          <div class="big">probabilidad cara = 80%</div>
-          <div class="world-coins" id="worldLoaded"></div>
-          <div class="world-controls">
-            <button class="cyber-btn magenta" style="font-size:11px;padding:8px 14px" onclick="simWorld('loaded', 10)">+ 10 tiros</button>
-            <button class="cyber-btn magenta" style="font-size:11px;padding:8px 14px" onclick="resetWorld('loaded')">↺</button>
-          </div>
-          <div class="world-summary" id="worldLoadedSum">— sin tiros aún —</div>
-        </div>
-      </div>
-    </div>
-
-    <div data-step="7" data-anim="zoom" class="cyber-card lime" style="margin-top:30px;text-align:center">
+    <div data-step="6" data-anim="zoom" class="cyber-card lime" style="margin-top:30px;text-align:center">
       <span class="corner c-tl" style="color:var(--lime)"></span><span class="corner c-tr" style="color:var(--lime)"></span>
       <span class="corner c-bl" style="color:var(--lime)"></span><span class="corner c-br" style="color:var(--lime)"></span>
-      <p style="font-size:17px"><strong>Pedro sacó 8/10. ¿De cuál mundo es más probable que venga ese resultado?</strong></p>
-      <p style="margin-top:14px;font-family:'JetBrains Mono',monospace;font-size:14px;color:var(--lime)">► esa pregunta es TODA la estadística inferencial.</p>
+      <p style="font-size:17px;line-height:1.7">Frente al resultado de Pedro (<strong style="color:var(--magenta)">8 caras de 10</strong>), la pregunta del detective es:</p>
+      <p style="margin-top:14px;font-size:20px;font-weight:700"><strong>"¿En cuál de las 2 historias <em>cabe mejor</em> lo que vimos?"</strong></p>
+      <p style="margin-top:10px;font-family:'JetBrains Mono',monospace;font-size:13px;color:var(--lime);letter-spacing:1px">► esa es TODA la estadística inferencial. nada más.</p>
     </div>
 
-    <div data-step="8" style="margin-top:30px">
-      <h3 class="cyber" style="font-size:22px;color:var(--cyan);margin-bottom:14px">// LOS NOMBRES "OFICIALES"</h3>
+    <div data-step="7" style="margin-top:30px">
+      <h3 class="cyber" style="font-size:22px;color:var(--cyan);margin-bottom:14px">// PONGÁMOSLES NOMBRE</h3>
       <p style="font-size:16px;line-height:1.7">Hasta acá hablamos de "lo aburrido" y "la sospecha". En estadística esas dos historias tienen nombre:</p>
       <div class="ex-grid">
         <div class="h-card h0">
@@ -744,63 +718,34 @@ h3.cyber { font-family: 'JetBrains Mono', monospace; font-weight: 700; }
   </div>
 </section>
 
-<!-- ============= CAP 3: LA EVIDENCIA + MEDIDOR DE SORPRESA ============= -->
+<!-- ============= CAP 3: EL MEDIDOR DE SORPRESA ============= -->
 <section class="scene" data-chapter="3" id="cap3">
   <div class="scene-inner">
-    <div data-step="1"><span class="chapter-tag">acto 03 // la evidencia</span></div>
+    <div data-step="1"><span class="chapter-tag">acto 03 // el medidor de sorpresa</span></div>
 
     <h2 class="cyber" data-step="2" style="margin-bottom:14px">
-      Para condenar a Pedro necesitamos <span class="gradient-text">medir qué tan raro es lo que vimos</span>
+      ¿Cómo medimos <span class="gradient-text">qué tan raro</span> es lo que vimos?
     </h2>
 
-    <p data-step="3" style="font-size:17px;color:rgba(255,255,255,.78);margin-bottom:30px">
-      El detective no dice "creo que es trampa". Dice: <strong style="color:var(--cyan)">"si la moneda fuera justa (H₀ cierta), ¿qué tan raro sería que salieran 8 caras de 10?"</strong>
+    <p data-step="3" style="font-size:17px;color:rgba(255,255,255,.78);margin-bottom:24px;line-height:1.7">
+      El detective <strong>no</strong> dice "creo que Pedro hace trampa". Dice algo más preciso:<br>
+      <strong style="color:var(--cyan)">"Si la moneda fuera justa (H₀), ¿qué tan raro sería ver 8 caras de 10?"</strong>
     </p>
 
-    <div data-step="4" class="cyber-card" style="padding:24px">
-      <p style="font-family:'JetBrains Mono',monospace;color:var(--cyan);font-size:11px;letter-spacing:2px;text-transform:uppercase;margin-bottom:14px">// PROBÉMOSLO: SIMULA UNA MONEDA JUSTA MUCHAS VECES</p>
-      <div class="coin-stage">
-        <div class="coin" id="coin">
-          <div class="face heads">C</div>
-          <div class="face tails">S</div>
-        </div>
-        <div class="coin-stats">
-          <div class="coin-stat heads"><div class="label">caras</div><div class="val" id="cntHeads">0</div></div>
-          <div class="coin-stat tails"><div class="label">sellos</div><div class="val" id="cntTails">0</div></div>
-          <div class="coin-stat prop"><div class="label">% caras</div><div class="val" id="cntProp">—</div></div>
-        </div>
-        <div class="coin-bar-wrap">
-          <div class="coin-bar">
-            <div class="fill-h" id="barH" style="width:50%"></div>
-            <div class="fill-t" id="barT" style="width:50%"></div>
-          </div>
-          <div class="coin-bar-labels"><span>caras</span><span>esperado bajo H₀ → 50%</span><span>sellos</span></div>
-        </div>
-        <div class="coin-controls">
-          <button class="cyber-btn magenta" onclick="flipCoin(1)">▶ TIRAR 1×</button>
-          <button class="cyber-btn magenta" onclick="flipCoin(10)">▶▶ 10×</button>
-          <button class="cyber-btn cyan" onclick="flipCoin(100)">▶▶▶ 100×</button>
-          <button class="cyber-btn lime" onclick="flipCoin(1000)">⚡ 1.000×</button>
-          <button class="cyber-btn" onclick="resetCoin()">↺ RESET</button>
-        </div>
-        <div class="coin-msg" id="coinMsg"></div>
-      </div>
-    </div>
-
-    <div data-step="5" data-anim="zoom" class="cyber-card cyan" style="margin-top:30px">
+    <div data-step="4" class="cyber-card cyan" style="margin-bottom:30px;font-size:15px;line-height:1.7">
       <span class="corner c-tl" style="color:var(--cyan)"></span><span class="corner c-tr" style="color:var(--cyan)"></span>
       <span class="corner c-bl" style="color:var(--cyan)"></span><span class="corner c-br" style="color:var(--cyan)"></span>
-      <h3 class="cyber" style="color:var(--cyan);font-size:22px;margin-bottom:14px">↳ Lo que viste</h3>
-      <ul style="line-height:2;font-size:15px;padding-left:20px">
-        <li>Con <strong>10 tiros</strong>, casi cualquier resultado pasa por azar.</li>
-        <li>Con <strong>1.000 tiros</strong>, la proporción se acerca al 50% (por eso decimos "moneda justa").</li>
-        <li>Lo IMPORTANTE: <strong style="color:var(--cyan)">cuanto más datos, más rara empieza a verse cualquier desviación</strong>.</li>
-      </ul>
+      <p style="font-family:'JetBrains Mono',monospace;color:var(--cyan);font-size:11px;letter-spacing:2px;margin-bottom:10px">// LA INTUICIÓN</p>
+      <p>📌 <strong>7 caras de 10</strong> → "uy, raro pero pasa". Tu primo ganó 7 veces seguidas piedra-papel-tijera una vez, ¿no?</p>
+      <p style="margin-top:8px">📌 <strong>70 caras de 100</strong> → "¡eso ya es DEMASIADO!". Misma proporción que 7/10, pero con tantos tiros sería rarísimo.</p>
+      <p style="margin-top:8px">📌 <strong>700 caras de 1.000</strong> → "imposible que sea azar". Acá ya nadie duda.</p>
     </div>
 
-    <div data-step="6" style="margin-top:36px">
-      <h3 class="cyber" style="font-size:22px;color:var(--magenta);margin-bottom:8px">// EL MEDIDOR DE SORPRESA 📡</h3>
-      <p style="color:rgba(255,255,255,.7);margin-bottom:14px;font-size:15px">Para medir qué tan raro es algo, usaremos <strong style="color:var(--magenta)">este medidor</strong>. La aguja se mueve según qué tan extremo sea el resultado <em>asumiendo que H₀ es cierta</em>.</p>
+    <div data-step="5" style="margin-top:14px">
+      <h3 class="cyber" style="font-size:22px;color:var(--magenta);margin-bottom:6px">// EL MEDIDOR DE SORPRESA 📡</h3>
+      <p style="color:rgba(255,255,255,.78);margin-bottom:18px;font-size:15px;line-height:1.7">
+        Para no andar adivinando, usamos <strong style="color:var(--magenta)">este medidor</strong>. Imagínalo como un <em>velocímetro de rareza</em>: la aguja se mueve de "normalísimo" (verde) a "RARÍSIMO" (rojo) <strong>asumiendo que H₀ es cierta</strong>. Cuando la aguja cruza la línea verde del 95%, hay caso.
+      </p>
       <div class="meter-wrap" id="meter1">
         <div class="meter-title">
           <span>// MEDIDOR DE SORPRESA</span>
@@ -815,22 +760,36 @@ h3.cyber { font-family: 'JetBrains Mono', monospace; font-weight: 700; }
         </div>
         <div class="meter-readout">
           <div class="pct" id="meter1Big">—</div>
-          <div class="label" id="meter1Lbl">muestra un caso</div>
+          <div class="label" id="meter1Lbl">elige un caso ↓</div>
         </div>
         <div style="display:flex;gap:10px;justify-content:center;margin-top:18px;flex-wrap:wrap">
           <button class="cyber-btn" onclick="setMeter1(7,10,17)">caso A: 7/10 caras</button>
-          <button class="cyber-btn magenta" onclick="setMeter1(8,10,5.5)">caso B: 8/10 caras (Pedro)</button>
+          <button class="cyber-btn magenta" onclick="setMeter1(8,10,94.5)">caso B: 8/10 (Pedro)</button>
           <button class="cyber-btn lime" onclick="setMeter1(70,100,99.99)">caso C: 70/100 caras</button>
         </div>
       </div>
     </div>
 
-    <div data-step="7" data-anim="zoom" class="cyber-card violet" style="margin-top:30px;text-align:center">
+    <div data-step="6" data-anim="zoom" class="cyber-card cyan" style="margin-top:24px">
+      <span class="corner c-tl" style="color:var(--cyan)"></span><span class="corner c-tr" style="color:var(--cyan)"></span>
+      <span class="corner c-bl" style="color:var(--cyan)"></span><span class="corner c-br" style="color:var(--cyan)"></span>
+      <h3 class="cyber" style="color:var(--cyan);font-size:20px;margin-bottom:12px">↳ ¿Qué notaste?</h3>
+      <ul style="line-height:1.9;font-size:15px;padding-left:20px">
+        <li><strong>7/10</strong> → aguja verde, "normalísimo". Pedro estaría libre.</li>
+        <li><strong>8/10</strong> (caso real) → aguja en 94.5%. <em>Casi</em> roja. Borderline.</li>
+        <li><strong>70/100</strong> → aguja clavada en rojo. Indiscutible.</li>
+      </ul>
+      <p style="margin-top:14px;color:var(--cyan);font-family:'JetBrains Mono',monospace;font-size:13px">► el TAMAÑO DE MUESTRA es lo que mueve la aguja, no solo la proporción.</p>
+    </div>
+
+    <div data-step="7" data-anim="zoom" class="cyber-card violet" style="margin-top:24px;text-align:center">
       <span class="corner c-tl" style="color:var(--violet)"></span><span class="corner c-tr" style="color:var(--violet)"></span>
       <span class="corner c-bl" style="color:var(--violet)"></span><span class="corner c-br" style="color:var(--violet)"></span>
-      <p style="font-size:17px">El número que dice "qué tan raro" tiene un nombre:</p>
-      <p style="font-size:32px;margin-top:10px;font-family:'JetBrains Mono',monospace;font-weight:800" class="gradient-text glow-magenta">p-value</p>
-      <p style="margin-top:10px;color:rgba(255,255,255,.7);font-size:14px">El medidor lo mostraremos como <strong>1 − p</strong> (qué tan rara es la evidencia).</p>
+      <p style="font-size:17px">El número del medidor tiene nombre técnico:</p>
+      <p style="font-size:36px;margin-top:10px;font-family:'JetBrains Mono',monospace;font-weight:800" class="gradient-text glow-magenta">p-value</p>
+      <p style="margin-top:8px;color:rgba(255,255,255,.7);font-size:14px;line-height:1.6">El p-value (<em>en realidad 1−p</em> en este medidor) responde una sola pregunta:<br>
+      <strong>"¿qué tan raro sería ver esto si H₀ fuera cierta?"</strong></p>
+      <p style="margin-top:14px;font-family:'JetBrains Mono',monospace;font-size:12px;color:var(--violet);letter-spacing:1px">► en cap 4 vamos a ver de DÓNDE sale ese número.</p>
     </div>
   </div>
 </section>
@@ -844,9 +803,15 @@ h3.cyber { font-family: 'JetBrains Mono', monospace; font-weight: 700; }
       Imaginemos <span class="gradient-text">1.000 universos</span> donde Pedro es inocente
     </h2>
 
-    <p data-step="3" style="font-size:17px;color:rgba(255,255,255,.78);margin-bottom:30px">
-      En <strong>cada universo</strong>, Pedro tira la moneda 10 veces (con una moneda <em>justa</em>, porque H₀ es cierta acá). Vamos a ver en cuántos universos sale algo <strong>tan extremo como 8 caras</strong>.
-    </p>
+    <div data-step="3" class="cyber-card cyan" style="margin-bottom:24px;font-size:15px;line-height:1.8">
+      <span class="corner c-tl" style="color:var(--cyan)"></span><span class="corner c-tr" style="color:var(--cyan)"></span>
+      <span class="corner c-bl" style="color:var(--cyan)"></span><span class="corner c-br" style="color:var(--cyan)"></span>
+      <p style="font-family:'JetBrains Mono',monospace;color:var(--cyan);font-size:11px;letter-spacing:2px;margin-bottom:10px">// EL EXPERIMENTO MENTAL</p>
+      <p>👉 <strong>Paso 1:</strong> imagina <strong>1.000 Pedros paralelos</strong>, cada uno con una moneda <em>justa</em> (H₀ es cierta para todos).</p>
+      <p>👉 <strong>Paso 2:</strong> cada uno tira su moneda 10 veces y cuenta caras.</p>
+      <p>👉 <strong>Paso 3:</strong> cada cuadrado del grid = 1 Pedro. Vamos a <strong style="color:var(--magenta)">pintar de rojo</strong> los Pedros que sacaron resultados <em>tan o más extremos</em> que el real (8+ caras o 2− caras).</p>
+      <p style="margin-top:8px;color:var(--lime)">► el % de cuadrados rojos = qué tan raro es lo que vimos = <strong>p-value</strong>.</p>
+    </div>
 
     <div data-step="4" class="vote-stage">
       <div class="vote-question">► ANTES DE VER — ¿CUÁNTOS UNIVERSOS DARÁN 8+ CARAS?</div>
@@ -1865,10 +1830,15 @@ function gotoChapter(c) {
 }
 
 function resetCurrentSim() {
-  if (currentChapter === 2) { resetWorld('fair'); resetWorld('loaded'); }
-  else if (currentChapter === 3) resetCoin();
+  if (currentChapter === 3) resetMeter1();
   else if (currentChapter === 4) resetUniverses();
   else if (currentChapter === 6) resetEvidence();
+}
+function resetMeter1() {
+  const n = document.getElementById('meter1Needle'); if (n) n.style.left = '0%';
+  const a = document.getElementById('meter1Pct'); if (a) a.textContent = '— %';
+  const b = document.getElementById('meter1Big'); if (b) b.textContent = '—';
+  const c = document.getElementById('meter1Lbl'); if (c) c.textContent = 'elige un caso ↓';
 }
 
 function saveState() {
@@ -1889,8 +1859,7 @@ function resetClass() {
   localStorage.removeItem('clase15_state');
   currentChapter = 1; currentStep = 0;
   document.querySelectorAll('[data-step]').forEach(el => el.classList.remove('is-revealed'));
-  resetCoin(); resetUniverses(); resetEvidence();
-  resetWorld('fair'); resetWorld('loaded');
+  resetUniverses(); resetEvidence();
   document.getElementById('welcome').classList.remove('hide');
   started = false;
   updateHud();
