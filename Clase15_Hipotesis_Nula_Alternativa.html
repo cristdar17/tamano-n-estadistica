@@ -308,19 +308,12 @@ h3.cyber { font-family: 'JetBrains Mono', monospace; font-weight: 700; }
 .world-summary strong { color: #fff; }
 
 /* ===== UNIVERSOS PARALELOS (Cap 4) ===== */
-.universes-grid {
-  display: grid; grid-template-columns: repeat(auto-fill, minmax(20px, 1fr));
-  gap: 2px; padding: 10px; max-height: 400px; overflow: hidden;
+#universesCanvas {
+  display: block; width: 100%; max-width: 900px; height: 380px;
+  margin: 0 auto;
+  background: radial-gradient(ellipse at center, rgba(0,240,255,.04), transparent 70%);
   border: 1px solid rgba(0,240,255,.2); border-radius: 10px;
-  background: rgba(0,0,0,.25);
 }
-.universe-cell {
-  aspect-ratio: 1; border-radius: 2px;
-  background: rgba(0,240,255,.15); transition: all .4s;
-  position: relative;
-}
-.universe-cell.extreme { background: var(--magenta); box-shadow: 0 0 6px var(--magenta); animation: ucPop .4s; }
-@keyframes ucPop { 0%{transform:scale(0.7);} 60%{transform:scale(1.4);} 100%{transform:scale(1);} }
 .universes-readout {
   display: flex; gap: 24px; justify-content: center; flex-wrap: wrap;
   margin-top: 16px; font-family: 'JetBrains Mono', monospace; font-size: 14px;
@@ -328,6 +321,19 @@ h3.cyber { font-family: 'JetBrains Mono', monospace; font-weight: 700; }
 .universes-readout .key { color: rgba(255,255,255,.5); }
 .universes-readout .val { color: var(--cyan); font-weight: 700; }
 .universes-readout .val.danger { color: var(--magenta); text-shadow: 0 0 10px var(--magenta); }
+.universes-legend {
+  display: flex; gap: 18px; justify-content: center; flex-wrap: wrap;
+  margin-top: 14px; font-family: 'JetBrains Mono', monospace; font-size: 11px;
+  letter-spacing: 1px; text-transform: uppercase;
+}
+.universes-legend .swatch {
+  display: inline-block; width: 14px; height: 14px; border-radius: 3px; margin-right: 6px;
+  vertical-align: middle;
+}
+.universes-legend .normal .swatch { background: var(--cyan); box-shadow: 0 0 6px var(--cyan); }
+.universes-legend .extreme .swatch { background: var(--magenta); box-shadow: 0 0 6px var(--magenta); }
+.universes-legend .normal { color: var(--cyan); }
+.universes-legend .extreme { color: var(--magenta); }
 
 /* ===== ERROR MATRIX (Cap 5) ===== */
 .matrix-wrap { display: grid; grid-template-columns: 130px 1fr 1fr; grid-template-rows: 60px 1fr 1fr; gap: 8px; max-width: 800px; margin: 0 auto; font-family: 'JetBrains Mono', monospace; }
@@ -962,12 +968,16 @@ h3.cyber { font-family: 'JetBrains Mono', monospace; font-weight: 700; }
     </div>
 
     <div data-step="5" class="cyber-card" style="margin-top:30px;padding:20px">
-      <p style="font-family:'JetBrains Mono',monospace;color:var(--cyan);font-size:11px;letter-spacing:2px;margin-bottom:14px">// 1.000 UNIVERSOS · CADA CASILLA = 1 SIMULACIÓN DE 10 TIROS</p>
-      <div class="universes-grid" id="universesGrid"></div>
+      <p style="font-family:'JetBrains Mono',monospace;color:var(--cyan);font-size:11px;letter-spacing:2px;margin-bottom:14px">// DISTRIBUCIÓN · 1.000 UNIVERSOS DONDE PEDRO ES INOCENTE</p>
+      <canvas id="universesCanvas" width="900" height="380"></canvas>
+      <div class="universes-legend">
+        <span class="normal"><span class="swatch"></span>NORMAL (3—7 caras)</span>
+        <span class="extreme"><span class="swatch"></span>COLA / RARO (≤2 ó ≥8 caras)</span>
+      </div>
       <div class="universes-readout">
         <span><span class="key">universos simulados:</span> <span class="val" id="uSims">0</span></span>
-        <span><span class="key">8+ caras:</span> <span class="val danger" id="uExtreme">0</span></span>
-        <span><span class="key">% extremos:</span> <span class="val danger" id="uPct">—</span></span>
+        <span><span class="key">en la cola (8+ ó 2−):</span> <span class="val danger" id="uExtreme">0</span></span>
+        <span><span class="key">% en la cola = p-value:</span> <span class="val danger" id="uPct">—</span></span>
       </div>
       <div style="display:flex;gap:10px;justify-content:center;margin-top:18px;flex-wrap:wrap">
         <button class="cyber-btn cyan" onclick="runUniverses()">⬇ SIMULAR 1.000 UNIVERSOS</button>
@@ -2279,69 +2289,218 @@ function resetWorld(which) {
 }
 
 /* ============================================================
-   1.000 UNIVERSOS (Cap 4)
+   1.000 UNIVERSOS — HISTOGRAMA CON COLAS (Cap 4)
    ============================================================ */
 const UNI_TOTAL = 1000;
 let uSimsDone = 0;
 let uExtreme = 0;
 let uAnimating = false;
+let uBins = new Array(11).fill(0);
+let uParticles = [];
+let uCanvas, uCtx;
+let uLoopActive = false;
 
-function buildUniverseGrid() {
-  const grid = document.getElementById('universesGrid');
-  if (grid.children.length > 0) return;
-  for (let i = 0; i < UNI_TOTAL; i++) {
-    const cell = document.createElement('div');
-    cell.className = 'universe-cell';
-    cell.dataset.idx = i;
-    grid.appendChild(cell);
+function getCanvas() {
+  if (!uCanvas) {
+    uCanvas = document.getElementById('universesCanvas');
+    if (uCanvas) uCtx = uCanvas.getContext('2d');
   }
+  return uCanvas;
+}
+
+function drawUniverses() {
+  if (!getCanvas()) return;
+  const W = uCanvas.width, H = uCanvas.height;
+  const PAD = { left: 50, right: 30, top: 50, bottom: 60 };
+  const plotW = W - PAD.left - PAD.right;
+  const plotH = H - PAD.top - PAD.bottom;
+  const binW = plotW / 11;
+
+  // bg fade
+  uCtx.fillStyle = 'rgba(10,0,20,0.18)';
+  uCtx.fillRect(0, 0, W, H);
+
+  // tail tint zones (left of bin 3, right of bin 8)
+  const xTail1 = PAD.left + 3 * binW;
+  const xTail2 = PAD.left + 8 * binW;
+  uCtx.fillStyle = 'rgba(255,46,147,.06)';
+  uCtx.fillRect(PAD.left, PAD.top, xTail1 - PAD.left, plotH);
+  uCtx.fillRect(xTail2, PAD.top, W - PAD.right - xTail2, plotH);
+
+  // dashed threshold lines
+  uCtx.strokeStyle = 'rgba(255,46,147,.5)';
+  uCtx.setLineDash([5, 4]);
+  uCtx.lineWidth = 1.5;
+  uCtx.beginPath();
+  uCtx.moveTo(xTail1, PAD.top); uCtx.lineTo(xTail1, H - PAD.bottom);
+  uCtx.moveTo(xTail2, PAD.top); uCtx.lineTo(xTail2, H - PAD.bottom);
+  uCtx.stroke();
+  uCtx.setLineDash([]);
+
+  // bars
+  const maxBin = Math.max(...uBins, 1);
+  // reserve top 40px for labels; scale so max bar uses plotH-30
+  const scale = (plotH - 35) / Math.max(maxBin, 280);
+
+  for (let b = 0; b <= 10; b++) {
+    const cnt = uBins[b];
+    const x = PAD.left + b * binW + 3;
+    const w = binW - 6;
+    const h = cnt * scale;
+    const y = (H - PAD.bottom) - h;
+    const isExtreme = b <= 2 || b >= 8;
+    const col = isExtreme ? '#ff2e93' : '#00f0ff';
+
+    if (cnt > 0) {
+      // gradient fill
+      const gr = uCtx.createLinearGradient(0, y, 0, y + h);
+      gr.addColorStop(0, isExtreme ? '#ff5cb0' : '#5cf6ff');
+      gr.addColorStop(1, isExtreme ? 'rgba(255,46,147,.35)' : 'rgba(0,240,255,.35)');
+      uCtx.fillStyle = gr;
+      uCtx.shadowBlur = 14; uCtx.shadowColor = col;
+      uCtx.fillRect(x, y, w, h);
+      uCtx.shadowBlur = 0;
+      uCtx.strokeStyle = col; uCtx.lineWidth = 1.5;
+      uCtx.strokeRect(x, y, w, h);
+      // count label
+      uCtx.fillStyle = '#fff';
+      uCtx.font = 'bold 11px JetBrains Mono, monospace';
+      uCtx.textAlign = 'center';
+      uCtx.fillText(cnt, x + w/2, y - 6);
+    }
+  }
+
+  // x axis baseline
+  uCtx.strokeStyle = 'rgba(255,255,255,.25)';
+  uCtx.lineWidth = 1;
+  uCtx.beginPath();
+  uCtx.moveTo(PAD.left, H - PAD.bottom);
+  uCtx.lineTo(W - PAD.right, H - PAD.bottom);
+  uCtx.stroke();
+
+  // x labels
+  uCtx.fillStyle = 'rgba(255,255,255,.6)';
+  uCtx.font = '11px JetBrains Mono, monospace';
+  uCtx.textAlign = 'center';
+  for (let b = 0; b <= 10; b++) {
+    const xc = PAD.left + (b + 0.5) * binW;
+    uCtx.fillText(b, xc, H - PAD.bottom + 18);
+  }
+
+  // axis title
+  uCtx.font = 'bold 12px JetBrains Mono, monospace';
+  uCtx.fillStyle = 'rgba(255,255,255,.85)';
+  uCtx.fillText('NÚMERO DE CARAS (de 10 tiros)', W/2, H - 18);
+
+  // tail labels at top
+  uCtx.font = 'bold 10px JetBrains Mono, monospace';
+  uCtx.fillStyle = '#ff2e93';
+  uCtx.shadowBlur = 8; uCtx.shadowColor = '#ff2e93';
+  uCtx.fillText('◀ COLA IZQ.', PAD.left + (xTail1 - PAD.left)/2, PAD.top - 18);
+  uCtx.fillText('COLA DER. ▶', xTail2 + (W - PAD.right - xTail2)/2, PAD.top - 18);
+  uCtx.shadowBlur = 0;
+  uCtx.fillStyle = 'rgba(0,240,255,.85)';
+  uCtx.fillText('CENTRO — NORMAL', PAD.left + (xTail1 - PAD.left) + (xTail2 - xTail1)/2, PAD.top - 18);
+
+  // marker for "Pedro = 8 caras"
+  if (uSimsDone > 0) {
+    const xPedro = PAD.left + (8 + 0.5) * binW;
+    uCtx.strokeStyle = '#ccff00';
+    uCtx.lineWidth = 2;
+    uCtx.shadowBlur = 12; uCtx.shadowColor = '#ccff00';
+    uCtx.setLineDash([3, 3]);
+    uCtx.beginPath();
+    uCtx.moveTo(xPedro, PAD.top + 4);
+    uCtx.lineTo(xPedro, H - PAD.bottom);
+    uCtx.stroke();
+    uCtx.setLineDash([]);
+    uCtx.fillStyle = '#ccff00';
+    uCtx.font = 'bold 10px JetBrains Mono, monospace';
+    uCtx.fillText('▼ PEDRO', xPedro, PAD.top - 4);
+    uCtx.shadowBlur = 0;
+  }
+
+  // falling particles
+  for (let p = uParticles.length - 1; p >= 0; p--) {
+    const par = uParticles[p];
+    par.y += par.vy; par.vy += 0.4;
+    if (par.y >= par.targetY) { uParticles.splice(p, 1); continue; }
+    uCtx.fillStyle = par.color;
+    uCtx.shadowBlur = 8; uCtx.shadowColor = par.color;
+    uCtx.beginPath();
+    uCtx.arc(par.x, par.y, 3, 0, Math.PI * 2);
+    uCtx.fill();
+  }
+  uCtx.shadowBlur = 0;
+}
+
+function uniLoop() {
+  drawUniverses();
+  if (uLoopActive) requestAnimationFrame(uniLoop);
 }
 
 function runUniverses() {
   if (uAnimating) return;
-  uAnimating = true;
+  if (!getCanvas()) return;
   resetUniverses();
-  buildUniverseGrid();
-  const cells = document.getElementById('universesGrid').children;
+  uAnimating = true;
+  uLoopActive = true;
+  requestAnimationFrame(uniLoop);
+
+  const W = uCanvas.width, H = uCanvas.height;
+  const PAD = { left: 50, right: 30, top: 50, bottom: 60 };
+  const plotW = W - PAD.left - PAD.right;
+  const binW = plotW / 11;
 
   const TOTAL = UNI_TOTAL;
   const results = [];
   for (let i = 0; i < TOTAL; i++) {
-    // 10 fair flips, count heads
     let h = 0;
     for (let k = 0; k < 10; k++) if (Math.random() < 0.5) h++;
     results.push(h);
   }
 
   let i = 0;
-  const WAVE = 30;
+  const WAVE = 12;
   const interval = setInterval(() => {
     for (let k = 0; k < WAVE && i < TOTAL; k++, i++) {
       const r = results[i];
-      const cell = cells[i];
-      if (r >= 8 || r <= 2) { // as extreme as 8/10 or more (two-tailed)
-        cell.classList.add('extreme');
-        uExtreme++;
-      } else {
-        cell.style.background = 'rgba(0,240,255,.15)';
-      }
+      const isExtreme = r >= 8 || r <= 2;
+      uBins[r]++;
+      uParticles.push({
+        x: PAD.left + (r + 0.5) * binW + (Math.random() - 0.5) * binW * 0.5,
+        y: PAD.top + 8,
+        vy: 1 + Math.random() * 1.5,
+        targetY: H - PAD.bottom - 4,
+        color: isExtreme ? '#ff2e93' : '#00f0ff'
+      });
       uSimsDone++;
+      if (isExtreme) uExtreme++;
     }
     document.getElementById('uSims').textContent = uSimsDone.toLocaleString('es');
     document.getElementById('uExtreme').textContent = uExtreme.toLocaleString('es');
     document.getElementById('uPct').textContent = (100 * uExtreme / uSimsDone).toFixed(2) + '%';
-    if (i >= TOTAL) { clearInterval(interval); uAnimating = false; }
-  }, 25);
+    if (i >= TOTAL) {
+      clearInterval(interval);
+      uAnimating = false;
+      // keep loop a bit longer to let particles finish
+      setTimeout(() => { uLoopActive = false; drawUniverses(); }, 1500);
+    }
+  }, 30);
 }
 
 function resetUniverses() {
   uSimsDone = 0; uExtreme = 0;
-  const grid = document.getElementById('universesGrid');
-  buildUniverseGrid();
-  Array.from(grid.children).forEach(c => { c.classList.remove('extreme'); c.style.background = ''; });
-  document.getElementById('uSims').textContent = '0';
-  document.getElementById('uExtreme').textContent = '0';
-  document.getElementById('uPct').textContent = '—';
+  uBins = new Array(11).fill(0);
+  uParticles = [];
+  if (getCanvas()) {
+    uCtx.fillStyle = '#0a0014';
+    uCtx.fillRect(0, 0, uCanvas.width, uCanvas.height);
+    drawUniverses();
+  }
+  const sims = document.getElementById('uSims'); if (sims) sims.textContent = '0';
+  const ex = document.getElementById('uExtreme'); if (ex) ex.textContent = '0';
+  const pct = document.getElementById('uPct'); if (pct) pct.textContent = '—';
 }
 
 /* ============================================================
@@ -2469,7 +2628,7 @@ window.addEventListener('DOMContentLoaded', () => {
   buildHud();
   indexSteps();
   loadState();
-  buildUniverseGrid();
+  resetUniverses();
   updateHud();
   whenKatexReady(() => renderMath(document.body));
 });
