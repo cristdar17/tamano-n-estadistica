@@ -1298,6 +1298,86 @@ h3.cyber { font-family: 'JetBrains Mono', monospace; font-weight: 700; }
 .ex-status .ttl { font-size: 18px; font-weight: 800; letter-spacing: 2px; }
 .ex-status .sub { font-size: 13px; margin-top: 6px; color: rgba(255,255,255,.85); }
 
+/* ===== Numeric input (calc-heavy exercises) ===== */
+.ex-numeric-row {
+  display: flex; gap: 12px; align-items: stretch; margin: 12px 0 10px;
+  flex-wrap: wrap;
+}
+.ex-numeric-input {
+  flex: 1; min-width: 200px;
+  padding: 16px 22px; border-radius: 12px;
+  background: rgba(0,0,0,.55); border: 2px solid rgba(0,240,255,.4);
+  color: var(--cyan); font-family: 'JetBrains Mono', monospace;
+  font-size: 28px; font-weight: 800; letter-spacing: 2px;
+  text-align: center;
+  text-shadow: 0 0 12px var(--cyan);
+  outline: none;
+  transition: all .25s;
+}
+.ex-numeric-input::placeholder { color: rgba(0,240,255,.35); font-weight: 600; }
+.ex-numeric-input:focus { border-color: var(--cyan); box-shadow: 0 0 24px rgba(0,240,255,.35); }
+.ex-numeric-input.correct { border-color: var(--lime); color: var(--lime); text-shadow: 0 0 14px var(--lime); animation: optionPop .5s; }
+.ex-numeric-input.wrong { border-color: #ff5252; color: #ff5252; text-shadow: 0 0 14px #ff5252; animation: optionShake .4s; }
+.ex-numeric-input:disabled { cursor: not-allowed; }
+.ex-numeric-btn {
+  padding: 16px 28px; border-radius: 12px;
+  background: linear-gradient(135deg, var(--magenta), var(--cyan));
+  color: var(--ink); font-family: 'JetBrains Mono', monospace;
+  font-size: 14px; font-weight: 800; letter-spacing: 2px;
+  border: none; cursor: pointer; min-width: 140px;
+  transition: all .2s;
+}
+.ex-numeric-btn:hover:not(:disabled) { transform: translateY(-2px); box-shadow: 0 6px 20px rgba(255,46,147,.4); }
+.ex-numeric-btn:disabled { opacity: .35; cursor: not-allowed; }
+.ex-formula-toggle {
+  display: inline-block; margin: 4px 0 12px;
+  padding: 6px 14px; border-radius: 8px;
+  background: rgba(255,46,147,.08); border: 1px dashed rgba(255,46,147,.4);
+  color: var(--magenta); font-family: 'JetBrains Mono', monospace;
+  font-size: 12px; cursor: pointer; letter-spacing: 1px;
+  transition: all .2s;
+}
+.ex-formula-toggle:hover { background: rgba(255,46,147,.16); border-style: solid; }
+.ex-formula-content {
+  display: none;
+  margin: 6px 0 14px; padding: 14px 18px;
+  border-radius: 10px;
+  background: rgba(0,240,255,.05); border-left: 3px solid var(--cyan);
+  color: rgba(255,255,255,.9); font-size: 13px; line-height: 1.7;
+}
+.ex-formula-content.show { display: block; animation: optionPop .35s; }
+.ex-formula-content .katex { font-size: 1.1em; }
+
+/* Tag for exercise style */
+.ex-style-tag {
+  display: inline-block; margin-left: 10px;
+  padding: 2px 8px; border-radius: 12px;
+  font-family: 'JetBrains Mono', monospace; font-size: 9px; letter-spacing: 2px;
+  background: rgba(0,240,255,.08); color: var(--cyan); border: 1px solid var(--cyan);
+}
+.ex-style-tag.deep { background: rgba(255,46,147,.08); color: var(--magenta); border-color: var(--magenta); }
+
+/* Rich data card with mini table */
+.ex-data-card-rich {
+  margin: 14px 0; padding: 16px 20px; border-radius: 12px;
+  background: rgba(0,0,0,.45); border: 1px dashed rgba(0,240,255,.35);
+  font-family: 'JetBrains Mono', monospace; font-size: 13px;
+  line-height: 1.7;
+}
+.ex-data-card-rich .title {
+  font-size: 11px; letter-spacing: 3px; color: var(--magenta);
+  margin-bottom: 10px; text-align: center; opacity: .85;
+}
+.ex-data-card-rich .grid {
+  display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+  gap: 10px 18px;
+}
+.ex-data-card-rich .cell { display: flex; flex-direction: column; align-items: center; gap: 2px; }
+.ex-data-card-rich .cell .lbl { font-size: 10px; color: rgba(255,255,255,.5); letter-spacing: 1px; }
+.ex-data-card-rich .cell .val {
+  font-size: 18px; font-weight: 800; color: var(--lime); text-shadow: 0 0 10px var(--lime);
+}
+
 /* ==================== GAME ARCADE ==================== */
 .game-stage {
   max-width: 900px; margin: 0 auto;
@@ -1511,7 +1591,7 @@ h3.cyber { font-family: 'JetBrains Mono', monospace; font-weight: 700; }
 <div class="hud-top">
   <div class="hud-logo">CLASE_15.exe</div>
   <div class="hud-progress" id="hudProgress"></div>
-  <div class="hud-counter" id="hudCounter">0 / 29</div>
+  <div class="hud-counter" id="hudCounter">0 / 34</div>
   <button class="hud-help-btn" onclick="toggleHelp()">[ H ] AYUDA</button>
 </div>
 
@@ -3916,71 +3996,100 @@ h3.cyber { font-family: 'JetBrains Mono', monospace; font-weight: 700; }
   </div>
 </section>
 
-<!-- ============= CAP 24: EJERCICIO TINDER ============= -->
+<!-- ============= CAP 24: BANCO FRAUDE (CALC HEAVY 1) ============= -->
 <section class="scene" data-chapter="24" id="cap24">
   <div class="scene-inner">
-    <div data-step="1"><span class="chapter-tag">ejercicio 1 / 5 — tu decides // app de citas</span></div>
+    <div data-step="1"><span class="chapter-tag">ejercicio 1 / 10 — calc heavy // banco andino · fraude</span></div>
 
     <div style="display:flex;align-items:center;gap:20px;margin-bottom:14px;flex-wrap:wrap">
-      <span class="ex-emoji" style="color:var(--magenta)">💘</span>
-      <h2 class="cyber" data-step="2" style="flex:1;min-width:280px">El <span class="gradient-text">rebrand de la app de citas</span></h2>
+      <span class="ex-emoji" style="color:var(--cyan)">🏦</span>
+      <h2 class="cyber" data-step="2" style="flex:1;min-width:280px">Banco Andino · <span class="gradient-text">fraude en swipes</span><span class="ex-style-tag">CALC · 4 PASOS</span></h2>
     </div>
 
     <div data-step="3" class="cyber-card" style="font-size:15px;line-height:1.7">
-      Una app de citas hace un rebrand. <strong>Antes</strong> el promedio histórico era de <strong>3.2 matches/día</strong>. Después del rebrand miden a <strong>400 usuarios</strong> y obtienen <strong style="color:var(--magenta)">3.8 matches/día (DE = 2.0)</strong>. Marketing celebra. <strong>Tú decides:</strong>
-      <div class="ex-data-card" style="margin-top:12px">
-        <div class="row">
-          <span>μ histórico:</span><b>3.2</b>
-          <span>x̄:</span><b>3.8</b>
-          <span>s:</span><b>2.0</b>
-          <span>n:</span><b>400</b>
+      Banco Andino afirma públicamente: <strong>"nuestra tasa de fraude es menor al 0.5%".</strong> Auditoría externa toma una muestra aleatoria de <strong>2000 swipes</strong> y detecta <strong style="color:var(--magenta)">14 fraudulentos (0.7%)</strong>. El equipo de comms ya está nervioso. <strong>Tú decides:</strong>
+      <div class="ex-data-card-rich" style="margin-top:14px">
+        <div class="title">▷ DATOS CRUDOS</div>
+        <div class="grid">
+          <div class="cell"><span class="lbl">n</span><span class="val">2000</span></div>
+          <div class="cell"><span class="lbl">x (fraudes)</span><span class="val">14</span></div>
+          <div class="cell"><span class="lbl">p̂ obs</span><span class="val">0.0070</span></div>
+          <div class="cell"><span class="lbl">p₀ (banco)</span><span class="val">0.005</span></div>
+          <div class="cell"><span class="lbl">α</span><span class="val">0.05</span></div>
         </div>
       </div>
     </div>
 
-    <div data-step="4" class="exercise-frame" id="ex24">
-      <div class="ex-num">▷ EJERCICIO 1 · 3 PREGUNTAS</div>
+    <div data-step="4" class="exercise-frame" id="ex24" data-max-score="4">
+      <div class="ex-num">▷ EJERCICIO 1 · 4 PREGUNTAS</div>
 
       <div class="q-1">
-        <div class="ex-question"><span class="qn">Q1</span><span>¿Cuál par de hipótesis usarías?</span></div>
+        <div class="ex-question"><span class="qn">Q1</span><span>Auditoría sospecha que la tasa REAL es <em>mayor</em> al 0.5%. ¿Cuál par de hipótesis es correcto?</span></div>
         <div class="ex-options">
-          <div class="ex-opt" onclick="answerEx('ex24',1,0,1,'Casi. H₀ siempre es la versión <em>aburrida</em> (sin cambio). Aquí queremos detectar si <em>subió</em>.')">
-            <span class="ic">A</span><span>H₀: μ &gt; 3.2 &nbsp;·&nbsp; H₁: μ = 3.2</span>
+          <div class="ex-opt" onclick="answerEx('ex24',1,0,1,'No. H₀ siempre lleva el signo de igualdad. H₀: p &gt; 0.005 nunca es válido.')">
+            <span class="ic">A</span><span>H₀: p &gt; 0.005 &nbsp;·&nbsp; H₁: p = 0.005</span>
           </div>
-          <div class="ex-opt" onclick="answerEx('ex24',1,1,1,'✓ Correcto. Quieres ver si los matches <em>subieron</em>, así que H₁ es μ &gt; 3.2 (cola derecha).')">
-            <span class="ic">B</span><span>H₀: μ = 3.2 &nbsp;·&nbsp; H₁: μ &gt; 3.2</span>
+          <div class="ex-opt" onclick="answerEx('ex24',1,1,1,'✓ Correcto. H₀ es la posición del banco (p = 0.005), H₁ es lo que sospecha auditoría (p &gt; 0.005). Es one-tail derecha.')">
+            <span class="ic">B</span><span>H₀: p = 0.005 &nbsp;·&nbsp; H₁: p &gt; 0.005</span>
           </div>
-          <div class="ex-opt" onclick="answerEx('ex24',1,2,1,'No. Aunque podría servir, una hipótesis bilateral perdería potencia. La pregunta es <em>direccional</em>: ¿subió?')">
-            <span class="ic">C</span><span>H₀: μ = 3.2 &nbsp;·&nbsp; H₁: μ ≠ 3.2</span>
+          <div class="ex-opt" onclick="answerEx('ex24',1,2,1,'No. Bilateral perdería potencia. La sospecha es direccional: la tasa real es <em>mayor</em>, no &quot;diferente&quot;.')">
+            <span class="ic">C</span><span>H₀: p = 0.005 &nbsp;·&nbsp; H₁: p ≠ 0.005</span>
           </div>
-          <div class="ex-opt" onclick="answerEx('ex24',1,3,1,'No. H₁: μ &lt; 3.2 sería para detectar si <em>bajaron</em> los matches, no si subieron.')">
-            <span class="ic">D</span><span>H₀: μ = 3.2 &nbsp;·&nbsp; H₁: μ &lt; 3.2</span>
+          <div class="ex-opt" onclick="answerEx('ex24',1,3,1,'No. H₁: p &lt; 0.005 sería para detectar tasa <em>menor</em> que la declarada — al banco le gustaría, pero no es la sospecha.')">
+            <span class="ic">D</span><span>H₀: p = 0.005 &nbsp;·&nbsp; H₁: p &lt; 0.005</span>
           </div>
         </div>
         <div class="ex-feedback"></div>
       </div>
 
       <div class="q-2">
-        <div class="ex-question"><span class="qn">Q2</span><span>¿Una cola o dos?</span></div>
-        <div class="ex-options duo">
-          <div class="ex-opt" onclick="answerEx('ex24',2,0,0,'✓ Correcto. H₁: μ &gt; 3.2 es <em>direccional</em>: solo nos interesa la cola derecha (que haya subido).')">
-            <span class="ic">1</span><span>Una cola (cola derecha)</span>
+        <div class="ex-question"><span class="qn">Q2</span><span>¿Qué test corresponde y cuántas colas?</span></div>
+        <div class="ex-options">
+          <div class="ex-opt" onclick="answerEx('ex24',2,0,1,'No. t-test es para medias con σ desconocida. Aquí la variable es proporción/binaria (fraude sí/no).')">
+            <span class="ic">A</span><span>t-test, two-tail</span>
           </div>
-          <div class="ex-opt" onclick="answerEx('ex24',2,1,0,'No. Dos colas se usa cuando preguntas <em>¿hubo cambio?</em>, no cuando preguntas <em>¿subió?</em>.')">
-            <span class="ic">2</span><span>Dos colas</span>
+          <div class="ex-opt" onclick="answerEx('ex24',2,1,1,'✓ Correcto. Variable binaria → 1-proporción z-test. H₁ es direccional → one-tail derecha.')">
+            <span class="ic">B</span><span>1-proporción z-test, one-tail derecha</span>
+          </div>
+          <div class="ex-opt" onclick="answerEx('ex24',2,2,1,'No. Two-tail repartiría α en ambas colas y perdería potencia para la dirección sospechada.')">
+            <span class="ic">C</span><span>1-proporción z-test, two-tail</span>
+          </div>
+          <div class="ex-opt" onclick="answerEx('ex24',2,3,1,'No. Chi-cuadrado se usa para tablas de contingencia o ajuste de bondad — aquí la pregunta es de proporción única.')">
+            <span class="ic">D</span><span>Chi-cuadrado de bondad de ajuste</span>
           </div>
         </div>
         <div class="ex-feedback"></div>
       </div>
 
       <div class="q-3">
-        <div class="ex-question"><span class="qn">Q3</span><span>El test da <strong>t = 6.0</strong> y <strong>p = 0.000000028</strong>. Con α = 0.05, ¿qué decides?</span></div>
-        <div class="ex-options duo">
-          <div class="ex-opt" onclick="answerEx('ex24',3,0,0,'✓ Exacto. p ≪ α. La evidencia es aplastante: el rebrand sí subió los matches.')">
-            <span class="ic">✓</span><span>Rechazo H₀ — el rebrand sí funcionó</span>
+        <div class="ex-question"><span class="qn">Q3</span><span>Calcula el estadístico <strong>z</strong>. (2 decimales, tolerancia ±0.05)</span></div>
+        <button class="ex-formula-toggle" onclick="toggleFormulaHint('ex24-formula')">💡 Ver fórmula</button>
+        <div class="ex-formula-content" id="ex24-formula">
+          $$z = \frac{\hat{p} - p_0}{\sqrt{\frac{p_0\,(1-p_0)}{n}}}$$
+          Reemplaza: $\hat{p} = 14/2000 = 0.007$, $p_0 = 0.005$, $n = 2000$. <br>
+          SE $= \sqrt{0.005 \cdot 0.995 / 2000} \approx 0.001577$.
+        </div>
+        <div class="ex-numeric-row">
+          <input type="text" class="ex-numeric-input" id="ex24-q3-input" placeholder="z = ?" inputmode="decimal" autocomplete="off">
+          <button class="ex-numeric-btn" id="ex24-q3-btn" onclick="answerExNumeric('ex24', 3, 1.27, 0.05, 'z = (0.007 - 0.005) / 0.001577 ≈ <b>1.27</b>. Como es one-tail derecha, p ≈ 0.10.')">CALCULAR</button>
+        </div>
+        <div class="ex-feedback"></div>
+      </div>
+
+      <div class="q-4">
+        <div class="ex-question"><span class="qn">Q4</span><span>Con z ≈ 1.27 → p ≈ 0.10. Con α = 0.05, ¿qué decides?</span></div>
+        <div class="ex-options">
+          <div class="ex-opt" onclick="answerEx('ex24',4,0,1,'No. p (0.10) &gt; α (0.05). No alcanza para rechazar — la diferencia entre 0.7% y 0.5% podría ser ruido con n=2000.')">
+            <span class="ic">A</span><span>Rechazo H₀: hay evidencia de fraude por encima del 0.5%</span>
           </div>
-          <div class="ex-opt" onclick="answerEx('ex24',3,1,0,'No. Con p tan chiquito (cerca de cero) y α=0.05, p &lt; α por mucho. Hay que rechazar H₀.')">
-            <span class="ic">✗</span><span>No rechazo H₀ — falta evidencia</span>
+          <div class="ex-opt" onclick="answerEx('ex24',4,1,1,'✓ Correcto. p &gt; α. La tasa observada (0.7%) PARECE alta, pero con n=2000 no es estadísticamente significativa. Auditoría debería ampliar la muestra antes de acusar.')">
+            <span class="ic">B</span><span>NO rechazo H₀: muestra insuficiente, ampliar n antes de acusar</span>
+          </div>
+          <div class="ex-opt" onclick="answerEx('ex24',4,2,1,'No. Tomar decisión sin acabar el test es justo lo que NO hay que hacer.')">
+            <span class="ic">C</span><span>Detener auditoría — el banco tiene razón</span>
+          </div>
+          <div class="ex-opt" onclick="answerEx('ex24',4,3,1,'No. Bajar α a 0.01 sería aún más estricto y tampoco rechazaría — además mover α después de ver datos es p-hacking.')">
+            <span class="ic">D</span><span>Cambiar α a 0.01 y volver a evaluar</span>
           </div>
         </div>
         <div class="ex-feedback"></div>
@@ -3991,70 +4100,100 @@ h3.cyber { font-family: 'JetBrains Mono', monospace; font-weight: 700; }
   </div>
 </section>
 
-<!-- ============= CAP 25: EJERCICIO PRO VS AMATEUR ============= -->
+<!-- ============= CAP 25: HOSPITAL URGENCIAS (CALC HEAVY 2) ============= -->
 <section class="scene" data-chapter="25" id="cap25">
   <div class="scene-inner">
-    <div data-step="1"><span class="chapter-tag">ejercicio 2 / 5 — tu decides // basket pro vs amateur</span></div>
+    <div data-step="1"><span class="chapter-tag">ejercicio 2 / 10 — calc heavy // clínica · tiempo de atención</span></div>
 
     <div style="display:flex;align-items:center;gap:20px;margin-bottom:14px;flex-wrap:wrap">
-      <span class="ex-emoji" style="color:var(--cyan)">🏀</span>
-      <h2 class="cyber" data-step="2" style="flex:1;min-width:280px">¿Los <span class="gradient-text">profesionales</span> meten más tiros libres?</h2>
+      <span class="ex-emoji" style="color:var(--magenta)">🏥</span>
+      <h2 class="cyber" data-step="2" style="flex:1;min-width:280px">Clínica Norte · <span class="gradient-text">¿realmente atiende rápido?</span><span class="ex-style-tag">CALC · 4 PASOS</span></h2>
     </div>
 
     <div data-step="3" class="cyber-card" style="font-size:15px;line-height:1.7">
-      Un periodista deportivo dice: <em>"los amateurs tiran tan bien como los profesionales"</em>. Para refutarlo, mides <strong>30 tiros libres</strong> a cada uno: <strong style="color:var(--cyan)">profesional anota 26/30 (87%)</strong>, <strong style="color:var(--magenta)">amateur anota 18/30 (60%)</strong>.
-      <div class="ex-data-card" style="margin-top:12px">
-        <div class="row">
-          <span>p̂ pro:</span><b>0.87</b>
-          <span>p̂ am:</span><b>0.60</b>
-          <span>n cada uno:</span><b>30</b>
+      Clínica Norte vende su servicio premium con la promesa: <strong>"tiempo medio de atención en urgencias menor a 30 minutos"</strong>. Una EPS contrata a un auditor que cronometra <strong>40 pacientes</strong>: media <strong style="color:var(--magenta)">x̄ = 33.5 min</strong> con desviación estándar <strong>s = 8 min</strong>. <strong>Tú decides:</strong>
+      <div class="ex-data-card-rich" style="margin-top:14px">
+        <div class="title">▷ DATOS CRUDOS</div>
+        <div class="grid">
+          <div class="cell"><span class="lbl">n</span><span class="val">40</span></div>
+          <div class="cell"><span class="lbl">x̄ (min)</span><span class="val">33.5</span></div>
+          <div class="cell"><span class="lbl">s</span><span class="val">8</span></div>
+          <div class="cell"><span class="lbl">μ₀ (promesa)</span><span class="val">30</span></div>
+          <div class="cell"><span class="lbl">α</span><span class="val">0.05</span></div>
         </div>
       </div>
     </div>
 
-    <div data-step="4" class="exercise-frame" id="ex25">
-      <div class="ex-num">▷ EJERCICIO 2 · 3 PREGUNTAS</div>
+    <div data-step="4" class="exercise-frame" id="ex25" data-max-score="4">
+      <div class="ex-num">▷ EJERCICIO 2 · 4 PREGUNTAS</div>
 
       <div class="q-1">
-        <div class="ex-question"><span class="qn">Q1</span><span>El periodista afirma que son iguales. ¿Cuál par usar?</span></div>
+        <div class="ex-question"><span class="qn">Q1</span><span>La EPS sospecha que el tiempo real es MAYOR a 30 min (la clínica miente). ¿Hipótesis?</span></div>
         <div class="ex-options">
-          <div class="ex-opt" onclick="answerEx('ex25',1,0,2,'No. H₀ es siempre la posición <em>aburrida</em> que quieres refutar. Aquí lo aburrido es &quot;son iguales&quot;.')">
-            <span class="ic">A</span><span>H₀: p_pro &gt; p_am &nbsp;·&nbsp; H₁: p_pro = p_am</span>
+          <div class="ex-opt" onclick="answerEx('ex25',1,0,1,'No. H₀ siempre lleva el signo de igualdad.')">
+            <span class="ic">A</span><span>H₀: μ &lt; 30 &nbsp;·&nbsp; H₁: μ ≥ 30</span>
           </div>
-          <div class="ex-opt" onclick="answerEx('ex25',1,1,2,'Casi. Si solo te interesara que el pro sea mejor, podrías usar una cola. Pero el periodista dice &quot;iguales&quot;: pruebas si son <em>distintos</em>.')">
-            <span class="ic">B</span><span>H₀: p_pro = p_am &nbsp;·&nbsp; H₁: p_pro &gt; p_am</span>
+          <div class="ex-opt" onclick="answerEx('ex25',1,1,1,'✓ Correcto. La clínica afirma μ &lt; 30 (H₀: μ = 30 como frontera). La sospecha es μ &gt; 30.')">
+            <span class="ic">B</span><span>H₀: μ = 30 &nbsp;·&nbsp; H₁: μ &gt; 30</span>
           </div>
-          <div class="ex-opt" onclick="answerEx('ex25',1,2,2,'✓ Correcto. La afirmación a refutar es &quot;son iguales&quot; (H₀). H₁ es que son <em>distintos</em> en cualquier dirección.')">
-            <span class="ic">C</span><span>H₀: p_pro = p_am &nbsp;·&nbsp; H₁: p_pro ≠ p_am</span>
+          <div class="ex-opt" onclick="answerEx('ex25',1,2,1,'No. La sospecha es direccional (mayor), no &quot;diferente&quot;.')">
+            <span class="ic">C</span><span>H₀: μ = 30 &nbsp;·&nbsp; H₁: μ ≠ 30</span>
           </div>
-          <div class="ex-opt" onclick="answerEx('ex25',1,3,2,'No. H₀ siempre debe contener el signo de igualdad.')">
-            <span class="ic">D</span><span>H₀: p_pro ≠ p_am &nbsp;·&nbsp; H₁: p_pro = p_am</span>
+          <div class="ex-opt" onclick="answerEx('ex25',1,3,1,'No. μ &lt; 30 sería defender a la clínica, no auditarla.')">
+            <span class="ic">D</span><span>H₀: μ = 30 &nbsp;·&nbsp; H₁: μ &lt; 30</span>
           </div>
         </div>
         <div class="ex-feedback"></div>
       </div>
 
       <div class="q-2">
-        <div class="ex-question"><span class="qn">Q2</span><span>¿Una cola o dos?</span></div>
-        <div class="ex-options duo">
-          <div class="ex-opt" onclick="answerEx('ex25',2,0,1,'No. Una cola serviría si la pregunta fuera &quot;¿el pro es mejor?&quot;. Aquí queremos refutar la igualdad sin importar la dirección.')">
-            <span class="ic">1</span><span>Una cola</span>
+        <div class="ex-question"><span class="qn">Q2</span><span>¿Qué test corresponde?</span></div>
+        <div class="ex-options">
+          <div class="ex-opt" onclick="answerEx('ex25',2,0,2,'No. z-test con σ conocida requiere conocer la desviación poblacional. Aquí solo tienes s muestral.')">
+            <span class="ic">A</span><span>z-test (σ conocida), one-tail derecha</span>
           </div>
-          <div class="ex-opt" onclick="answerEx('ex25',2,1,1,'✓ Exacto. H₁: p_pro ≠ p_am es bilateral → dos colas.')">
-            <span class="ic">2</span><span>Dos colas</span>
+          <div class="ex-opt" onclick="answerEx('ex25',2,1,2,'No. La pregunta es direccional (μ &gt; 30) — two-tail dispersa α innecesariamente.')">
+            <span class="ic">B</span><span>t-test, two-tail</span>
+          </div>
+          <div class="ex-opt" onclick="answerEx('ex25',2,2,2,'✓ Correcto. σ desconocida → t. H₁ direccional → one-tail derecha. Con n=40 (≥30) la t y z dan resultados parecidos pero formalmente es t.')">
+            <span class="ic">C</span><span>t-test (σ desconocida), one-tail derecha</span>
+          </div>
+          <div class="ex-opt" onclick="answerEx('ex25',2,3,2,'No. Wilcoxon es no-paramétrico — se usa cuando rompes normalidad o tienes muestras chicas con outliers, no es el primer recurso aquí.')">
+            <span class="ic">D</span><span>Wilcoxon de los signos</span>
           </div>
         </div>
         <div class="ex-feedback"></div>
       </div>
 
       <div class="q-3">
-        <div class="ex-question"><span class="qn">Q3</span><span>El test da <strong>z = 2.37</strong> y <strong>p = 0.018</strong>. Con α = 0.05, ¿decides?</span></div>
-        <div class="ex-options duo">
-          <div class="ex-opt" onclick="answerEx('ex25',3,0,0,'✓ Sí. p = 0.018 &lt; α = 0.05. Los profesionales sí tiran mejor de manera real, no por suerte.')">
-            <span class="ic">✓</span><span>Rechazo H₀ — el pro tira mejor</span>
+        <div class="ex-question"><span class="qn">Q3</span><span>Calcula el estadístico <strong>t</strong>. (2 decimales, tolerancia ±0.05)</span></div>
+        <button class="ex-formula-toggle" onclick="toggleFormulaHint('ex25-formula')">💡 Ver fórmula</button>
+        <div class="ex-formula-content" id="ex25-formula">
+          $$t = \frac{\bar{x} - \mu_0}{s / \sqrt{n}}$$
+          Reemplaza: $\bar{x} = 33.5$, $\mu_0 = 30$, $s = 8$, $n = 40$. <br>
+          SE $= 8/\sqrt{40} \approx 1.265$.
+        </div>
+        <div class="ex-numeric-row">
+          <input type="text" class="ex-numeric-input" id="ex25-q3-input" placeholder="t = ?" inputmode="decimal" autocomplete="off">
+          <button class="ex-numeric-btn" id="ex25-q3-btn" onclick="answerExNumeric('ex25', 3, 2.77, 0.05, 't = (33.5 - 30) / 1.265 ≈ <b>2.77</b>. Con df=39, p ≈ 0.0043 (one-tail).')">CALCULAR</button>
+        </div>
+        <div class="ex-feedback"></div>
+      </div>
+
+      <div class="q-4">
+        <div class="ex-question"><span class="qn">Q4</span><span>Con t ≈ 2.77 → p ≈ 0.004. Con α = 0.05, ¿qué reportas a la EPS?</span></div>
+        <div class="ex-options">
+          <div class="ex-opt" onclick="answerEx('ex25',4,0,0,'✓ Correcto. p &lt; α por mucho. La clínica está mintiendo: el tiempo real es significativamente mayor a 30 min.')">
+            <span class="ic">A</span><span>Rechazo H₀: la clínica incumple su promesa de servicio</span>
           </div>
-          <div class="ex-opt" onclick="answerEx('ex25',3,1,0,'No. p = 0.018 cae por <em>debajo</em> de α = 0.05, así que sí rechazamos H₀.')">
-            <span class="ic">✗</span><span>No rechazo — pueden ser iguales</span>
+          <div class="ex-opt" onclick="answerEx('ex25',4,1,0,'No. p (0.004) es mucho menor que α (0.05). Hay evidencia fuerte de incumplimiento.')">
+            <span class="ic">B</span><span>NO rechazo H₀: la diferencia es ruido</span>
+          </div>
+          <div class="ex-opt" onclick="answerEx('ex25',4,2,0,'No. Cambiar α después de ver datos es p-hacking. Mantén α=0.05 y reporta el resultado real.')">
+            <span class="ic">C</span><span>Volver a hacer el test con α = 0.001</span>
+          </div>
+          <div class="ex-opt" onclick="answerEx('ex25',4,3,0,'No. n=40 es razonable y la evidencia es clara. Pedir más datos sin justificación es procrastinar.')">
+            <span class="ic">D</span><span>Pedir n más grande antes de concluir</span>
           </div>
         </div>
         <div class="ex-feedback"></div>
@@ -4065,70 +4204,94 @@ h3.cyber { font-family: 'JetBrains Mono', monospace; font-weight: 700; }
   </div>
 </section>
 
-<!-- ============= CAP 26: EJERCICIO JUAN VALDEZ ============= -->
+<!-- ============= CAP 26: MANUFACTURA SKF (CALC HEAVY 3) ============= -->
 <section class="scene" data-chapter="26" id="cap26">
   <div class="scene-inner">
-    <div data-step="1"><span class="chapter-tag">ejercicio 3 / 5 — tu decides // batalla de cafés</span></div>
+    <div data-step="1"><span class="chapter-tag">ejercicio 3 / 10 — calc heavy // SKF · línea de producción</span></div>
 
     <div style="display:flex;align-items:center;gap:20px;margin-bottom:14px;flex-wrap:wrap">
-      <span class="ex-emoji" style="color:var(--orange)">☕</span>
-      <h2 class="cyber" data-step="2" style="flex:1;min-width:280px">¿Realmente prefieren <span class="gradient-text">Juan Valdez</span>?</h2>
+      <span class="ex-emoji" style="color:var(--cyan)">⚙️</span>
+      <h2 class="cyber" data-step="2" style="flex:1;min-width:280px">SKF Manufactura · <span class="gradient-text">¿se descalibró la línea?</span><span class="ex-style-tag">CALC · 4 PASOS</span></h2>
     </div>
 
     <div data-step="3" class="cyber-card" style="font-size:15px;line-height:1.7">
-      En un mall de Pereira hacen un test ciego entre Juan Valdez y un café de cadena. Si el sabor fuera indistinguible, esperaríamos <strong>50%</strong> para cada uno. De <strong>150 personas</strong>, <strong style="color:var(--magenta)">90 prefieren Juan Valdez (60%)</strong>. La marca quiere usarlo en publicidad nacional.
-      <div class="ex-data-card" style="margin-top:12px">
-        <div class="row">
-          <span>p̂:</span><b>0.60</b>
-          <span>p₀:</span><b>0.50</b>
-          <span>n:</span><b>150</b>
+      Línea de rodamientos SKF tiene tasa histórica estable de <strong>2% defectos</strong>. QA toma muestra rutinaria de <strong>500 piezas</strong> y encuentra <strong style="color:var(--magenta)">18 defectos (3.6%)</strong>. El supervisor pregunta: <strong>¿la línea cambió o es ruido?</strong> Aquí <strong>cualquier cambio importa</strong> (subir o bajar — bajar también sería sospechoso).
+      <div class="ex-data-card-rich" style="margin-top:14px">
+        <div class="title">▷ DATOS CRUDOS</div>
+        <div class="grid">
+          <div class="cell"><span class="lbl">n</span><span class="val">500</span></div>
+          <div class="cell"><span class="lbl">x (defectos)</span><span class="val">18</span></div>
+          <div class="cell"><span class="lbl">p̂ obs</span><span class="val">0.036</span></div>
+          <div class="cell"><span class="lbl">p₀ histórico</span><span class="val">0.02</span></div>
+          <div class="cell"><span class="lbl">α</span><span class="val">0.05</span></div>
         </div>
       </div>
     </div>
 
-    <div data-step="4" class="exercise-frame" id="ex26">
-      <div class="ex-num">▷ EJERCICIO 3 · 3 PREGUNTAS</div>
+    <div data-step="4" class="exercise-frame" id="ex26" data-max-score="4">
+      <div class="ex-num">▷ EJERCICIO 3 · 4 PREGUNTAS</div>
 
       <div class="q-1">
-        <div class="ex-question"><span class="qn">Q1</span><span>Juan Valdez quiere demostrar preferencia. ¿Cuáles hipótesis?</span></div>
+        <div class="ex-question"><span class="qn">Q1</span><span>¿Hipótesis correctas dado el contexto (cualquier cambio importa)?</span></div>
         <div class="ex-options">
-          <div class="ex-opt" onclick="answerEx('ex26',1,0,1,'No. H₀ debe ser la posición conservadora (azar = 50%). Y H₁ debe direccional para arriba.')">
-            <span class="ic">A</span><span>H₀: p &gt; 0.50 &nbsp;·&nbsp; H₁: p = 0.50</span>
+          <div class="ex-opt" onclick="answerEx('ex26',1,0,2,'No. one-tail derecha solo capta si subió. Pero también queremos detectar si bajó (raro y sospechoso, podría indicar mala medición).')">
+            <span class="ic">A</span><span>H₀: p = 0.02 &nbsp;·&nbsp; H₁: p &gt; 0.02</span>
           </div>
-          <div class="ex-opt" onclick="answerEx('ex26',1,1,1,'✓ Correcto. La marca quiere demostrar que más del 50% prefiere su café, así que H₁: p &gt; 0.50.')">
-            <span class="ic">B</span><span>H₀: p = 0.50 &nbsp;·&nbsp; H₁: p &gt; 0.50</span>
+          <div class="ex-opt" onclick="answerEx('ex26',1,1,2,'No. Solo capta si bajó.')">
+            <span class="ic">B</span><span>H₀: p = 0.02 &nbsp;·&nbsp; H₁: p &lt; 0.02</span>
           </div>
-          <div class="ex-opt" onclick="answerEx('ex26',1,2,1,'No del todo. Bilateral funciona pero pierdes potencia. La pregunta es si Juan Valdez <em>gana</em>.')">
-            <span class="ic">C</span><span>H₀: p = 0.50 &nbsp;·&nbsp; H₁: p ≠ 0.50</span>
+          <div class="ex-opt" onclick="answerEx('ex26',1,2,2,'✓ Correcto. Two-tail (p ≠ 0.02) es lo apropiado: cualquier desviación significativa de la tasa histórica es señal de cambio en el proceso.')">
+            <span class="ic">C</span><span>H₀: p = 0.02 &nbsp;·&nbsp; H₁: p ≠ 0.02</span>
           </div>
-          <div class="ex-opt" onclick="answerEx('ex26',1,3,1,'No. H₁: p &lt; 0.50 sería decir que Juan Valdez gusta <em>menos</em> que el rival.')">
-            <span class="ic">D</span><span>H₀: p = 0.50 &nbsp;·&nbsp; H₁: p &lt; 0.50</span>
+          <div class="ex-opt" onclick="answerEx('ex26',1,3,2,'No. H₀ siempre lleva igualdad.')">
+            <span class="ic">D</span><span>H₀: p ≤ 0.02 &nbsp;·&nbsp; H₁: p &gt; 0.02</span>
           </div>
         </div>
         <div class="ex-feedback"></div>
       </div>
 
       <div class="q-2">
-        <div class="ex-question"><span class="qn">Q2</span><span>¿Una cola o dos?</span></div>
+        <div class="ex-question"><span class="qn">Q2</span><span>¿Test apropiado?</span></div>
         <div class="ex-options duo">
-          <div class="ex-opt" onclick="answerEx('ex26',2,0,0,'✓ Correcto. H₁: p &gt; 0.50 → solo nos importa la cola derecha (preferencia mayor que azar).')">
-            <span class="ic">1</span><span>Una cola (derecha)</span>
+          <div class="ex-opt" onclick="answerEx('ex26',2,0,0,'✓ Correcto. Variable binaria (defecto sí/no) y muestra única → 1-prop z-test. H₁ bilateral → two-tail.')">
+            <span class="ic">A</span><span>1-proporción z, two-tail</span>
           </div>
-          <div class="ex-opt" onclick="answerEx('ex26',2,1,0,'No. Dos colas dispersa el rechazo a ambos lados; aquí solo importa que el % sea <em>mayor</em>.')">
-            <span class="ic">2</span><span>Dos colas</span>
+          <div class="ex-opt" onclick="answerEx('ex26',2,1,0,'No. t-test es para medias, aquí la variable es binaria.')">
+            <span class="ic">B</span><span>t-test, two-tail</span>
           </div>
         </div>
         <div class="ex-feedback"></div>
       </div>
 
       <div class="q-3">
-        <div class="ex-question"><span class="qn">Q3</span><span>El test da <strong>z = 2.45</strong> y <strong>p = 0.0071</strong>. Con α = 0.05, ¿decides?</span></div>
-        <div class="ex-options duo">
-          <div class="ex-opt" onclick="answerEx('ex26',3,0,0,'✓ Correcto. p = 0.0071 &lt; α = 0.05. La preferencia es real. Marketing puede usar el dato.')">
-            <span class="ic">✓</span><span>Rechazo H₀ — Juan Valdez sí gana</span>
+        <div class="ex-question"><span class="qn">Q3</span><span>Calcula el estadístico <strong>z</strong>. (2 decimales, tolerancia ±0.05)</span></div>
+        <button class="ex-formula-toggle" onclick="toggleFormulaHint('ex26-formula')">💡 Ver fórmula</button>
+        <div class="ex-formula-content" id="ex26-formula">
+          $$z = \frac{\hat{p} - p_0}{\sqrt{\frac{p_0\,(1-p_0)}{n}}}$$
+          Reemplaza: $\hat{p} = 0.036$, $p_0 = 0.02$, $n = 500$. <br>
+          SE $= \sqrt{0.02 \cdot 0.98 / 500} \approx 0.006261$.
+        </div>
+        <div class="ex-numeric-row">
+          <input type="text" class="ex-numeric-input" id="ex26-q3-input" placeholder="z = ?" inputmode="decimal" autocomplete="off">
+          <button class="ex-numeric-btn" id="ex26-q3-btn" onclick="answerExNumeric('ex26', 3, 2.56, 0.05, 'z = (0.036 - 0.02) / 0.006261 ≈ <b>2.56</b>. Two-tail p ≈ 2·(1-Φ(2.56)) ≈ 0.011.')">CALCULAR</button>
+        </div>
+        <div class="ex-feedback"></div>
+      </div>
+
+      <div class="q-4">
+        <div class="ex-question"><span class="qn">Q4</span><span>Con z ≈ 2.56 → p ≈ 0.011 (two-tail). Con α = 0.05, ¿qué le dices al supervisor?</span></div>
+        <div class="ex-options">
+          <div class="ex-opt" onclick="answerEx('ex26',4,0,0,'✓ Correcto. p &lt; α. Hay evidencia de que la línea cambió. Detener producción y revisar antes de seguir embarcando — más barato que un recall.')">
+            <span class="ic">A</span><span>Rechazo H₀: detener línea y revisar — la tasa cambió</span>
           </div>
-          <div class="ex-opt" onclick="answerEx('ex26',3,1,0,'No. p = 0.0071 está <em>por debajo</em> de α = 0.05. Hay evidencia suficiente para rechazar H₀.')">
-            <span class="ic">✗</span><span>No rechazo — puede ser azar</span>
+          <div class="ex-opt" onclick="answerEx('ex26',4,1,0,'No. p &lt; α. Es ruido improbable de no haber cambio real.')">
+            <span class="ic">B</span><span>NO rechazo H₀: 1.6% extra es ruido aleatorio</span>
+          </div>
+          <div class="ex-opt" onclick="answerEx('ex26',4,2,0,'No. El test ya dio significativo. Esperar es regalar costo.')">
+            <span class="ic">C</span><span>Continuar producción y volver a muestrear mañana</span>
+          </div>
+          <div class="ex-opt" onclick="answerEx('ex26',4,3,0,'No. Bajar α después de ver el resultado para "salvar" la decisión es manipulación.')">
+            <span class="ic">D</span><span>Subir α a 0.10 para estar más seguro</span>
           </div>
         </div>
         <div class="ex-feedback"></div>
@@ -4139,70 +4302,96 @@ h3.cyber { font-family: 'JetBrains Mono', monospace; font-weight: 700; }
   </div>
 </section>
 
-<!-- ============= CAP 27: EJERCICIO FORTNITE (TWIST: NO RECHAZAR) ============= -->
+<!-- ============= CAP 27: SHOPIFY EMAIL A/B (CALC HEAVY 4) ============= -->
 <section class="scene" data-chapter="27" id="cap27">
   <div class="scene-inner">
-    <div data-step="1"><span class="chapter-tag">ejercicio 4 / 5 — tu decides // gaming · cuidado con el twist</span></div>
+    <div data-step="1"><span class="chapter-tag">ejercicio 4 / 10 — calc heavy // shopify · email a/b</span></div>
 
     <div style="display:flex;align-items:center;gap:20px;margin-bottom:14px;flex-wrap:wrap">
-      <span class="ex-emoji" style="color:var(--violet)">🎮</span>
-      <h2 class="cyber" data-step="2" style="flex:1;min-width:280px">¿El nuevo <span class="gradient-text">parche subió tu winrate</span>?</h2>
+      <span class="ex-emoji" style="color:var(--magenta)">📧</span>
+      <h2 class="cyber" data-step="2" style="flex:1;min-width:280px">Shopify Marketing · <span class="gradient-text">¿la campaña B le gana a la A?</span><span class="ex-style-tag">CALC · 4 PASOS</span></h2>
     </div>
 
     <div data-step="3" class="cyber-card" style="font-size:15px;line-height:1.7">
-      Antes del último parche, tu tasa histórica de victoria en battle royale era <strong>8%</strong>. Después del parche juegas <strong>200 partidas</strong> y ganas <strong style="color:var(--magenta)">22 (11%)</strong>. ¿Subió de verdad o es racha de suerte?
-      <div class="ex-data-card" style="margin-top:12px">
-        <div class="row">
-          <span>p̂:</span><b>0.11</b>
-          <span>p₀:</span><b>0.08</b>
-          <span>n:</span><b>200</b>
+      Equipo de growth en Shopify lanza dos versiones del mismo email a 3000 usuarios cada una. <strong>Versión A</strong> (subject genérico): <strong>240 clics (8.0%)</strong>. <strong>Versión B</strong> (subject personalizado con nombre): <strong style="color:var(--magenta)">312 clics (10.4%)</strong>. CMO quiere saber si B realmente convierte mejor o es suerte.
+      <div class="ex-data-card-rich" style="margin-top:14px">
+        <div class="title">▷ DATOS CRUDOS</div>
+        <div class="grid">
+          <div class="cell"><span class="lbl">n_A</span><span class="val">3000</span></div>
+          <div class="cell"><span class="lbl">x_A clics</span><span class="val">240</span></div>
+          <div class="cell"><span class="lbl">p̂_A</span><span class="val">0.080</span></div>
+          <div class="cell"><span class="lbl">n_B</span><span class="val">3000</span></div>
+          <div class="cell"><span class="lbl">x_B clics</span><span class="val">312</span></div>
+          <div class="cell"><span class="lbl">p̂_B</span><span class="val">0.104</span></div>
         </div>
       </div>
     </div>
 
-    <div data-step="4" class="exercise-frame" id="ex27">
-      <div class="ex-num">▷ EJERCICIO 4 · 3 PREGUNTAS · OJO CON Q3</div>
+    <div data-step="4" class="exercise-frame" id="ex27" data-max-score="4">
+      <div class="ex-num">▷ EJERCICIO 4 · 4 PREGUNTAS</div>
 
       <div class="q-1">
-        <div class="ex-question"><span class="qn">Q1</span><span>¿Cuáles hipótesis para "¿subió mi winrate?"</span></div>
+        <div class="ex-question"><span class="qn">Q1</span><span>CMO pregunta: ¿B convierte mejor que A? ¿Hipótesis?</span></div>
         <div class="ex-options">
-          <div class="ex-opt" onclick="answerEx('ex27',1,0,1,'No. H₀ debe ser que nada cambió (sigue 8%).')">
-            <span class="ic">A</span><span>H₀: p &gt; 0.08 &nbsp;·&nbsp; H₁: p = 0.08</span>
+          <div class="ex-opt" onclick="answerEx('ex27',1,0,1,'No. La pregunta es direccional: ¿B mejor que A? No &quot;diferente&quot;.')">
+            <span class="ic">A</span><span>H₀: p_A = p_B &nbsp;·&nbsp; H₁: p_A ≠ p_B</span>
           </div>
-          <div class="ex-opt" onclick="answerEx('ex27',1,1,1,'✓ Correcto. H₀ dice &quot;nada cambió&quot; (8%); H₁ dice &quot;subió&quot; (&gt;8%).')">
-            <span class="ic">B</span><span>H₀: p = 0.08 &nbsp;·&nbsp; H₁: p &gt; 0.08</span>
+          <div class="ex-opt" onclick="answerEx('ex27',1,1,1,'✓ Correcto. H₁: p_B &gt; p_A captura la pregunta direccional del CMO.')">
+            <span class="ic">B</span><span>H₀: p_A = p_B &nbsp;·&nbsp; H₁: p_B &gt; p_A</span>
           </div>
-          <div class="ex-opt" onclick="answerEx('ex27',1,2,1,'No del todo. La pregunta es <em>direccional</em>: ¿subió?')">
-            <span class="ic">C</span><span>H₀: p = 0.08 &nbsp;·&nbsp; H₁: p ≠ 0.08</span>
+          <div class="ex-opt" onclick="answerEx('ex27',1,2,1,'No. H₀ no es la hipótesis "mala", es la posición de "no hay diferencia".')">
+            <span class="ic">C</span><span>H₀: p_B &gt; p_A &nbsp;·&nbsp; H₁: p_A = p_B</span>
           </div>
-          <div class="ex-opt" onclick="answerEx('ex27',1,3,1,'No. H₁: p &lt; 0.08 sería para probar si tu winrate <em>bajó</em>.')">
-            <span class="ic">D</span><span>H₀: p = 0.08 &nbsp;·&nbsp; H₁: p &lt; 0.08</span>
+          <div class="ex-opt" onclick="answerEx('ex27',1,3,1,'No. Eso preguntaría si A le gana a B.')">
+            <span class="ic">D</span><span>H₀: p_A = p_B &nbsp;·&nbsp; H₁: p_A &gt; p_B</span>
           </div>
         </div>
         <div class="ex-feedback"></div>
       </div>
 
       <div class="q-2">
-        <div class="ex-question"><span class="qn">Q2</span><span>¿Una cola o dos?</span></div>
+        <div class="ex-question"><span class="qn">Q2</span><span>¿Test correcto?</span></div>
         <div class="ex-options duo">
-          <div class="ex-opt" onclick="answerEx('ex27',2,0,0,'✓ Correcto. H₁: p &gt; 0.08 → cola derecha.')">
-            <span class="ic">1</span><span>Una cola (derecha)</span>
+          <div class="ex-opt" onclick="answerEx('ex27',2,0,0,'✓ Correcto. Dos muestras independientes con variable binaria (clic/no clic) → 2-proporción z. Direccional → one-tail.')">
+            <span class="ic">A</span><span>2-proporción z, one-tail derecha</span>
           </div>
-          <div class="ex-opt" onclick="answerEx('ex27',2,1,0,'No. Solo nos interesa si <em>subió</em>.')">
-            <span class="ic">2</span><span>Dos colas</span>
+          <div class="ex-opt" onclick="answerEx('ex27',2,1,0,'No. 1-prop sería para una sola muestra contra un valor fijo. Aquí comparas dos muestras.')">
+            <span class="ic">B</span><span>1-proporción z, two-tail</span>
           </div>
         </div>
         <div class="ex-feedback"></div>
       </div>
 
       <div class="q-3">
-        <div class="ex-question"><span class="qn">Q3</span><span>El test da <strong>z = 1.56</strong> y <strong>p = 0.0594</strong>. Con α = 0.05, ¿decides?</span></div>
-        <div class="ex-options duo">
-          <div class="ex-opt" onclick="answerEx('ex27',3,0,1,'❌ Cuidado. p = 0.0594 está <em>por encima</em> de 0.05. Aunque parezca cerquita, no rechazas.')">
-            <span class="ic">✓</span><span>Rechazo H₀ — el parche subió mi winrate</span>
+        <div class="ex-question"><span class="qn">Q3</span><span>Calcula el estadístico <strong>z</strong>. (2 decimales, tolerancia ±0.05)</span></div>
+        <button class="ex-formula-toggle" onclick="toggleFormulaHint('ex27-formula')">💡 Ver fórmula</button>
+        <div class="ex-formula-content" id="ex27-formula">
+          $$z = \frac{\hat{p}_B - \hat{p}_A}{\sqrt{\hat{p}\,(1-\hat{p})\,(1/n_A + 1/n_B)}}, \quad \hat{p} = \frac{x_A + x_B}{n_A + n_B}$$
+          Pooled $\hat{p} = 552/6000 = 0.092$. <br>
+          SE $= \sqrt{0.092 \cdot 0.908 \cdot (2/3000)} \approx 0.00746$. <br>
+          Diferencia $= 0.104 - 0.080 = 0.024$.
+        </div>
+        <div class="ex-numeric-row">
+          <input type="text" class="ex-numeric-input" id="ex27-q3-input" placeholder="z = ?" inputmode="decimal" autocomplete="off">
+          <button class="ex-numeric-btn" id="ex27-q3-btn" onclick="answerExNumeric('ex27', 3, 3.22, 0.05, 'z = 0.024 / 0.00746 ≈ <b>3.22</b>. One-tail p ≈ 0.0006.')">CALCULAR</button>
+        </div>
+        <div class="ex-feedback"></div>
+      </div>
+
+      <div class="q-4">
+        <div class="ex-question"><span class="qn">Q4</span><span>Con z ≈ 3.22 → p ≈ 0.0006. Con α = 0.05, ¿qué le dices al CMO?</span></div>
+        <div class="ex-options">
+          <div class="ex-opt" onclick="answerEx('ex27',4,0,0,'✓ Correcto. p mucho menor que α. La personalización SÍ aumenta clics de manera real, no por casualidad. Desplegar.')">
+            <span class="ic">A</span><span>Rechazo H₀: la versión B convierte significativamente más — desplegar</span>
           </div>
-          <div class="ex-opt" onclick="answerEx('ex27',3,1,1,'✓ Exacto, este es el twist. p = 0.0594 &gt; α = 0.05 (por poquito). No hay evidencia suficiente; podría ser racha de suerte.')">
-            <span class="ic">✗</span><span>No rechazo — la evidencia no alcanza</span>
+          <div class="ex-opt" onclick="answerEx('ex27',4,1,0,'No. La diferencia 8% → 10.4% (relativa: +30%) es significativa estadística Y prácticamente.')">
+            <span class="ic">B</span><span>NO rechazo: 2.4 puntos porcentuales es pequeño</span>
+          </div>
+          <div class="ex-opt" onclick="answerEx('ex27',4,2,0,'No. Repetir test que ya dio significativo es perder tiempo y plata.')">
+            <span class="ic">C</span><span>Repetir el test con n = 10000</span>
+          </div>
+          <div class="ex-opt" onclick="answerEx('ex27',4,3,0,'No. La interacción (subject × segmento) puede ser un follow-up útil, pero NO bloquea la decisión actual con p tan bajo.')">
+            <span class="ic">D</span><span>Esperar a probar interacción con segmento de cliente</span>
           </div>
         </div>
         <div class="ex-feedback"></div>
@@ -4213,70 +4402,94 @@ h3.cyber { font-family: 'JetBrains Mono', monospace; font-weight: 700; }
   </div>
 </section>
 
-<!-- ============= CAP 28: EJERCICIO TRANSMILENIO ============= -->
+<!-- ============= CAP 28: RAPPI DELIVERY (CALC HEAVY 5 - ALPHA TRAP) ============= -->
 <section class="scene" data-chapter="28" id="cap28">
   <div class="scene-inner">
-    <div data-step="1"><span class="chapter-tag">ejercicio 5 / 5 — tu decides // transporte público</span></div>
+    <div data-step="1"><span class="chapter-tag">ejercicio 5 / 10 — calc heavy // rappi · trampa de α</span></div>
 
     <div style="display:flex;align-items:center;gap:20px;margin-bottom:14px;flex-wrap:wrap">
-      <span class="ex-emoji" style="color:var(--lime)">🚌</span>
-      <h2 class="cyber" data-step="2" style="flex:1;min-width:280px">¿La empresa de buses <span class="gradient-text">cumple su 90% puntual</span>?</h2>
+      <span class="ex-emoji" style="color:var(--cyan)">🛵</span>
+      <h2 class="cyber" data-step="2" style="flex:1;min-width:280px">Rappi · <span class="gradient-text">¿el modelo ML bajó el tiempo de entrega?</span><span class="ex-style-tag">CALC · 4 PASOS</span></h2>
     </div>
 
     <div data-step="3" class="cyber-card" style="font-size:15px;line-height:1.7">
-      La empresa de buses de la ciudad anuncia: <em>"el 90% de nuestros buses sale puntual"</em>. Un usuario escéptico mide <strong>100 buses</strong> y solo <strong style="color:var(--magenta)">78 salen a tiempo (78%)</strong>. Va a denunciar a la Superintendencia.
-      <div class="ex-data-card" style="margin-top:12px">
-        <div class="row">
-          <span>promesa:</span><b>0.90</b>
-          <span>p̂ medido:</span><b>0.78</b>
-          <span>n:</span><b>100</b>
+      Histórico Rappi: tiempo medio de entrega <strong>μ = 28 min</strong> con <strong>σ = 6 min</strong> (conocida tras años de operación). Lanzan modelo ML de routing y miden <strong>50 órdenes</strong>: media <strong style="color:var(--magenta)">x̄ = 26.4 min</strong>. Producto quiere saber si REALMENTE bajó. <strong>OJO con el α</strong>: hay disputa interna entre data science (α=0.05) e infra (α=0.01 porque hay que migrar la flota entera).
+      <div class="ex-data-card-rich" style="margin-top:14px">
+        <div class="title">▷ DATOS CRUDOS</div>
+        <div class="grid">
+          <div class="cell"><span class="lbl">n</span><span class="val">50</span></div>
+          <div class="cell"><span class="lbl">x̄ (min)</span><span class="val">26.4</span></div>
+          <div class="cell"><span class="lbl">σ (conocida)</span><span class="val">6</span></div>
+          <div class="cell"><span class="lbl">μ₀</span><span class="val">28</span></div>
         </div>
       </div>
     </div>
 
-    <div data-step="4" class="exercise-frame" id="ex28">
-      <div class="ex-num">▷ EJERCICIO 5 · 3 PREGUNTAS</div>
+    <div data-step="4" class="exercise-frame" id="ex28" data-max-score="4">
+      <div class="ex-num">▷ EJERCICIO 5 · 4 PREGUNTAS</div>
 
       <div class="q-1">
-        <div class="ex-question"><span class="qn">Q1</span><span>El usuario quiere demostrar que la empresa <em>no</em> cumple. ¿Cuáles hipótesis?</span></div>
+        <div class="ex-question"><span class="qn">Q1</span><span>Producto pregunta: ¿bajó el tiempo? ¿Hipótesis?</span></div>
         <div class="ex-options">
-          <div class="ex-opt" onclick="answerEx('ex28',1,0,2,'No. H₀ es la afirmación de la empresa (90%), no su negación.')">
-            <span class="ic">A</span><span>H₀: p &lt; 0.90 &nbsp;·&nbsp; H₁: p = 0.90</span>
+          <div class="ex-opt" onclick="answerEx('ex28',1,0,2,'No. one-tail derecha capta &quot;subió&quot;. Aquí preguntan si BAJÓ.')">
+            <span class="ic">A</span><span>H₀: μ = 28 &nbsp;·&nbsp; H₁: μ &gt; 28</span>
           </div>
-          <div class="ex-opt" onclick="answerEx('ex28',1,1,2,'No. H₁: p &gt; 0.90 sería para probar que la empresa cumple <em>aún mejor</em> de lo prometido.')">
-            <span class="ic">B</span><span>H₀: p = 0.90 &nbsp;·&nbsp; H₁: p &gt; 0.90</span>
+          <div class="ex-opt" onclick="answerEx('ex28',1,1,2,'No. Two-tail dispersa α — no aprovecha que la pregunta es direccional (¿bajó?).')">
+            <span class="ic">B</span><span>H₀: μ = 28 &nbsp;·&nbsp; H₁: μ ≠ 28</span>
           </div>
-          <div class="ex-opt" onclick="answerEx('ex28',1,2,2,'✓ Correcto. H₀ es la promesa de la empresa (90%); H₁ es lo que el usuario quiere demostrar (que es <em>menor</em>).')">
-            <span class="ic">C</span><span>H₀: p = 0.90 &nbsp;·&nbsp; H₁: p &lt; 0.90</span>
+          <div class="ex-opt" onclick="answerEx('ex28',1,2,2,'✓ Correcto. one-tail izquierda (μ &lt; 28) capta exactamente la pregunta del producto.')">
+            <span class="ic">C</span><span>H₀: μ = 28 &nbsp;·&nbsp; H₁: μ &lt; 28</span>
           </div>
-          <div class="ex-opt" onclick="answerEx('ex28',1,3,2,'No del todo. Bilateral pierde potencia cuando la sospecha es solo a un lado (incumplimiento).')">
-            <span class="ic">D</span><span>H₀: p = 0.90 &nbsp;·&nbsp; H₁: p ≠ 0.90</span>
+          <div class="ex-opt" onclick="answerEx('ex28',1,3,2,'No. H₀ no se invierte por capricho.')">
+            <span class="ic">D</span><span>H₀: μ &lt; 28 &nbsp;·&nbsp; H₁: μ = 28</span>
           </div>
         </div>
         <div class="ex-feedback"></div>
       </div>
 
       <div class="q-2">
-        <div class="ex-question"><span class="qn">Q2</span><span>¿Una cola o dos?</span></div>
+        <div class="ex-question"><span class="qn">Q2</span><span>¿Qué test corresponde?</span></div>
         <div class="ex-options duo">
-          <div class="ex-opt" onclick="answerEx('ex28',2,0,0,'✓ Correcto. H₁: p &lt; 0.90 → cola izquierda.')">
-            <span class="ic">1</span><span>Una cola (izquierda)</span>
+          <div class="ex-opt" onclick="answerEx('ex28',2,0,0,'✓ Correcto. σ es CONOCIDA (años de histórico) → z-test (no t). Direccional → one-tail izquierda.')">
+            <span class="ic">A</span><span>z-test (σ conocida), one-tail izquierda</span>
           </div>
-          <div class="ex-opt" onclick="answerEx('ex28',2,1,0,'No. La sospecha es solo de incumplimiento (a la izquierda).')">
-            <span class="ic">2</span><span>Dos colas</span>
+          <div class="ex-opt" onclick="answerEx('ex28',2,1,0,'No. Como σ es conocida, formalmente corresponde z, no t.')">
+            <span class="ic">B</span><span>t-test, one-tail izquierda</span>
           </div>
         </div>
         <div class="ex-feedback"></div>
       </div>
 
       <div class="q-3">
-        <div class="ex-question"><span class="qn">Q3</span><span>El test da <strong>z = -4.0</strong> y <strong>p &lt; 0.0001</strong>. Con α = 0.05, ¿decides?</span></div>
-        <div class="ex-options duo">
-          <div class="ex-opt" onclick="answerEx('ex28',3,0,0,'✓ Correcto. p ≪ α = 0.05. La empresa miente: no cumple el 90%. Denuncia procede.')">
-            <span class="ic">✓</span><span>Rechazo H₀ — la empresa miente</span>
+        <div class="ex-question"><span class="qn">Q3</span><span>Calcula el estadístico <strong>z</strong>. (2 decimales, tolerancia ±0.05; <strong>signo importa</strong>)</span></div>
+        <button class="ex-formula-toggle" onclick="toggleFormulaHint('ex28-formula')">💡 Ver fórmula</button>
+        <div class="ex-formula-content" id="ex28-formula">
+          $$z = \frac{\bar{x} - \mu_0}{\sigma / \sqrt{n}}$$
+          Reemplaza: $\bar{x} = 26.4$, $\mu_0 = 28$, $\sigma = 6$, $n = 50$. <br>
+          SE $= 6/\sqrt{50} \approx 0.8485$. <br>
+          Como x̄ &lt; μ₀, el z será <strong>negativo</strong>.
+        </div>
+        <div class="ex-numeric-row">
+          <input type="text" class="ex-numeric-input" id="ex28-q3-input" placeholder="z = ?" inputmode="decimal" autocomplete="off">
+          <button class="ex-numeric-btn" id="ex28-q3-btn" onclick="answerExNumeric('ex28', 3, -1.89, 0.05, 'z = (26.4 - 28) / 0.8485 ≈ <b>-1.89</b>. One-tail izquierda p ≈ 0.029.')">CALCULAR</button>
+        </div>
+        <div class="ex-feedback"></div>
+      </div>
+
+      <div class="q-4">
+        <div class="ex-question"><span class="qn">Q4</span><span>Con z ≈ -1.89 → p ≈ 0.029. Disputa interna: data science usa α=0.05, infra usa α=0.01. ¿Qué reportas?</span></div>
+        <div class="ex-options">
+          <div class="ex-opt" onclick="answerEx('ex28',4,0,2,'No. p &lt; 0.05 sí (rechaza con DS), pero p &gt; 0.01 (no rechaza con infra). Decir solo "rechazo" es engañoso.')">
+            <span class="ic">A</span><span>Rechazo H₀: el modelo ML sí bajó el tiempo</span>
           </div>
-          <div class="ex-opt" onclick="answerEx('ex28',3,1,0,'No. Con p prácticamente cero, la evidencia es demoledora. Hay que rechazar H₀.')">
-            <span class="ic">✗</span><span>No rechazo — el 90% se sostiene</span>
+          <div class="ex-opt" onclick="answerEx('ex28',4,1,2,'No. p &lt; 0.05, sí se rechaza al menos con un α razonable.')">
+            <span class="ic">B</span><span>NO rechazo H₀: la diferencia es ruido</span>
+          </div>
+          <div class="ex-opt" onclick="answerEx('ex28',4,2,2,'✓ Correcto. p=0.029 cae en zona ambigua: rechazas con α=0.05 pero NO con α=0.01. La decisión depende del costo de migrar — reportar AMBOS escenarios y dejar que negocio elija el α apropiado.')">
+            <span class="ic">C</span><span>Reportar ambos: rechazo con α=0.05, NO rechazo con α=0.01 — decisión depende del costo de migración</span>
+          </div>
+          <div class="ex-opt" onclick="answerEx('ex28',4,3,2,'No. Promediar α es estadísticamente sin sentido.')">
+            <span class="ic">D</span><span>Usar α = 0.03 (promedio entre los dos)</span>
           </div>
         </div>
         <div class="ex-feedback"></div>
@@ -4284,17 +4497,458 @@ h3.cyber { font-family: 'JetBrains Mono', monospace; font-weight: 700; }
 
       <div class="ex-status" id="ex28status"></div>
     </div>
+  </div>
+</section>
+
+<!-- ============= CAP 29: PFIZER VACUNA (DEEP 1) ============= -->
+<section class="scene" data-chapter="29" id="cap29">
+  <div class="scene-inner">
+    <div data-step="1"><span class="chapter-tag">ejercicio 6 / 10 — reasoning deep // pfizer · vacuna eficacia</span></div>
+
+    <div style="display:flex;align-items:center;gap:20px;margin-bottom:14px;flex-wrap:wrap">
+      <span class="ex-emoji" style="color:var(--magenta)">💉</span>
+      <h2 class="cyber" data-step="2" style="flex:1;min-width:280px">Pfizer · <span class="gradient-text">trampa de una cola vs dos</span><span class="ex-style-tag deep">DEEP · 3 PASOS</span></h2>
+    </div>
+
+    <div data-step="3" class="cyber-card" style="font-size:15px;line-height:1.7">
+      Pfizer afirma públicamente que la eficacia de su vacuna es del <strong>95%</strong>. La FDA monta un estudio post-comercialización para verificar la cifra. Toman <strong>n = 4000 pacientes</strong> y observan eficacia de <strong style="color:var(--magenta)">92%</strong>. El equipo de FDA debate cómo plantear el test antes de mirar resultados.
+      <div class="ex-data-card-rich" style="margin-top:14px">
+        <div class="title">▷ CONTEXTO REGULATORIO</div>
+        <div class="grid">
+          <div class="cell"><span class="lbl">eficacia declarada</span><span class="val">95%</span></div>
+          <div class="cell"><span class="lbl">eficacia observada</span><span class="val">92%</span></div>
+          <div class="cell"><span class="lbl">α</span><span class="val">0.05</span></div>
+        </div>
+      </div>
+    </div>
+
+    <div data-step="4" class="exercise-frame" id="ex29" data-max-score="3">
+      <div class="ex-num">▷ EJERCICIO 6 · 3 PREGUNTAS · DEEP</div>
+
+      <div class="q-1">
+        <div class="ex-question"><span class="qn">Q1</span><span>FDA quiere comprobar si la eficacia REAL es <em>diferente</em> al 95% declarado (en cualquier dirección). ¿Qué test elige?</span></div>
+        <div class="ex-options">
+          <div class="ex-opt" onclick="answerEx('ex29',1,0,2,'No. one-tail derecha buscaría &quot;eficacia mayor&quot;. La FDA no se preocupa de que la vacuna sea MEJOR que lo declarado — eso sería bueno.')">
+            <span class="ic">A</span><span>one-tail derecha (eficacia &gt; 95%)</span>
+          </div>
+          <div class="ex-opt" onclick="answerEx('ex29',1,1,2,'Casi. one-tail izquierda es defendible si la pregunta fuera "¿es menor de lo declarado?". Pero la pregunta es "¿es DIFERENTE?", lo cual incluye ambas direcciones.')">
+            <span class="ic">B</span><span>one-tail izquierda (eficacia &lt; 95%)</span>
+          </div>
+          <div class="ex-opt" onclick="answerEx('ex29',1,2,2,'✓ Correcto. La pregunta de la FDA es bilateral: ¿la cifra real es DIFERENTE del 95%? two-tail captura ambas direcciones.')">
+            <span class="ic">C</span><span>two-tail (eficacia ≠ 95%)</span>
+          </div>
+          <div class="ex-opt" onclick="answerEx('ex29',1,3,2,'No. La pregunta tiene una dirección clara aunque sea bilateral: comparar contra 95%.')">
+            <span class="ic">D</span><span>No se puede plantear un test sin más datos</span>
+          </div>
+        </div>
+        <div class="ex-feedback"></div>
+      </div>
+
+      <div class="q-2">
+        <div class="ex-question"><span class="qn">Q2</span><span>Con test two-tail los datos dan <strong>p = 0.03</strong>. Si la FDA hubiera usado one-tail izquierda (eficacia &lt; 95%, en la dirección observada), ¿qué pasa con el p-valor?</span></div>
+        <div class="ex-options">
+          <div class="ex-opt" onclick="answerEx('ex29',2,0,2,'No. El p-valor depende del tipo de test, no es invariante.')">
+            <span class="ic">A</span><span>Es exactamente igual</span>
+          </div>
+          <div class="ex-opt" onclick="answerEx('ex29',2,1,2,'No. Two-tail tiene MÁS p-valor (suma ambas colas), no menos. Pasar a one-tail no lo duplica.')">
+            <span class="ic">B</span><span>Se duplica → p ≈ 0.06</span>
+          </div>
+          <div class="ex-opt" onclick="answerEx('ex29',2,2,2,'✓ Correcto. one-tail izquierda en la dirección observada usa solo media cola → p se divide por 2 → p ≈ 0.015. ¡Cuidado! cambiar de cola DESPUÉS de ver datos es p-hacking.')">
+            <span class="ic">C</span><span>Se divide por 2 → p ≈ 0.015 — pero hacerlo después de ver datos es p-hacking</span>
+          </div>
+          <div class="ex-opt" onclick="answerEx('ex29',2,3,2,'No. El test elegido sí afecta el p-valor.')">
+            <span class="ic">D</span><span>No cambia, solo cambia α</span>
+          </div>
+        </div>
+        <div class="ex-feedback"></div>
+      </div>
+
+      <div class="q-3">
+        <div class="ex-question"><span class="qn">Q3</span><span>Two-tail con α=0.05 y p=0.03: rechazo H₀. La eficacia real es estadísticamente distinta del 95%. <strong>¿Qué hace la FDA con la vacuna?</strong></span></div>
+        <div class="ex-options">
+          <div class="ex-opt" onclick="answerEx('ex29',3,0,1,'No. Aprobar sin más cuando ya hay evidencia de discrepancia es justo lo que la FDA NO debe hacer.')">
+            <span class="ic">A</span><span>Aprobar sin restricciones — 92% sigue siendo "alto"</span>
+          </div>
+          <div class="ex-opt" onclick="answerEx('ex29',3,1,1,'✓ Correcto. La estadística rechaza igualdad con 95%, pero 92% sigue siendo eficacia útil. Lo correcto: pedir estudios confirmatorios y actualizar el etiquetado al rango real, no aprobar/retirar sin más.')">
+            <span class="ic">B</span><span>Pedir estudios confirmatorios + actualizar el etiquetado a la eficacia real (~92%)</span>
+          </div>
+          <div class="ex-opt" onclick="answerEx('ex29',3,2,1,'No. 92% sigue siendo eficacia clínicamente alta. Retirar destruiría una herramienta de salud pública útil.')">
+            <span class="ic">C</span><span>Retirar la vacuna del mercado inmediatamente</span>
+          </div>
+          <div class="ex-opt" onclick="answerEx('ex29',3,3,1,'No. p=0.03 ya rechazó. Cambiar α retrospectivamente es p-hacking inverso.')">
+            <span class="ic">D</span><span>Bajar α a 0.01 y reanalizar para evitar el rechazo</span>
+          </div>
+        </div>
+        <div class="ex-feedback"></div>
+      </div>
+
+      <div class="ex-status" id="ex29status"></div>
+    </div>
+  </div>
+</section>
+
+<!-- ============= CAP 30: GOOGLE A/B BUTTON (DEEP 2 - PRACTICAL VS STATISTICAL) ============= -->
+<section class="scene" data-chapter="30" id="cap30">
+  <div class="scene-inner">
+    <div data-step="1"><span class="chapter-tag">ejercicio 7 / 10 — reasoning deep // google · n descomunal</span></div>
+
+    <div style="display:flex;align-items:center;gap:20px;margin-bottom:14px;flex-wrap:wrap">
+      <span class="ex-emoji" style="color:var(--cyan)">🔍</span>
+      <h2 class="cyber" data-step="2" style="flex:1;min-width:280px">Google · <span class="gradient-text">significancia estadística vs práctica</span><span class="ex-style-tag deep">DEEP · 3 PASOS</span></h2>
+    </div>
+
+    <div data-step="3" class="cyber-card" style="font-size:15px;line-height:1.7">
+      Google corre A/B sobre el color del botón "Buscar" en home. <strong>n = 10 millones por grupo</strong>. Botón A (azul actual): <strong>conv = 12.00%</strong>. Botón B (azul ligeramente más oscuro): <strong style="color:var(--magenta)">conv = 12.10%</strong>. El test sale con <strong>p &lt; 0.0001</strong>. Implementar el cambio cuesta <strong>USD 200K</strong> en QA, despliegue y rollback plan. Margen incremental por clic: <strong>USD 0.05</strong>. Tráfico anual al home: <strong>~2 mil millones</strong> de sesiones.
+      <div class="ex-data-card-rich" style="margin-top:14px">
+        <div class="title">▷ DATOS</div>
+        <div class="grid">
+          <div class="cell"><span class="lbl">n por grupo</span><span class="val">10M</span></div>
+          <div class="cell"><span class="lbl">conv A</span><span class="val">12.00%</span></div>
+          <div class="cell"><span class="lbl">conv B</span><span class="val">12.10%</span></div>
+          <div class="cell"><span class="lbl">p-valor</span><span class="val">&lt;0.0001</span></div>
+          <div class="cell"><span class="lbl">costo cambio</span><span class="val">USD 200K</span></div>
+          <div class="cell"><span class="lbl">margen/clic</span><span class="val">USD 0.05</span></div>
+        </div>
+      </div>
+    </div>
+
+    <div data-step="4" class="exercise-frame" id="ex30" data-max-score="3">
+      <div class="ex-num">▷ EJERCICIO 7 · 3 PREGUNTAS · DEEP</div>
+
+      <div class="q-1">
+        <div class="ex-question"><span class="qn">Q1</span><span>Con p &lt; 0.0001, ¿es ESTADÍSTICAMENTE significativo?</span></div>
+        <div class="ex-options">
+          <div class="ex-opt" onclick="answerEx('ex30',1,0,0,'✓ Correcto. p &lt; 0.0001 ≪ α=0.05. Con n=10M, hasta diferencias minúsculas son detectables. Eso es lo que pasa aquí.')">
+            <span class="ic">A</span><span>Sí, p &lt; 0.0001 — la diferencia es estadísticamente real, no aleatoria</span>
+          </div>
+          <div class="ex-opt" onclick="answerEx('ex30',1,1,0,'No. p &lt; 0.0001 es altísimamente significativo estadísticamente.')">
+            <span class="ic">B</span><span>No, 0.10 puntos porcentuales es muy poco</span>
+          </div>
+          <div class="ex-opt" onclick="answerEx('ex30',1,2,0,'No. Cuando n es enorme, hasta el ruido está controlado y diferencias chicas SÍ se detectan.')">
+            <span class="ic">C</span><span>No, con n tan grande el p-valor no significa nada</span>
+          </div>
+          <div class="ex-opt" onclick="answerEx('ex30',1,3,0,'No, ese sería un argumento sobre poder, pero el resultado es claramente significativo.')">
+            <span class="ic">D</span><span>Depende del β del test</span>
+          </div>
+        </div>
+        <div class="ex-feedback"></div>
+      </div>
+
+      <div class="q-2">
+        <div class="ex-question"><span class="qn">Q2</span><span>Cálculo de impacto: 2B sesiones × 0.001 (efecto extra) × USD 0.05 = <strong>USD 100K/año extra</strong>. Costo de implementar: USD 200K. ¿Es PRÁCTICAMENTE significativo?</span></div>
+        <div class="ex-options">
+          <div class="ex-opt" onclick="answerEx('ex30',2,0,1,'No. Significancia estadística (p&lt;0.0001) NO implica impacto práctico. ROI negativo el primer año + riesgo de regresión.')">
+            <span class="ic">A</span><span>Sí — p &lt; 0.0001 lo demuestra</span>
+          </div>
+          <div class="ex-opt" onclick="answerEx('ex30',2,1,1,'✓ Correcto. ROI año 1: -USD 100K. Solo se recupera al segundo año, ASUMIENDO que el efecto persiste y no hay regresión por interacción con otros experimentos. Riesgo no compensa.')">
+            <span class="ic">B</span><span>No — ROI negativo el primer año, no compensa el riesgo de cambio en producción</span>
+          </div>
+          <div class="ex-opt" onclick="answerEx('ex30',2,2,1,'No. "Cualquier mejora cuenta" ignora costo de oportunidad: ese USD 200K invertido en otra cosa puede dar más.')">
+            <span class="ic">C</span><span>Sí — cualquier mejora suma cuando eres Google</span>
+          </div>
+          <div class="ex-opt" onclick="answerEx('ex30',2,3,1,'No. α controla error tipo I; aquí el problema no es ese, es el efecto chico.')">
+            <span class="ic">D</span><span>Depende del α elegido</span>
+          </div>
+        </div>
+        <div class="ex-feedback"></div>
+      </div>
+
+      <div class="q-3">
+        <div class="ex-question"><span class="qn">Q3</span><span>¿Qué reportas al CEO?</span></div>
+        <div class="ex-options">
+          <div class="ex-opt" onclick="answerEx('ex30',3,0,1,'No. "Significativo" sin contexto le hará tomar mala decisión. La cifra estadística SOLA engaña.')">
+            <span class="ic">A</span><span>"El test fue significativo, hay que desplegar"</span>
+          </div>
+          <div class="ex-opt" onclick="answerEx('ex30',3,1,1,'✓ Correcto. Reportar AMBAS dimensiones: el efecto es real estadísticamente PERO trivial en magnitud y ROI negativo. Esa es la lectura honesta.')">
+            <span class="ic">B</span><span>"El test fue significativo pero el efecto es trivial — recomiendo NO desplegar"</span>
+          </div>
+          <div class="ex-opt" onclick="answerEx('ex30',3,2,1,'No. p&lt;0.0001 es resultado claro, no ambiguo. Repetir es perder tiempo.')">
+            <span class="ic">C</span><span>"Repetir el test, los datos son ambiguos"</span>
+          </div>
+          <div class="ex-opt" onclick="answerEx('ex30',3,3,1,'No. Bajar n no cambia la realidad del efecto trivial — solo enmascararía la conclusión.')">
+            <span class="ic">D</span><span>"Repetir con n más chico para tener un efecto más realista"</span>
+          </div>
+        </div>
+        <div class="ex-feedback"></div>
+      </div>
+
+      <div class="ex-status" id="ex30status"></div>
+    </div>
+  </div>
+</section>
+
+<!-- ============= CAP 31: STARTUP OUTLIER (DEEP 3 - ASSUMPTIONS) ============= -->
+<section class="scene" data-chapter="31" id="cap31">
+  <div class="scene-inner">
+    <div data-step="1"><span class="chapter-tag">ejercicio 8 / 10 — reasoning deep // startup · supuestos rotos</span></div>
+
+    <div style="display:flex;align-items:center;gap:20px;margin-bottom:14px;flex-wrap:wrap">
+      <span class="ex-emoji" style="color:var(--magenta)">📱</span>
+      <h2 class="cyber" data-step="2" style="flex:1;min-width:280px">Startup · <span class="gradient-text">el outlier que rompe todo</span><span class="ex-style-tag deep">DEEP · 3 PASOS</span></h2>
+    </div>
+
+    <div data-step="3" class="cyber-card" style="font-size:15px;line-height:1.7">
+      Una startup mide tiempo (en minutos) que pasan sus 8 beta-testers en la app durante una sesión. <strong>n = 8</strong>, datos: <strong style="color:var(--magenta)">2, 3, 4, 5, 4, 3, 2, 180</strong>. El equipo quiere correr un t-test contra la media histórica de 4 min. La <strong>media observada es 25.4 min</strong>. Founder: "¡estamos arrasando! Corramos el test ya".
+      <div class="ex-data-card-rich" style="margin-top:14px">
+        <div class="title">▷ DATOS CRUDOS (minutos)</div>
+        <div class="grid">
+          <div class="cell"><span class="lbl">x_1...x_8</span><span class="val" style="font-size:14px">2,3,4,5,4,3,2,180</span></div>
+          <div class="cell"><span class="lbl">media</span><span class="val">25.4</span></div>
+          <div class="cell"><span class="lbl">mediana</span><span class="val">3.5</span></div>
+          <div class="cell"><span class="lbl">μ₀ histórico</span><span class="val">4</span></div>
+        </div>
+      </div>
+    </div>
+
+    <div data-step="4" class="exercise-frame" id="ex31" data-max-score="3">
+      <div class="ex-num">▷ EJERCICIO 8 · 3 PREGUNTAS · DEEP</div>
+
+      <div class="q-1">
+        <div class="ex-question"><span class="qn">Q1</span><span>¿Cuál supuesto del t-test se viola con MÁS fuerza aquí?</span></div>
+        <div class="ex-options">
+          <div class="ex-opt" onclick="answerEx('ex31',1,0,1,'No. Independencia se rompería si 1 usuario contara varias veces. No es lo más visible aquí.')">
+            <span class="ic">A</span><span>Independencia entre observaciones</span>
+          </div>
+          <div class="ex-opt" onclick="answerEx('ex31',1,1,1,'✓ Correcto. Con n=8 y un valor de 180 vs el resto entre 2-5, los datos son claramente NO normales (asimetría brutal). El t-test asume normalidad o n grande — fallan ambos.')">
+            <span class="ic">B</span><span>Normalidad (los datos son brutalmente asimétricos por el outlier de 180)</span>
+          </div>
+          <div class="ex-opt" onclick="answerEx('ex31',1,2,1,'No. Homocedasticidad aplica a 2-sample t-test, no a uno solo.')">
+            <span class="ic">C</span><span>Homocedasticidad (varianzas iguales)</span>
+          </div>
+          <div class="ex-opt" onclick="answerEx('ex31',1,3,1,'No. n &gt; 30 es heurística para que el TLC ayude. Pero con outlier extremo y n=8, eso no rescata nada.')">
+            <span class="ic">D</span><span>Tamaño muestral n &gt; 30</span>
+          </div>
+        </div>
+        <div class="ex-feedback"></div>
+      </div>
+
+      <div class="q-2">
+        <div class="ex-question"><span class="qn">Q2</span><span>Founder dice: "la media es 25.4, mucho mayor que 4". ¿Es un buen estimador del tiempo TÍPICO en la app?</span></div>
+        <div class="ex-options">
+          <div class="ex-opt" onclick="answerEx('ex31',2,0,1,'No. La media es sensible a outliers. Un solo valor de 180 la jala de 3.5 a 25.4.')">
+            <span class="ic">A</span><span>Sí, la media es siempre el mejor estimador de tendencia central</span>
+          </div>
+          <div class="ex-opt" onclick="answerEx('ex31',2,1,1,'✓ Correcto. La mediana (3.5) refleja el comportamiento típico — 7 de 8 usuarios pasan menos de 5 min. La media se infla por el outlier de 180.')">
+            <span class="ic">B</span><span>No — la mediana (3.5) representa mucho mejor el tiempo típico; la media es engañosa con ese outlier</span>
+          </div>
+          <div class="ex-opt" onclick="answerEx('ex31',2,2,1,'No. n=8 es muy poco para que el TLC suavice un outlier tan extremo.')">
+            <span class="ic">C</span><span>Sí, porque n=8 es muestra grande para una startup</span>
+          </div>
+          <div class="ex-opt" onclick="answerEx('ex31',2,3,1,'No. Sí se puede decir mucho: la media está claramente distorsionada.')">
+            <span class="ic">D</span><span>No se puede decir sin más datos</span>
+          </div>
+        </div>
+        <div class="ex-feedback"></div>
+      </div>
+
+      <div class="q-3">
+        <div class="ex-question"><span class="qn">Q3</span><span>¿Qué deberías hacer ANTES de cualquier test?</span></div>
+        <div class="ex-options">
+          <div class="ex-opt" onclick="answerEx('ex31',3,0,2,'No. Borrar outliers sin justificación es manipular. Investigar primero la causa.')">
+            <span class="ic">A</span><span>Eliminar el 180 del dataset y correr el t-test sin él</span>
+          </div>
+          <div class="ex-opt" onclick="answerEx('ex31',3,1,2,'No. n=200 no soluciona la pregunta: ¿el 180 representa un comportamiento real o un bug?')">
+            <span class="ic">B</span><span>Aumentar n a 200 hasta que el outlier no importe</span>
+          </div>
+          <div class="ex-opt" onclick="answerEx('ex31',3,2,2,'✓ Correcto. INVESTIGAR primero (¿bug? ¿pestaña olvidada en background? ¿usuario real?). Luego usar mediana o test no paramétrico (Wilcoxon) o bootstrap. Reportar AMBOS resultados con/sin outlier para transparencia.')">
+            <span class="ic">C</span><span>Investigar el origen del 180 (bug, sesión olvidada, usuario real) y usar mediana/Wilcoxon/bootstrap; reportar con y sin outlier</span>
+          </div>
+          <div class="ex-opt" onclick="answerEx('ex31',3,3,2,'No. log-transformación enmascara el problema: el outlier de 180 sigue siendo tras el log un valor MUY distinto.')">
+            <span class="ic">D</span><span>Aplicar log-transformación y seguir con el t-test sin más</span>
+          </div>
+        </div>
+        <div class="ex-feedback"></div>
+      </div>
+
+      <div class="ex-status" id="ex31status"></div>
+    </div>
+  </div>
+</section>
+
+<!-- ============= CAP 32: FDA ERROR I/II (DEEP 4) ============= -->
+<section class="scene" data-chapter="32" id="cap32">
+  <div class="scene-inner">
+    <div data-step="1"><span class="chapter-tag">ejercicio 9 / 10 — reasoning deep // fda · errores i y ii</span></div>
+
+    <div style="display:flex;align-items:center;gap:20px;margin-bottom:14px;flex-wrap:wrap">
+      <span class="ex-emoji" style="color:var(--cyan)">💊</span>
+      <h2 class="cyber" data-step="2" style="flex:1;min-width:280px">FDA · <span class="gradient-text">errores tipo I y II en oncología</span><span class="ex-style-tag deep">DEEP · 3 PASOS</span></h2>
+    </div>
+
+    <div data-step="3" class="cyber-card" style="font-size:15px;line-height:1.7">
+      La FDA evalúa una droga oncológica nueva. Plantea: <strong>H₀: la droga NO funciona</strong> (no hay diferencia con placebo) vs <strong>H₁: la droga SÍ funciona</strong>. Aprobar = rechazar H₀. No aprobar = no rechazar. La FDA usa α = <strong>0.025</strong> para drogas críticas (no 0.05). <strong>¿Por qué?</strong>
+      <div class="ex-data-card-rich" style="margin-top:14px">
+        <div class="title">▷ MARCO REGULATORIO</div>
+        <div class="grid">
+          <div class="cell"><span class="lbl">H₀</span><span class="val" style="font-size:13px">droga = placebo</span></div>
+          <div class="cell"><span class="lbl">H₁</span><span class="val" style="font-size:13px">droga &gt; placebo</span></div>
+          <div class="cell"><span class="lbl">α (FDA crítica)</span><span class="val">0.025</span></div>
+          <div class="cell"><span class="lbl">α común</span><span class="val">0.05</span></div>
+        </div>
+      </div>
+    </div>
+
+    <div data-step="4" class="exercise-frame" id="ex32" data-max-score="3">
+      <div class="ex-num">▷ EJERCICIO 9 · 3 PREGUNTAS · DEEP</div>
+
+      <div class="q-1">
+        <div class="ex-question"><span class="qn">Q1</span><span>En este contexto, ¿qué es ERROR TIPO I (rechazar H₀ siendo H₀ verdadera)?</span></div>
+        <div class="ex-options">
+          <div class="ex-opt" onclick="answerEx('ex32',1,0,0,'✓ Correcto. Aprobar (rechazar H₀) una droga que en realidad NO funciona (H₀ era cierta). Consecuencia: pacientes oncológicos toman placebo disfrazado, mueren sin tratamiento real.')">
+            <span class="ic">A</span><span>Aprobar una droga que NO funciona — pacientes mueren creyendo tomar tratamiento real</span>
+          </div>
+          <div class="ex-opt" onclick="answerEx('ex32',1,1,0,'No. Eso es error tipo II (no rechazar H₀ siendo H₀ falsa).')">
+            <span class="ic">B</span><span>Rechazar una droga que SÍ funciona</span>
+          </div>
+          <div class="ex-opt" onclick="answerEx('ex32',1,2,0,'No. Eso sería error de cálculo o de muestreo, no error tipo I.')">
+            <span class="ic">C</span><span>No estudiar suficientes pacientes</span>
+          </div>
+          <div class="ex-opt" onclick="answerEx('ex32',1,3,0,'No. El error tipo I es conceptual, no aritmético.')">
+            <span class="ic">D</span><span>Calcular mal el p-valor</span>
+          </div>
+        </div>
+        <div class="ex-feedback"></div>
+      </div>
+
+      <div class="q-2">
+        <div class="ex-question"><span class="qn">Q2</span><span>¿Qué es ERROR TIPO II (no rechazar H₀ siendo H₀ falsa)?</span></div>
+        <div class="ex-options">
+          <div class="ex-opt" onclick="answerEx('ex32',2,0,1,'No. Eso es error tipo I.')">
+            <span class="ic">A</span><span>Aprobar una droga que NO funciona</span>
+          </div>
+          <div class="ex-opt" onclick="answerEx('ex32',2,1,1,'✓ Correcto. NO aprobar (no rechazar H₀) una droga que SÍ funciona. Consecuencia: pacientes pierden acceso a un tratamiento real porque el estudio no detectó el efecto.')">
+            <span class="ic">B</span><span>NO aprobar una droga que SÍ funciona — pacientes pierden acceso a tratamiento real</span>
+          </div>
+          <div class="ex-opt" onclick="answerEx('ex32',2,2,1,'No. n insuficiente AUMENTA la probabilidad de error tipo II, pero no es la definición.')">
+            <span class="ic">C</span><span>Tener n insuficiente</span>
+          </div>
+          <div class="ex-opt" onclick="answerEx('ex32',2,3,1,'No. Eso sería error de cómputo.')">
+            <span class="ic">D</span><span>Calcular mal el p-valor</span>
+          </div>
+        </div>
+        <div class="ex-feedback"></div>
+      </div>
+
+      <div class="q-3">
+        <div class="ex-question"><span class="qn">Q3</span><span>¿Por qué la FDA usa α = 0.025 (más estricto) en drogas críticas en vez de α = 0.05?</span></div>
+        <div class="ex-options">
+          <div class="ex-opt" onclick="answerEx('ex32',3,0,1,'No. Es al revés: α más bajo = más estricto = MENOS prob de tipo I.')">
+            <span class="ic">A</span><span>Para tener más probabilidad de detectar efectos pequeños</span>
+          </div>
+          <div class="ex-opt" onclick="answerEx('ex32',3,1,1,'✓ Correcto. α más bajo = MENOS probabilidad de error tipo I (aprobar droga mala) a costa de MÁS error tipo II (rechazar droga buena). Para drogas oncológicas se prefiere ser excesivamente cauto: el costo social de aprobar veneno es mayor que el costo de demorar una droga buena que volverá a estudiarse.')">
+            <span class="ic">B</span><span>Porque prefieren error tipo II (no aprobar droga buena) antes que tipo I (aprobar droga mala que mate gente)</span>
+          </div>
+          <div class="ex-opt" onclick="answerEx('ex32',3,2,1,'No. El α se elige por costos relativos de los errores, no por presupuesto.')">
+            <span class="ic">C</span><span>Porque las drogas oncológicas son caras de producir</span>
+          </div>
+          <div class="ex-opt" onclick="answerEx('ex32',3,3,1,'No. La FDA usa α=0.025 con justificación estadística clara, no por costumbre.')">
+            <span class="ic">D</span><span>Por capricho regulatorio histórico</span>
+          </div>
+        </div>
+        <div class="ex-feedback"></div>
+      </div>
+
+      <div class="ex-status" id="ex32status"></div>
+    </div>
+  </div>
+</section>
+
+<!-- ============= CAP 33: MULTIPLE COMPARISONS (DEEP 5) ============= -->
+<section class="scene" data-chapter="33" id="cap33">
+  <div class="scene-inner">
+    <div data-step="1"><span class="chapter-tag">ejercicio 10 / 10 — reasoning deep // multiple comparisons</span></div>
+
+    <div style="display:flex;align-items:center;gap:20px;margin-bottom:14px;flex-wrap:wrap">
+      <span class="ex-emoji" style="color:var(--magenta)">🎰</span>
+      <h2 class="cyber" data-step="2" style="flex:1;min-width:280px">Growth Team · <span class="gradient-text">la trampa de los 20 tests</span><span class="ex-style-tag deep">DEEP · 3 PASOS</span></h2>
+    </div>
+
+    <div data-step="3" class="cyber-card" style="font-size:15px;line-height:1.7">
+      Equipo de growth corre <strong>20 tests A/B independientes</strong> en una sola semana (botones, copys, colores, layouts) — todos a <strong>α = 0.05</strong>. <strong>Resultado</strong>: 19 tests salen no significativos, <strong style="color:var(--magenta)">1 test sale con p = 0.04</strong> (significativo). El analista júnior celebra: <strong>"¡encontramos algo!"</strong>. Pero algo huele raro.
+      <div class="ex-data-card-rich" style="margin-top:14px">
+        <div class="title">▷ DATOS</div>
+        <div class="grid">
+          <div class="cell"><span class="lbl">tests corridos</span><span class="val">20</span></div>
+          <div class="cell"><span class="lbl">α por test</span><span class="val">0.05</span></div>
+          <div class="cell"><span class="lbl">significativos</span><span class="val">1</span></div>
+          <div class="cell"><span class="lbl">p del único</span><span class="val">0.04</span></div>
+        </div>
+      </div>
+    </div>
+
+    <div data-step="4" class="exercise-frame" id="ex33" data-max-score="3">
+      <div class="ex-num">▷ EJERCICIO 10 · 3 PREGUNTAS · DEEP</div>
+
+      <div class="q-1">
+        <div class="ex-question"><span class="qn">Q1</span><span>Si TODAS las hipótesis nulas fueran verdaderas (ningún cambio funciona), ¿probabilidad de obtener AL MENOS 1 falso positivo en 20 tests independientes a α=0.05?</span></div>
+        <div class="ex-options">
+          <div class="ex-opt" onclick="answerEx('ex33',1,0,2,'No. 5% es la prob por test individual, no acumulada en 20 tests.')">
+            <span class="ic">A</span><span>5% (es el α)</span>
+          </div>
+          <div class="ex-opt" onclick="answerEx('ex33',1,1,2,'No. Es alta pero no 100%.')">
+            <span class="ic">B</span><span>100% (siempre sale algo)</span>
+          </div>
+          <div class="ex-opt" onclick="answerEx('ex33',1,2,2,'✓ Correcto. P(al menos 1 FP) = 1 - (1-0.05)²⁰ = 1 - 0.95²⁰ ≈ 1 - 0.358 ≈ <strong>64%</strong>. Es probable encontrar "algo" significativo por puro azar.')">
+            <span class="ic">C</span><span>~64% (= 1 - 0.95²⁰)</span>
+          </div>
+          <div class="ex-opt" onclick="answerEx('ex33',1,3,2,'No. ~50% sería para una distribución diferente. Calcula 1 - 0.95²⁰.')">
+            <span class="ic">D</span><span>~50%</span>
+          </div>
+        </div>
+        <div class="ex-feedback"></div>
+      </div>
+
+      <div class="q-2">
+        <div class="ex-question"><span class="qn">Q2</span><span>¿Qué corrección clásica aplicarías para controlar el error tipo I familia-wise?</span></div>
+        <div class="ex-options">
+          <div class="ex-opt" onclick="answerEx('ex33',2,0,0,'✓ Correcto. Bonferroni: α/k. Aquí α/20 = 0.0025. Es conservador pero el más simple y famoso. Alternativas: Holm-Bonferroni, Benjamini-Hochberg (FDR).')">
+            <span class="ic">A</span><span>Bonferroni: usar α/20 = 0.0025 por test</span>
+          </div>
+          <div class="ex-opt" onclick="answerEx('ex33',2,1,0,'No. Subir α aumenta la prob de FP, no la baja.')">
+            <span class="ic">B</span><span>Subir α a 0.10 para más potencia</span>
+          </div>
+          <div class="ex-opt" onclick="answerEx('ex33',2,2,0,'No. Repetir solo el test "ganador" sin corrección sigue ignorando el problema multicompare.')">
+            <span class="ic">C</span><span>Repetir solo el test que dio significativo</span>
+          </div>
+          <div class="ex-opt" onclick="answerEx('ex33',2,3,0,'No. Sin corrección con 20 tests, casi seguro reportas FP como hallazgo real.')">
+            <span class="ic">D</span><span>Reportar el p tal cual sin corrección</span>
+          </div>
+        </div>
+        <div class="ex-feedback"></div>
+      </div>
+
+      <div class="q-3">
+        <div class="ex-question"><span class="qn">Q3</span><span>Con corrección de Bonferroni (α=0.0025), el resultado de p=0.04 es...</span></div>
+        <div class="ex-options">
+          <div class="ex-opt" onclick="answerEx('ex33',3,0,1,'No. p=0.04 ≫ 0.0025. Bonferroni dice claramente: NO significativo.')">
+            <span class="ic">A</span><span>Significativo, hay que desplegar</span>
+          </div>
+          <div class="ex-opt" onclick="answerEx('ex33',3,1,1,'✓ Correcto. p=0.04 &gt; α corregido (0.0025) → NO significativo bajo corrección. Probablemente sea uno de los ~1 falso positivo esperado en 20 tests. Lo sano: replicar el test ganador en una nueva muestra; si vuelve a salir, ahí sí es real.')">
+            <span class="ic">B</span><span>NO significativo bajo corrección — probablemente ruido; replicar con muestra fresca antes de actuar</span>
+          </div>
+          <div class="ex-opt" onclick="answerEx('ex33',3,2,1,'No. Bajo corrección estricta, no hay zona "marginal".')">
+            <span class="ic">C</span><span>Marginal, decisión 50/50</span>
+          </div>
+          <div class="ex-opt" onclick="answerEx('ex33',3,3,1,'No. Sí se puede decidir: con la corrección queda fuera del umbral.')">
+            <span class="ic">D</span><span>No se puede decidir sin más datos</span>
+          </div>
+        </div>
+        <div class="ex-feedback"></div>
+      </div>
+
+      <div class="ex-status" id="ex33status"></div>
+    </div>
 
     <div data-step="5" data-anim="glitch" style="text-align:center;margin-top:40px">
       <div class="big-verdict gradient-text glow-magenta">FIN ACTO 3</div>
-      <p style="margin-top:18px;color:rgba(255,255,255,.78);font-size:17px">5 ejercicios resueltos. Ya puedes leer cualquier estudio o A/B test del mundo real.</p>
+      <p style="margin-top:18px;color:rgba(255,255,255,.78);font-size:17px">10 ejercicios resueltos. Ya no te van a poder vender un estudio chimbo.</p>
       <p style="margin-top:24px;color:var(--lime);font-family:'JetBrains Mono',monospace;font-size:14px;letter-spacing:3px">► Y AHORA EL JUEGO 🎮 ◄</p>
     </div>
   </div>
 </section>
 
-<!-- ============= CAP 29: GAME ARCADE ============= -->
-<section class="scene" data-chapter="29" id="cap29">
+<!-- ============= CAP 34: GAME ARCADE ============= -->
+<section class="scene" data-chapter="34" id="cap34">
   <div class="scene-inner">
     <div data-step="1"><span class="chapter-tag">acto final // detective estadistico arcade</span></div>
 
@@ -4328,7 +4982,7 @@ h3.cyber { font-family: 'JetBrains Mono', monospace; font-weight: 700; }
 /* ============================================================
    STEP MANAGER
    ============================================================ */
-const TOTAL_CHAPTERS = 29;
+const TOTAL_CHAPTERS = 34;
 let currentChapter = 1;
 let currentStep = 0;
 let stepsPerChapter = {};
@@ -4526,9 +5180,20 @@ function updateTimer() {
 }
 
 /* ============================================================
-   INTERACTIVE EXERCISES (caps 24-28)
+   INTERACTIVE EXERCISES (caps 24-33)
    ============================================================ */
 const exState = {};
+
+function _exMaxScore(exId) {
+  const frame = document.getElementById(exId);
+  return parseInt((frame && frame.dataset.maxScore) || '3', 10);
+}
+
+function _exMaybeFinalize(exId) {
+  const max = _exMaxScore(exId);
+  if ((exState[exId + '_done'] || 0) >= max) finalizeExercise(exId);
+}
+
 function answerEx(exId, qNum, optIdx, correctIdx, explanation) {
   const key = exId + '_' + qNum;
   if (exState[key]) return;
@@ -4552,31 +5217,80 @@ function answerEx(exId, qNum, optIdx, correctIdx, explanation) {
 
   if (optIdx === correctIdx) exState[exId + '_score'] = (exState[exId + '_score'] || 0) + 1;
   exState[exId + '_done'] = (exState[exId + '_done'] || 0) + 1;
-  if (exState[exId + '_done'] >= 3) finalizeExercise(exId);
+  _exMaybeFinalize(exId);
+}
+
+function answerExNumeric(exId, qNum, expected, tol, explanation) {
+  const key = exId + '_' + qNum;
+  if (exState[key]) return;
+
+  const block = document.querySelector('#' + exId + ' .q-' + qNum);
+  if (!block) return;
+  const input = document.getElementById(exId + '-q' + qNum + '-input');
+  const btn = document.getElementById(exId + '-q' + qNum + '-btn');
+  if (!input || !btn) return;
+
+  const raw = (input.value || '').trim().replace(',', '.');
+  if (raw === '' || isNaN(parseFloat(raw))) {
+    const fb = block.querySelector('.ex-feedback');
+    fb.classList.remove('ok', 'bad');
+    fb.classList.add('show', 'bad');
+    fb.innerHTML = 'Ingresa un número antes de calcular.';
+    return;
+  }
+
+  exState[key] = true;
+  const val = parseFloat(raw);
+  const ok = Math.abs(val - expected) <= tol;
+
+  input.disabled = true;
+  btn.disabled = true;
+  input.classList.add(ok ? 'correct' : 'wrong');
+
+  const fb = block.querySelector('.ex-feedback');
+  fb.classList.remove('ok', 'bad');
+  fb.classList.add('show', ok ? 'ok' : 'bad');
+  fb.innerHTML = ok
+    ? '✓ <strong>' + val + '</strong> está dentro de tolerancia. ' + explanation
+    : '✗ Tu valor: ' + val + '. Correcto: <strong>' + expected + '</strong>. ' + explanation;
+
+  if (ok) exState[exId + '_score'] = (exState[exId + '_score'] || 0) + 1;
+  exState[exId + '_done'] = (exState[exId + '_done'] || 0) + 1;
+  _exMaybeFinalize(exId);
+}
+
+function toggleFormulaHint(id) {
+  const el = document.getElementById(id);
+  if (!el) return;
+  el.classList.toggle('show');
 }
 
 function finalizeExercise(exId) {
   const score = exState[exId + '_score'] || 0;
+  const max = _exMaxScore(exId);
   const status = document.getElementById(exId + 'status');
   if (!status) return;
   status.classList.add('show');
+
+  const filled = '★'.repeat(score);
+  const empty = '☆'.repeat(max - score);
   let title, sub;
-  if (score === 3) {
+  if (score === max) {
     status.classList.add('win');
-    title = '★ ★ ★  PERFECTO';
-    sub = '3 / 3 correctas. Dominas H₀, H₁ y la decisión.';
-  } else if (score === 2) {
+    title = filled + '  PERFECTO';
+    sub = score + ' / ' + max + ' correctas. Dominas el caso.';
+  } else if (score >= max - 1) {
     status.classList.add('win');
-    title = '★ ★ ☆  CASI PERFECTO';
-    sub = '2 / 3 correctas. Repasa la pregunta que fallaste y sigues.';
-  } else if (score === 1) {
+    title = filled + empty + '  CASI PERFECTO';
+    sub = score + ' / ' + max + ' correctas. Repasa la pregunta que fallaste y sigues.';
+  } else if (score >= 1) {
     status.classList.add('lose');
-    title = '★ ☆ ☆  REVISAR';
-    sub = '1 / 3 correctas. Vuelve a leer la lectura intuitiva del caso anterior.';
+    title = filled + empty + '  REVISAR';
+    sub = score + ' / ' + max + ' correctas. Vuelve a leer la lectura intuitiva del caso anterior.';
   } else {
     status.classList.add('lose');
-    title = '☆ ☆ ☆  REPASAR';
-    sub = '0 / 3 correctas. Tranqui — vuelve a los ejemplos y repite este ejercicio.';
+    title = empty + '  REPASAR';
+    sub = '0 / ' + max + ' correctas. Tranqui — vuelve a los ejemplos y repite este ejercicio.';
   }
   status.innerHTML = '<div class="ttl">' + title + '</div><div class="sub">' + sub + '</div>';
 }
