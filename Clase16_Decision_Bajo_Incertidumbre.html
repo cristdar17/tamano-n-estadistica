@@ -168,6 +168,25 @@ h3.cyber { font-family: 'JetBrains Mono', monospace; font-weight: 700; }
 .cyber-btn-sec { background: transparent; color: var(--cyan); font-family: 'JetBrains Mono', monospace; font-size: 13px; padding: 10px 18px; border-radius: 8px; border: 1px solid var(--cyan); cursor: pointer; }
 .cyber-btn-sec:hover { background: rgba(0,240,255,.08); }
 .active-pivot { background: var(--cyan); color: var(--ink); border-color: var(--cyan); }
+.oraculo-overlay { position: fixed; inset: 0; z-index: 200; background: rgba(0,0,0,0.85); padding: 60px 20px 20px; overflow-y: auto; }
+.oraculo-banner { position: fixed; top: 0; left: 0; right: 0; background: #ffab40; color: #000; font-family: 'JetBrains Mono', monospace; font-weight: 800; text-align: center; padding: 10px; letter-spacing: 2px; z-index: 201; }
+.oraculo-card { max-width: 900px; margin: 0 auto; background: var(--ink2); border: 2px solid #ffab40; border-radius: 12px; padding: 24px; position: relative; }
+.oraculo-tabs { display: flex; gap: 2px; margin-bottom: 16px; border-bottom: 1px solid rgba(255,255,255,0.1); }
+.oraculo-tab { background: transparent; color: rgba(255,255,255,0.6); border: 0; padding: 8px 16px; cursor: pointer; font-family: 'JetBrains Mono', monospace; font-size: 12px; border-bottom: 2px solid transparent; }
+.oraculo-tab.active { color: #ffab40; border-bottom-color: #ffab40; }
+.oraculo-input { width: 100%; padding: 10px 14px; background: rgba(0,0,0,0.4); border: 1px solid rgba(255,255,255,0.2); border-radius: 6px; color: #fff; font-family: 'JetBrains Mono', monospace; font-size: 14px; margin-top: 6px; }
+.oraculo-input:focus { border-color: #ffab40; outline: none; }
+.oraculo-textarea { resize: vertical; min-height: 200px; }
+.oraculo-resultado { margin-top: 20px; }
+.oraculo-resultado table { width: 100%; border-collapse: collapse; font-family: 'JetBrains Mono', monospace; font-size: 13px; }
+.oraculo-resultado th, .oraculo-resultado td { padding: 6px 10px; border: 1px solid rgba(255,255,255,0.15); text-align: right; }
+.oraculo-resultado th { background: rgba(255,171,64,0.15); color: #ffab40; }
+.oraculo-resultado td:first-child, .oraculo-resultado th:first-child { text-align: center; }
+.oraculo-veredicto { font-size: 24px; font-weight: 800; text-align: center; padding: 16px; margin-top: 12px; border-radius: 8px; font-family: 'JetBrains Mono', monospace; }
+.oraculo-veredicto.quebrar { background: rgba(255,46,147,0.15); color: var(--magenta); border: 2px solid var(--magenta); }
+.oraculo-veredicto.sobrevivir { background: rgba(0,230,118,0.15); color: var(--green); border: 2px solid var(--green); }
+.oraculo-close { position: absolute; top: 12px; right: 12px; background: transparent; color: rgba(255,255,255,0.5); border: 0; font-size: 20px; cursor: pointer; }
+.oraculo-batch-preview { margin-top: 20px; max-height: 400px; overflow-y: auto; font-family: 'JetBrains Mono', monospace; font-size: 11px; }
 </style>
 </head>
 <body class="scanlines">
@@ -403,6 +422,42 @@ h3.cyber { font-family: 'JetBrains Mono', monospace; font-weight: 700; }
     <span><span class="hud-step-counter" id="stepCounter">Paso 1</span></span>
     <span><kbd>→</kbd> avanzar · <kbd>←</kbd> atrás · <kbd>T</kbd> oráculo</span>
   </footer>
+
+<div id="oraculoPanel" class="oraculo-overlay" style="display:none">
+  <div class="oraculo-banner">⚠ MODO DOCENTE — NO PROYECTAR ⚠</div>
+  <div class="oraculo-card">
+    <div class="oraculo-tabs">
+      <button id="oraculoTabLookup" class="oraculo-tab active">Lookup (1 ID)</button>
+      <button id="oraculoTabBatch" class="oraculo-tab">Batch (lista)</button>
+    </div>
+
+    <div id="oraculoLookup" class="oraculo-pane">
+      <label class="font-mono text-sm text-zinc-400">ID del estudiante</label>
+      <input id="oraculoInput" type="text" placeholder="cédula, código, o nombre"
+             class="oraculo-input" autocomplete="off">
+      <button id="oraculoGenerar" class="cyber-btn mt-3">Generar trayectoria</button>
+      <button id="oraculoClear" class="cyber-btn-sec mt-3 ml-2">Limpiar</button>
+      <div id="oraculoResultado" class="oraculo-resultado"></div>
+    </div>
+
+    <div id="oraculoBatch" class="oraculo-pane" style="display:none">
+      <label class="font-mono text-sm text-zinc-400">
+        Pega aquí los IDs (uno por línea, opcionalmente <code>id,nombre</code>)
+      </label>
+      <textarea id="oraculoBatchInput" rows="10"
+                placeholder="12345&#10;67890,Ana Perez&#10;..."
+                class="oraculo-input oraculo-textarea"></textarea>
+      <div class="mt-3 flex gap-2 flex-wrap">
+        <button id="oraculoBatchGen" class="cyber-btn">Generar todas</button>
+        <button id="oraculoBatchPrint" class="cyber-btn-sec">Imprimir tarjetas</button>
+        <button id="oraculoBatchCSV" class="cyber-btn-sec">Exportar CSV</button>
+      </div>
+      <div id="oraculoBatchPreview" class="oraculo-batch-preview"></div>
+    </div>
+
+    <button id="oraculoClose" class="oraculo-close">✕</button>
+  </div>
+</div>
 
   <script>
   // === Motor de simulación ===
@@ -945,6 +1000,67 @@ h3.cyber { font-family: 'JetBrains Mono', monospace; font-weight: 700; }
     actualizarActo4();
   }
   window.addEventListener('DOMContentLoaded', bindActo4);
+
+  // === Panel del Oráculo ===
+  function abrirOraculo() {
+    document.getElementById('oraculoPanel').style.display = 'block';
+    setTimeout(() => document.getElementById('oraculoInput').focus(), 100);
+  }
+  function cerrarOraculo() {
+    document.getElementById('oraculoPanel').style.display = 'none';
+  }
+  function generarLookup() {
+    const id = document.getElementById('oraculoInput').value;
+    if (!id.trim()) return;
+    const r = simularPorID(id);
+    const out = document.getElementById('oraculoResultado');
+    let html = `<div class="font-mono text-sm text-zinc-400 mb-2">ID: <strong class="text-white">${id}</strong></div>`;
+    html += '<table><thead><tr><th>Mes</th><th>Ingreso ($M)</th><th>Gasto ($M)</th><th>Caja ($M)</th></tr></thead><tbody>';
+    r.meses.forEach(m => {
+      html += `<tr><td>${m.mes}</td><td>${m.ingreso.toFixed(2)}</td><td>${m.gasto.toFixed(2)}</td><td>${m.caja.toFixed(2)}</td></tr>`;
+    });
+    html += '</tbody></table>';
+    if (r.mesQuiebra) {
+      html += `<div class="oraculo-veredicto quebrar">🔴 QUEBRASTE MES ${r.mesQuiebra}</div>`;
+    } else {
+      const cajaFinal = r.trayectoria[r.trayectoria.length - 1];
+      html += `<div class="oraculo-veredicto sobrevivir">🟢 SOBREVIVISTE — CAJA FINAL $${cajaFinal.toFixed(2)}M</div>`;
+    }
+    out.innerHTML = html;
+  }
+  function limpiarOraculo() {
+    document.getElementById('oraculoInput').value = '';
+    document.getElementById('oraculoResultado').innerHTML = '';
+    document.getElementById('oraculoInput').focus();
+  }
+  function switchOraculoTab(which) {
+    ['Lookup','Batch'].forEach(t => {
+      document.getElementById('oraculo' + t).style.display = (t === which) ? 'block' : 'none';
+      document.getElementById('oraculoTab' + t).classList.toggle('active', t === which);
+    });
+  }
+  window.addEventListener('DOMContentLoaded', () => {
+    document.addEventListener('keydown', (e) => {
+      // Don't trigger when typing in inputs
+      if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA') {
+        if (e.key === 'Escape') cerrarOraculo();
+        return;
+      }
+      if (e.key === 't' || e.key === 'T') {
+        const open = document.getElementById('oraculoPanel').style.display === 'block';
+        if (open) cerrarOraculo(); else abrirOraculo();
+      }
+      if (e.key === 'Escape') cerrarOraculo();
+    });
+    document.getElementById('oraculoGenerar').addEventListener('click', generarLookup);
+    document.getElementById('oraculoInput').addEventListener('keydown', (e) => {
+      if (e.key === 'Enter') generarLookup();
+    });
+    document.getElementById('oraculoClear').addEventListener('click', limpiarOraculo);
+    document.getElementById('oraculoClose').addEventListener('click', cerrarOraculo);
+    document.getElementById('oraculoTabLookup').addEventListener('click', () => switchOraculoTab('Lookup'));
+    document.getElementById('oraculoTabBatch').addEventListener('click', () => switchOraculoTab('Batch'));
+  });
   </script>
 </body>
 </html>
