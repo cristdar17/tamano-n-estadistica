@@ -420,7 +420,7 @@ h3.cyber { font-family: 'JetBrains Mono', monospace; font-weight: 700; }
 
   <footer class="hud-bottom">
     <span><span class="hud-step-counter" id="stepCounter">Paso 1</span></span>
-    <span><kbd>→</kbd> avanzar · <kbd>←</kbd> atrás · <kbd>T</kbd> oráculo</span>
+    <span><kbd>→</kbd> avanzar · <kbd>←</kbd> atrás · <kbd>O</kbd> oráculo</span>
   </footer>
 
 <div id="oraculoPanel" class="oraculo-overlay" style="display:none">
@@ -1046,7 +1046,7 @@ h3.cyber { font-family: 'JetBrains Mono', monospace; font-weight: 700; }
         if (e.key === 'Escape') cerrarOraculo();
         return;
       }
-      if (e.key === 't' || e.key === 'T') {
+      if (e.key === 'o' || e.key === 'O') {
         const open = document.getElementById('oraculoPanel').style.display === 'block';
         if (open) cerrarOraculo(); else abrirOraculo();
       }
