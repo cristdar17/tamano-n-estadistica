@@ -219,7 +219,7 @@ h3.cyber { font-family: 'JetBrains Mono', monospace; font-weight: 700; }
   <script>
   // === Motor de simulación ===
   const PARAMS = {
-    cajaInicial: 50,
+    cajaInicial: 15,
     ingMin: 5,  ingMax: 15,
     gasMin: 9,  gasModa: 11,  gasMax: 14,
   };
@@ -258,6 +258,32 @@ h3.cyber { font-family: 'JetBrains Mono', monospace; font-weight: 700; }
     return { trayectoria, meses, mesQuiebra };
   }
 
+  function monteCarlo(params, N = 10000) {
+    const out = [];
+    for (let i = 0; i < N; i++) out.push(simularUnaVida(params));
+    return out;
+  }
+
+  function resumen(corridas) {
+    const total = corridas.length;
+    const quiebras = corridas.filter(c => c.mesQuiebra !== null);
+    const pQuiebra = quiebras.length / total;
+    const mesesQuiebra = quiebras.map(c => c.mesQuiebra).sort((a,b) => a - b);
+    const mediaMes = mesesQuiebra.length
+      ? mesesQuiebra.reduce((a,b) => a+b, 0) / mesesQuiebra.length
+      : null;
+    const p05 = mesesQuiebra.length
+      ? mesesQuiebra[Math.floor(mesesQuiebra.length * 0.05)]
+      : null;
+    // Histograma de mes de quiebra: array de 13 conteos (index 0 = sobrevivieron)
+    const histo = new Array(13).fill(0);
+    for (const c of corridas) {
+      if (c.mesQuiebra === null) histo[0]++;
+      else histo[c.mesQuiebra]++;
+    }
+    return { total, pQuiebra, mediaMes, p05, histo };
+  }
+
   // === Tests (run with ?test=1) ===
   function runTests() {
     console.group('Tests motor de simulación');
@@ -289,6 +315,15 @@ h3.cyber { font-family: 'JetBrains Mono', monospace; font-weight: 700; }
       console.assert(r.trayectoria.length === r.meses.length + 1, 'trayectoria mal alineada');
     }
     console.log('✓ simularUnaVida: 100 corridas con longitud correcta');
+
+    // 5. monteCarlo N=10000 con PARAMS base: P(quiebra<12) entre 55-70%
+    const r = monteCarlo(PARAMS, 10000);
+    const s = resumen(r);
+    console.assert(s.pQuiebra >= 0.55 && s.pQuiebra <= 0.70,
+      `P(quiebra) fuera de [0.55, 0.70]: ${s.pQuiebra}`);
+    console.log(`✓ P(quiebra antes mes 12) = ${(s.pQuiebra*100).toFixed(1)}%`);
+    console.log(`  Mes esperado de quiebra: ${s.mediaMes?.toFixed(1)}`);
+    console.log(`  Peor 5%: mes ${s.p05}`);
 
     console.groupEnd();
   }
