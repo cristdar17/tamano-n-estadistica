@@ -56,15 +56,11 @@ Definimos distribuciones explícitas:
 
 **Beat 1 (5 min) — Demo proyectada.** Animación de "tragamonedas": el estudiante ve un mes lanzarse en vivo. Mes 1: ingreso $5.2M, gasto $14.1M → caja $41.1M (Pedro celebra). Mes 2: ingreso $13.4M, gasto $9.3M → caja $45.2M (Lucho celebra). Aceleramos meses 3–12. Llega a $0 en mes 9. Quiebra. Mostramos una segunda trayectoria que sobrevive. La pregunta queda servida.
 
-**Beat 2 (8 min) — Cada estudiante simula su propia vida.** El docente dice: *"Ahora cada uno tiene SU propia TintoApp. Vengan en orden alfabético; les voy a dar sus 12 meses."* Los estudiantes hacen fila. El docente:
+**Beat 2 (8 min) — Cada estudiante mira SU propia vida.** El docente dice: *"Cada uno tiene SU propia TintoApp. Saquen su tira (la grapamos a su guía esta mañana)."* Cada estudiante encuentra en su escritorio una tira de papel con su ID arriba y su trayectoria de 12 meses ya impresa, junto con el veredicto destacado. Llenan la tabla de su guía copiándola y dibujan a mano la línea de caja en el mini-gráfico cuadriculado. Mientras tanto, la animación cinematic sigue corriendo en loop como ambiente.
 
-1. Pulsa **T** (teclado) → aparece **Panel del Oráculo** sobre la pantalla cinematic (panel oculto del estudiantado, color distinto).
-2. Ingresa el ID del estudiante (cédula o código UTP).
-3. El panel muestra **la trayectoria completa** del estudiante: tabla de 12 meses con `ingreso`, `gasto`, `caja final`, y un veredicto destacado (`Quebraste mes X` o `Sobreviviste con $Y M`).
-4. El estudiante copia los números a su guía impresa (tabla preformateada de 12 filas).
-5. ESC o **T** cierra el panel; la clase continúa proyectada mientras la fila avanza.
+Las tiras se generan **antes de clase** con el modo Batch del Panel del Oráculo (ver Componentes técnicos). Esto elimina la fila durante la hora.
 
-Mecánica clave: la simulación es **seeded por el ID** (hash + PRNG mulberry32). Si el docente vuelve a meter el mismo ID, sale la misma trayectoria → reproducible y auditable.
+Mecánica clave: la simulación es **seeded por el ID** (hash + PRNG mulberry32). Si el docente vuelve a generar el mismo ID, sale la misma trayectoria → reproducible y auditable. Si un estudiante pierde su tira o llega tarde, el docente puede reabrir el Panel y regenerar en 5 segundos.
 
 **Beat 3 (2 min) — Cierre del acto.** El docente pregunta al aire: *"Levanten la mano los que quebraron antes del mes 6. Los que sobrevivieron. ¿Cuántos hubo en la mitad?"* Conteo a ojo. La diversidad del salón ya es Monte Carlo en miniatura. Transición: *"Y eso fueron 30 vidas. ¿Qué pasa si vemos 10.000?"*
 
@@ -173,11 +169,13 @@ const PARAMS = {
 
 ### Panel del Oráculo (modo docente)
 
-Capa oculta del estudiantado que el docente activa por teclado para entregar trayectorias personalizadas durante el Acto 2.
+Capa oculta del estudiantado para generar trayectorias personalizadas. **Uso principal: antes de clase, en modo Batch, para imprimir todas las tiras de una.** Uso secundario: modo Single durante clase, si un estudiante pierde su tira o llega tarde.
 
 **Activación:** tecla `T` (toggle). ESC cierra. El panel cubre la pantalla con overlay translúcido oscuro, banner amarillo "MODO DOCENTE — NO PROYECTAR" arriba, para evitar confusiones si está conectado al cañón.
 
-**UI del panel:**
+**Dos modos dentro del panel (tabs):**
+
+**Modo Single** — uso ocasional:
 
 - Input grande: `ID del estudiante` (acepta cédula, código UTP, o nombre)
 - Botón **Generar trayectoria**
@@ -185,6 +183,26 @@ Capa oculta del estudiantado que el docente activa por teclado para entregar tra
   - Tabla 12 filas × 4 columnas (Mes / Ingreso / Gasto / Caja final), meses 1–12 (mes 0 con caja $50M ya está impreso en la guía)
   - Banner grande con el destino: `🔴 QUEBRASTE MES 7` o `🟢 SOBREVIVISTE — CAJA FINAL $14.3M`
   - Botón "Limpiar" para el siguiente estudiante
+
+**Modo Batch** — uso antes de clase (flujo principal):
+
+- Textarea grande: el docente pega la lista de IDs (uno por línea), normalmente la lista del curso UTP.
+- Botón **Generar todas las tiras**
+- Output: una **vista imprimible** con una tira por estudiante. Cada tira ocupa ~¼ de página A4 (4 estudiantes por página, líneas punteadas de corte). Contenido por tira:
+  - ID arriba en grande
+  - Tabla 12 filas × 4 columnas
+  - Banner del destino
+  - Pie: "Grapa esto a tu guía impresa"
+- Botón **Imprimir** (atajo Ctrl+P con `@media print` que oculta todo lo demás y deja solo las tiras).
+
+Flujo del docente la mañana de la clase:
+
+1. Abre `Clase16_Decision_Bajo_Incertidumbre.html` localmente.
+2. Pulsa `T` → Modo Batch.
+3. Pega IDs del curso → Generar.
+4. Imprime (4 tiras por página, líneas de corte).
+5. Corta y grapa cada tira a una copia de la guía.
+6. Reparte al inicio de la clase.
 
 **Seeded PRNG (reproducible por ID):**
 
@@ -324,6 +342,8 @@ Script Node generador (similar a los `gen_guia8.js` y `create_taller5.js` ya pre
 | Panel del Oráculo se oculta bien | Tecla `T` lo abre, ESC lo cierra, banner amarillo evidente |
 | Mismo ID → misma trayectoria | Generar 2 veces el ID "12345" debe dar trayectoria idéntica |
 | IDs distintos → trayectorias distintas | Generar 30 IDs distintos: la dispersión de "mes de quiebra" debe ser ancha (no todos sobreviven ni todos mueren) |
+| Modo Batch imprime bien | Pegar lista de 30 IDs → vista imprimible con 4 tiras por página A4 → Ctrl+P muestra solo las tiras, oculta el resto |
+| Tiras de impresión legibles | Cada tira cabe en ¼ de A4 sin recortes; ID arriba grande; tabla legible; veredicto destacado |
 | Generador .docx funciona | Correr el script Node; abrir el .docx; verificar 4 páginas, tablas presentes, sin overflow |
 
 ## Entregables
@@ -345,9 +365,11 @@ Script Node generador (similar a los `gen_guia8.js` y `create_taller5.js` ya pre
 
 4. **Cambio en repo xolver depende del Pi.** Mitigación: snippet listo en este spec; aplicable cuando el Pi sea accesible. Si no se llega a aplicar antes de clase, el botón apunta al xolver vacío y el docente modela en vivo (degrada un poco la experiencia pero no rompe).
 
-5. **30 estudiantes haciendo fila puede comerse el Acto 2.** Mitigación: la animación cinematic del slot machine queda corriendo en loop mientras la fila avanza; el docente puede pausar fácil entre IDs. Estimado: 10–15 s por estudiante × 30 = 5–8 min, encaja en los 15 min del Acto 2 con margen. Si el grupo es más grande de lo esperado, el docente puede empezar a procesar IDs en paralelo durante Acto 1 (estudiantes que ya hayan llegado al salón).
+5. **Docente olvida procesar las tiras antes de clase.** Mitigación: incluir en el spec una "checklist del día anterior" (parte de la guía .docx, página de instrucciones para el docente como portada interna). El Modo Single sigue funcionando como red de seguridad si toca improvisar.
 
-6. **Estudiante pierde su guía o no la copia bien.** Mitigación: el Panel del Oráculo es reproducible — mismo ID, misma trayectoria. El estudiante puede volver a pedirla al final si la quiere completa.
+6. **Estudiante pierde su tira o llega tarde.** Mitigación: el Modo Single del Panel del Oráculo regenera en 5 segundos con el mismo ID, mostrando la trayectoria en pantalla; el estudiante la copia en vivo.
+
+7. **Lista de IDs no está disponible la mañana de la clase.** Mitigación: el docente puede usar nombres en vez de IDs (el hash funciona igual). Como último recurso, generar números 1..30 y asignar uno al estudiante al entrar al salón.
 
 7. **El docente puede proyectar el Panel sin querer.** Mitigación: banner amarillo gigante "MODO DOCENTE — NO PROYECTAR" + overlay oscuro que rompe la estética cinematic visualmente, para que el docente NOTE el cambio. Recomendación operativa en el spec: el docente tiene un segundo monitor (laptop sin proyectar) para esto.
 
