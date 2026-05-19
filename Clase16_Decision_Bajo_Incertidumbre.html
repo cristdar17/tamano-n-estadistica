@@ -217,6 +217,83 @@ h3.cyber { font-family: 'JetBrains Mono', monospace; font-weight: 700; }
   </footer>
 
   <script>
+  // === Motor de simulación ===
+  const PARAMS = {
+    cajaInicial: 50,
+    ingMin: 5,  ingMax: 15,
+    gasMin: 9,  gasModa: 11,  gasMax: 14,
+  };
+
+  function uniforme(a, b) { return a + Math.random() * (b - a); }
+
+  function triangular(min, mode, max) {
+    const u = Math.random();
+    const c = (mode - min) / (max - min);
+    return u < c
+      ? min + Math.sqrt(u * (max - min) * (mode - min))
+      : max - Math.sqrt((1 - u) * (max - min) * (max - mode));
+  }
+
+  function simularUnaVida(params, rng = Math.random) {
+    const _u = (a,b) => a + rng() * (b - a);
+    const _t = (mn,md,mx) => {
+      const u = rng();
+      const c = (md - mn) / (mx - mn);
+      return u < c
+        ? mn + Math.sqrt(u * (mx - mn) * (md - mn))
+        : mx - Math.sqrt((1 - u) * (mx - mn) * (mx - md));
+    };
+    let caja = params.cajaInicial;
+    const trayectoria = [caja];
+    const meses = [];
+    let mesQuiebra = null;
+    for (let m = 1; m <= 12; m++) {
+      const ing = _u(params.ingMin, params.ingMax);
+      const gas = _t(params.gasMin, params.gasModa, params.gasMax);
+      caja += ing - gas;
+      meses.push({ mes: m, ingreso: ing, gasto: gas, caja });
+      trayectoria.push(caja);
+      if (caja <= 0 && !mesQuiebra) { mesQuiebra = m; break; }
+    }
+    return { trayectoria, meses, mesQuiebra };
+  }
+
+  // === Tests (run with ?test=1) ===
+  function runTests() {
+    console.group('Tests motor de simulación');
+    // 1. uniforme dentro de rango
+    for (let i = 0; i < 1000; i++) {
+      const v = uniforme(5, 15);
+      console.assert(v >= 5 && v <= 15, `uniforme fuera de rango: ${v}`);
+    }
+    console.log('✓ uniforme: 1000 valores en [5,15]');
+
+    // 2. triangular respeta min/max
+    for (let i = 0; i < 1000; i++) {
+      const v = triangular(9, 11, 14);
+      console.assert(v >= 9 && v <= 14, `triangular fuera de rango: ${v}`);
+    }
+    console.log('✓ triangular: 1000 valores en [9,14]');
+
+    // 3. triangular tiene moda cerca de 11
+    const sum = Array.from({length: 100000}, () => triangular(9, 11, 14)).reduce((a,b)=>a+b,0);
+    const mean = sum / 100000;
+    // E[triangular] = (a+b+c)/3 = (9+11+14)/3 = 11.33
+    console.assert(Math.abs(mean - 11.33) < 0.1, `media triangular: ${mean}`);
+    console.log(`✓ media triangular ≈ 11.33: got ${mean.toFixed(3)}`);
+
+    // 4. simularUnaVida produce 12 meses o menos (si quiebra)
+    for (let i = 0; i < 100; i++) {
+      const r = simularUnaVida(PARAMS);
+      console.assert(r.meses.length <= 12, `más de 12 meses: ${r.meses.length}`);
+      console.assert(r.trayectoria.length === r.meses.length + 1, 'trayectoria mal alineada');
+    }
+    console.log('✓ simularUnaVida: 100 corridas con longitud correcta');
+
+    console.groupEnd();
+  }
+  if (new URLSearchParams(location.search).get('test') === '1') runTests();
+
   // === Step reveal controller (igual a Clase15) ===
   const scenes = ['acto1','acto2','acto3','acto4'];
   let currentScene = 0;
