@@ -171,7 +171,7 @@ const PARAMS = {
 
 Capa oculta del estudiantado para generar trayectorias personalizadas. **Uso principal: antes de clase, en modo Batch, para imprimir todas las tiras de una.** Uso secundario: modo Single durante clase, si un estudiante pierde su tira o llega tarde.
 
-**Activación:** tecla `T` (toggle). ESC cierra. El panel cubre la pantalla con overlay translúcido oscuro, banner amarillo "MODO DOCENTE — NO PROYECTAR" arriba, para evitar confusiones si está conectado al cañón.
+**Activación:** tecla `O` (de "Oráculo" — toggle). ESC cierra. La tecla `T` se mantiene libre para el timer del docente (mismo binding que Clase15). El panel cubre la pantalla con overlay translúcido oscuro, banner amarillo "MODO DOCENTE — NO PROYECTAR" arriba, para evitar confusiones si está conectado al cañón.
 
 **Dos modos dentro del panel (tabs):**
 
@@ -198,7 +198,7 @@ Capa oculta del estudiantado para generar trayectorias personalizadas. **Uso pri
 Flujo del docente la mañana de la clase:
 
 1. Abre `Clase16_Decision_Bajo_Incertidumbre.html` localmente.
-2. Pulsa `T` → Modo Batch.
+2. Pulsa `O` → Modo Batch.
 3. Pega IDs del curso → Generar.
 4. Imprime (4 tiras por página, líneas de corte).
 5. Corta y grapa cada tira a una copia de la guía.
@@ -339,7 +339,7 @@ Script Node generador (similar a los `gen_guia8.js` y `create_taller5.js` ya pre
 | Palancas Acto 4 responden | <200ms para actualizar P(sobrevivir) al mover un slider |
 | Link xolver carga TintoApp | Click en "Abrir en xolver" llega con modelo precargado |
 | Móvil no se rompe | Probar en celular: HUD, navegación, Canvas escalan |
-| Panel del Oráculo se oculta bien | Tecla `T` lo abre, ESC lo cierra, banner amarillo evidente |
+| Panel del Oráculo se oculta bien | Tecla `O` lo abre, ESC lo cierra, banner amarillo evidente |
 | Mismo ID → misma trayectoria | Generar 2 veces el ID "12345" debe dar trayectoria idéntica |
 | IDs distintos → trayectorias distintas | Generar 30 IDs distintos: la dispersión de "mes de quiebra" debe ser ancha (no todos sobreviven ni todos mueren) |
 | Modo Batch imprime bien | Pegar lista de 30 IDs → vista imprimible con 4 tiras por página A4 → Ctrl+P muestra solo las tiras, oculta el resto |
