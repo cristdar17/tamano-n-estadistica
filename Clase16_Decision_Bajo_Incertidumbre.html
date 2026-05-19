@@ -164,6 +164,9 @@ h3.cyber { font-family: 'JetBrains Mono', monospace; font-weight: 700; }
 .cyber-btn.lime:hover { background: rgba(204,255,0,.1); box-shadow: 0 0 24px rgba(204,255,0,.4); }
 .cyber-btn.violet { color: var(--violet); border-color: var(--violet); }
 .cyber-btn.violet:hover { background: rgba(179,136,255,.1); box-shadow: 0 0 24px rgba(179,136,255,.4); }
+.cyber-btn:disabled { opacity: 0.5; cursor: not-allowed; }
+.cyber-btn-sec { background: transparent; color: var(--cyan); font-family: 'JetBrains Mono', monospace; font-size: 13px; padding: 10px 18px; border-radius: 8px; border: 1px solid var(--cyan); cursor: pointer; }
+.cyber-btn-sec:hover { background: rgba(0,240,255,.08); }
 </style>
 </head>
 <body class="scanlines">
@@ -244,7 +247,47 @@ h3.cyber { font-family: 'JetBrains Mono', monospace; font-weight: 700; }
     <section class="scene" id="acto2">
       <div class="scene-inner">
         <span class="chapter-tag">Acto 02 · Una vida posible</span>
-        <h1 class="cyber gradient-text-2" data-step data-anim="zoom">Acto 2 (placeholder)</h1>
+
+        <h1 class="cyber gradient-text-2 mb-8" data-step data-anim="zoom">
+          Una sola vida posible
+        </h1>
+
+        <div class="cyber-card violet mb-6" data-step data-anim="slide-left">
+          <h3 class="cyber mb-3" style="color:var(--violet)">📐 Distribuciones (no promedios)</h3>
+          <div class="font-mono text-sm space-y-1">
+            <div>Ingresos ~ <span class="glow-cyan">Uniforme($2M, $16M)</span></div>
+            <div>Gastos ~ <span class="glow-magenta">Triangular($9M, moda $14M, $18M)</span></div>
+          </div>
+        </div>
+
+        <div class="grid md:grid-cols-[1fr_2fr] gap-6 mb-8" data-step data-anim="zoom">
+          <div class="cyber-card">
+            <h3 class="cyber mb-3 text-sm">🎰 EL MES</h3>
+            <div class="font-mono space-y-2">
+              <div>Mes: <span id="acto2Mes" class="glow-cyan text-2xl">0</span></div>
+              <div>Ingreso: <span id="acto2Ing" class="text-cyan-300">—</span></div>
+              <div>Gasto: <span id="acto2Gas" class="text-pink-300">—</span></div>
+              <div class="pt-2 border-t border-zinc-700">
+                Caja: <span id="acto2Caja" class="text-2xl glow-lime">$50.0M</span>
+              </div>
+            </div>
+            <div class="mt-4 flex gap-2">
+              <button id="acto2Lanzar" class="cyber-btn">Lanzar mes →</button>
+              <button id="acto2Reset" class="cyber-btn-sec">Otra vida</button>
+            </div>
+            <div id="acto2Veredicto" class="mt-4 text-center font-bold hidden"></div>
+          </div>
+          <div class="cyber-card cyan">
+            <canvas id="acto2Canvas" width="700" height="320" class="w-full"></canvas>
+          </div>
+        </div>
+
+        <p class="text-center text-zinc-400" data-step data-anim="slide-left">
+          <em>Esa fue UNA vida. ¿Y si lanzamos otra?</em>
+        </p>
+        <p class="text-center text-zinc-400 mt-2" data-step data-anim="slide-right">
+          <em>¿Y si las viéramos TODAS?</em> → Acto 3
+        </p>
       </div>
     </section>
     <section class="scene" id="acto3">
@@ -522,6 +565,101 @@ h3.cyber { font-family: 'JetBrains Mono', monospace; font-weight: 700; }
     ctx.stroke();
     ctx.shadowBlur = 0;
   }
+  // === Acto 2 slot machine ===
+  let acto2Estado = null;
+  function acto2Reset() {
+    acto2Estado = { caja: PARAMS.cajaInicial, mes: 0, historia: [{mes:0, caja: PARAMS.cajaInicial}], quebrado: false };
+    document.getElementById('acto2Mes').textContent = '0';
+    document.getElementById('acto2Ing').textContent = '—';
+    document.getElementById('acto2Gas').textContent = '—';
+    document.getElementById('acto2Caja').textContent = '$' + PARAMS.cajaInicial.toFixed(1) + 'M';
+    document.getElementById('acto2Veredicto').classList.add('hidden');
+    document.getElementById('acto2Lanzar').disabled = false;
+    drawActo2Canvas();
+  }
+  function acto2LanzarMes() {
+    if (!acto2Estado || acto2Estado.quebrado) return;
+    acto2Estado.mes++;
+    const ing = uniforme(PARAMS.ingMin, PARAMS.ingMax);
+    const gas = triangular(PARAMS.gasMin, PARAMS.gasModa, PARAMS.gasMax);
+    acto2Estado.caja += ing - gas;
+    acto2Estado.historia.push({mes: acto2Estado.mes, caja: acto2Estado.caja});
+    document.getElementById('acto2Mes').textContent = acto2Estado.mes;
+    document.getElementById('acto2Ing').textContent = '$' + ing.toFixed(1) + 'M';
+    document.getElementById('acto2Gas').textContent = '$' + gas.toFixed(1) + 'M';
+    document.getElementById('acto2Caja').textContent = '$' + acto2Estado.caja.toFixed(1) + 'M';
+    if (acto2Estado.caja <= 0) {
+      acto2Estado.quebrado = true;
+      const v = document.getElementById('acto2Veredicto');
+      v.classList.remove('hidden');
+      v.style.color = 'var(--magenta)';
+      v.textContent = `🔴 QUEBRASTE MES ${acto2Estado.mes}`;
+      document.getElementById('acto2Lanzar').disabled = true;
+    } else if (acto2Estado.mes >= 12) {
+      const v = document.getElementById('acto2Veredicto');
+      v.classList.remove('hidden');
+      v.style.color = 'var(--green)';
+      v.textContent = `🟢 SOBREVIVISTE — $${acto2Estado.caja.toFixed(1)}M`;
+      document.getElementById('acto2Lanzar').disabled = true;
+    }
+    drawActo2Canvas();
+  }
+  function drawActo2Canvas() {
+    const c = document.getElementById('acto2Canvas');
+    if (!c) return;
+    const ctx = c.getContext('2d');
+    const W = c.width, H = c.height;
+    ctx.clearRect(0, 0, W, H);
+    // ejes
+    ctx.strokeStyle = 'rgba(255,255,255,0.15)';
+    ctx.lineWidth = 1;
+    ctx.beginPath();
+    ctx.moveTo(40, 20); ctx.lineTo(40, H-30); ctx.lineTo(W-20, H-30);
+    ctx.stroke();
+    ctx.fillStyle = 'rgba(255,255,255,0.4)';
+    ctx.font = '11px JetBrains Mono';
+    for (let m = 0; m <= 12; m += 3) {
+      const x = 40 + (W-60) * (m/12);
+      ctx.fillText('M' + m, x-8, H-12);
+    }
+    for (let y = 0; y <= 60; y += 20) {
+      const py = H-30 - (H-50) * (y/60);
+      ctx.fillText('$' + y + 'M', 4, py+3);
+    }
+    // línea $0
+    ctx.strokeStyle = 'rgba(255,82,82,0.4)';
+    ctx.beginPath();
+    ctx.moveTo(40, H-30 - (H-50) * 0/60);
+    ctx.lineTo(W-20, H-30 - (H-50) * 0/60);
+    ctx.stroke();
+    // trayectoria
+    if (acto2Estado && acto2Estado.historia.length > 0) {
+      ctx.strokeStyle = '#00f0ff';
+      ctx.lineWidth = 2.5;
+      ctx.shadowColor = '#00f0ff';
+      ctx.shadowBlur = 10;
+      ctx.beginPath();
+      acto2Estado.historia.forEach((p, i) => {
+        const x = 40 + (W-60) * (p.mes/12);
+        const y = H-30 - (H-50) * (Math.max(0, p.caja)/60);
+        if (i === 0) ctx.moveTo(x, y); else ctx.lineTo(x, y);
+      });
+      ctx.stroke();
+      ctx.shadowBlur = 0;
+      acto2Estado.historia.forEach(p => {
+        const x = 40 + (W-60) * (p.mes/12);
+        const y = H-30 - (H-50) * (Math.max(0, p.caja)/60);
+        ctx.fillStyle = p.caja <= 0 ? '#ff5252' : '#00f0ff';
+        ctx.beginPath(); ctx.arc(x, y, 4, 0, Math.PI*2); ctx.fill();
+      });
+    }
+  }
+
+  window.addEventListener('DOMContentLoaded', () => {
+    acto2Reset();
+    document.getElementById('acto2Lanzar').addEventListener('click', acto2LanzarMes);
+    document.getElementById('acto2Reset').addEventListener('click', acto2Reset);
+  });
   window.addEventListener('DOMContentLoaded', () => {
     drawActo1Canvas();
     if (window.renderMathInElement) {
