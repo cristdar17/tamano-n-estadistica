@@ -11,7 +11,7 @@ status: aprobado
 - **Público:** mismos estudiantes de Clases 7–15 (estadística aplicada, UTP). Ya vieron probabilidad, intervalos, AB testing, hipótesis.
 - **Duración:** 60 min exactos (última clase del curso).
 - **Entrega:** archivo HTML único `Clase16_Decision_Bajo_Incertidumbre.html` proyectado por el docente; estudiantes con laptop para el hands-on del Acto 4.
-- **Interacción:** cada estudiante simula **su propia trayectoria** (seeded por ID) escribiéndola en la guía impresa que llenan durante toda la clase. El docente es el oráculo de datos. Hands-on en xolver al final.
+- **Interacción:** cada estudiante recibe **una tarjeta pre-impresa con su trayectoria personalizada** (seeded por ID) y la transcribe a su guía durante el Acto 2. El Panel del Oráculo del HTML queda como modo lookup de emergencia. Hands-on en xolver al final.
 - **Stack:** Tailwind CDN + Inter/JetBrains Mono + KaTeX. Sin build. Sin dependencias locales. Patrón idéntico a Clase15.
 
 ## Identidad visual
@@ -56,11 +56,19 @@ Definimos distribuciones explícitas:
 
 **Beat 1 (5 min) — Demo proyectada.** Animación de "tragamonedas": el estudiante ve un mes lanzarse en vivo. Mes 1: ingreso $5.2M, gasto $14.1M → caja $41.1M (Pedro celebra). Mes 2: ingreso $13.4M, gasto $9.3M → caja $45.2M (Lucho celebra). Aceleramos meses 3–12. Llega a $0 en mes 9. Quiebra. Mostramos una segunda trayectoria que sobrevive. La pregunta queda servida.
 
-**Beat 2 (8 min) — Cada estudiante mira SU propia vida.** El docente dice: *"Cada uno tiene SU propia TintoApp. Saquen su tira (la grapamos a su guía esta mañana)."* Cada estudiante encuentra en su escritorio una tira de papel con su ID arriba y su trayectoria de 12 meses ya impresa, junto con el veredicto destacado. Llenan la tabla de su guía copiándola y dibujan a mano la línea de caja en el mini-gráfico cuadriculado. Mientras tanto, la animación cinematic sigue corriendo en loop como ambiente.
+**Beat 2 (8 min) — Cada estudiante recibe su propia vida.** Los estudiantes **ya tienen su tarjeta personalizada** (pre-impresa, repartida al entrar al salón, boca abajo o en sobre cerrado). El docente dice: *"Ahora cada uno tiene SU propia TintoApp. Den la vuelta a su tarjeta."*
 
-Las tiras se generan **antes de clase** con el modo Batch del Panel del Oráculo (ver Componentes técnicos). Esto elimina la fila durante la hora.
+La tarjeta contiene:
 
-Mecánica clave: la simulación es **seeded por el ID** (hash + PRNG mulberry32). Si el docente vuelve a generar el mismo ID, sale la misma trayectoria → reproducible y auditable. Si un estudiante pierde su tira o llega tarde, el docente puede reabrir el Panel y regenerar en 5 segundos.
+- ID del estudiante (cédula / código)
+- Tabla de 12 meses con ingreso, gasto, caja final
+- Veredicto: `🔴 QUEBRASTE MES X` o `🟢 SOBREVIVISTE — CAJA FINAL $Y M`
+
+Cada estudiante copia su tabla a la guía (rellena meses 1–12 + dibuja la trayectoria en el mini-gráfico cuadriculado). Mientras tanto, la animación cinematic del slot machine sigue en loop como ambiente musical-visual.
+
+**Panel del Oráculo en clase** queda como **modo de emergencia/lookup**: si un estudiante perdió su tarjeta, llegó tarde, o quiere verificar, levanta la mano → el docente activa el panel con **T**, ingresa su ID, y le muestra/reimprime su trayectoria en pantalla del laptop (no proyectada).
+
+Mecánica clave: la simulación es **seeded por el ID** (hash + PRNG mulberry32). Mismo ID = misma trayectoria. La pre-impresión y el lookup en clase usan la misma función → consistencia garantizada.
 
 **Beat 3 (2 min) — Cierre del acto.** El docente pregunta al aire: *"Levanten la mano los que quebraron antes del mes 6. Los que sobrevivieron. ¿Cuántos hubo en la mitad?"* Conteo a ojo. La diversidad del salón ya es Monte Carlo en miniatura. Transición: *"Y eso fueron 30 vidas. ¿Qué pasa si vemos 10.000?"*
 
@@ -169,40 +177,30 @@ const PARAMS = {
 
 ### Panel del Oráculo (modo docente)
 
-Capa oculta del estudiantado para generar trayectorias personalizadas. **Uso principal: antes de clase, en modo Batch, para imprimir todas las tiras de una.** Uso secundario: modo Single durante clase, si un estudiante pierde su tira o llega tarde.
+Capa oculta del estudiantado con **dos modos de operación**:
 
-**Activación:** tecla `O` (de "Oráculo" — toggle). ESC cierra. La tecla `T` se mantiene libre para el timer del docente (mismo binding que Clase15). El panel cubre la pantalla con overlay translúcido oscuro, banner amarillo "MODO DOCENTE — NO PROYECTAR" arriba, para evitar confusiones si está conectado al cañón.
+- **Batch (pre-clase):** docente pega el roster completo y genera todas las tarjetas para imprimir.
+- **Lookup (en clase):** modo emergencia — un solo ID a la vez para estudiantes que perdieron su tarjeta.
 
-**Dos modos dentro del panel (tabs):**
+**Activación:** tecla `T` (toggle). ESC cierra. Overlay translúcido oscuro, banner amarillo "MODO DOCENTE — NO PROYECTAR" arriba.
 
-**Modo Single** — uso ocasional:
+**Modo Batch — UI:**
 
-- Input grande: `ID del estudiante` (acepta cédula, código UTP, o nombre)
+- Textarea grande: pegar lista de IDs (uno por línea, o CSV con `id,nombre`)
+- Botón **Generar todas las tarjetas**
+- Botón **Imprimir tarjetas** → abre vista lista para imprimir: grilla de tarjetas (4 por hoja A4), cada una con ID, nombre opcional, tabla 12 meses, veredicto. Estilo limpio (no cyberpunk) para legibilidad en papel.
+- Botón **Exportar CSV** → descarga `trayectorias_clase16.csv` con todas las trayectorias (backup).
+
+**Modo Lookup — UI:**
+
+- Input grande: `ID del estudiante`
 - Botón **Generar trayectoria**
 - Tarjeta de resultado con:
   - Tabla 12 filas × 4 columnas (Mes / Ingreso / Gasto / Caja final), meses 1–12 (mes 0 con caja $50M ya está impreso en la guía)
   - Banner grande con el destino: `🔴 QUEBRASTE MES 7` o `🟢 SOBREVIVISTE — CAJA FINAL $14.3M`
   - Botón "Limpiar" para el siguiente estudiante
 
-**Modo Batch** — uso antes de clase (flujo principal):
-
-- Textarea grande: el docente pega la lista de IDs (uno por línea), normalmente la lista del curso UTP.
-- Botón **Generar todas las tiras**
-- Output: una **vista imprimible** con una tira por estudiante. Cada tira ocupa ~¼ de página A4 (4 estudiantes por página, líneas punteadas de corte). Contenido por tira:
-  - ID arriba en grande
-  - Tabla 12 filas × 4 columnas
-  - Banner del destino
-  - Pie: "Grapa esto a tu guía impresa"
-- Botón **Imprimir** (atajo Ctrl+P con `@media print` que oculta todo lo demás y deja solo las tiras).
-
-Flujo del docente la mañana de la clase:
-
-1. Abre `Clase16_Decision_Bajo_Incertidumbre.html` localmente.
-2. Pulsa `O` → Modo Batch.
-3. Pega IDs del curso → Generar.
-4. Imprime (4 tiras por página, líneas de corte).
-5. Corta y grapa cada tira a una copia de la guía.
-6. Reparte al inicio de la clase.
+Ambos modos usan la **misma función seeded** → garantía de consistencia entre la tarjeta impresa y el lookup en clase.
 
 **Seeded PRNG (reproducible por ID):**
 
@@ -339,11 +337,12 @@ Script Node generador (similar a los `gen_guia8.js` y `create_taller5.js` ya pre
 | Palancas Acto 4 responden | <200ms para actualizar P(sobrevivir) al mover un slider |
 | Link xolver carga TintoApp | Click en "Abrir en xolver" llega con modelo precargado |
 | Móvil no se rompe | Probar en celular: HUD, navegación, Canvas escalan |
-| Panel del Oráculo se oculta bien | Tecla `O` lo abre, ESC lo cierra, banner amarillo evidente |
+| Panel del Oráculo se oculta bien | Tecla `T` lo abre, ESC lo cierra, banner amarillo evidente |
+| Batch genera todas las tarjetas | Pegar lista de 30 IDs en textarea → ver 30 tarjetas en la vista de impresión |
+| Vista de impresión cuadra A4 | "Imprimir tarjetas" abre print preview con 4 tarjetas por A4, sin overflow, márgenes limpios |
+| CSV de backup descarga bien | Botón "Exportar CSV" descarga archivo con todas las trayectorias en formato tabular |
 | Mismo ID → misma trayectoria | Generar 2 veces el ID "12345" debe dar trayectoria idéntica |
 | IDs distintos → trayectorias distintas | Generar 30 IDs distintos: la dispersión de "mes de quiebra" debe ser ancha (no todos sobreviven ni todos mueren) |
-| Modo Batch imprime bien | Pegar lista de 30 IDs → vista imprimible con 4 tiras por página A4 → Ctrl+P muestra solo las tiras, oculta el resto |
-| Tiras de impresión legibles | Cada tira cabe en ¼ de A4 sin recortes; ID arriba grande; tabla legible; veredicto destacado |
 | Generador .docx funciona | Correr el script Node; abrir el .docx; verificar 4 páginas, tablas presentes, sin overflow |
 
 ## Entregables
@@ -365,13 +364,9 @@ Script Node generador (similar a los `gen_guia8.js` y `create_taller5.js` ya pre
 
 4. **Cambio en repo xolver depende del Pi.** Mitigación: snippet listo en este spec; aplicable cuando el Pi sea accesible. Si no se llega a aplicar antes de clase, el botón apunta al xolver vacío y el docente modela en vivo (degrada un poco la experiencia pero no rompe).
 
-5. **Docente olvida procesar las tiras antes de clase.** Mitigación: incluir en el spec una "checklist del día anterior" (parte de la guía .docx, página de instrucciones para el docente como portada interna). El Modo Single sigue funcionando como red de seguridad si toca improvisar.
+5. **Estudiante perdió o no recibió su tarjeta.** Mitigación: el Modo Lookup del Panel del Oráculo permite regenerarla en segundos (misma seed = misma trayectoria). El docente le muestra en su laptop o le pasa el papel con los números a mano. Cero fricción.
 
-6. **Estudiante pierde su tira o llega tarde.** Mitigación: el Modo Single del Panel del Oráculo regenera en 5 segundos con el mismo ID, mostrando la trayectoria en pantalla; el estudiante la copia en vivo.
-
-7. **Lista de IDs no está disponible la mañana de la clase.** Mitigación: el docente puede usar nombres en vez de IDs (el hash funciona igual). Como último recurso, generar números 1..30 y asignar uno al estudiante al entrar al salón.
-
-7. **El docente puede proyectar el Panel sin querer.** Mitigación: banner amarillo gigante "MODO DOCENTE — NO PROYECTAR" + overlay oscuro que rompe la estética cinematic visualmente, para que el docente NOTE el cambio. Recomendación operativa en el spec: el docente tiene un segundo monitor (laptop sin proyectar) para esto.
+6. **El docente puede proyectar el Panel sin querer.** Mitigación: banner amarillo gigante "MODO DOCENTE — NO PROYECTAR" + overlay oscuro que rompe la estética cinematic visualmente, para que el docente NOTE el cambio. Recomendación operativa en el spec: el docente tiene un segundo monitor (laptop sin proyectar) para esto.
 
 ## Fuera de alcance (YAGNI)
 
