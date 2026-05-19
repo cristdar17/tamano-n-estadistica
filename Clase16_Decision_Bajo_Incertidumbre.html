@@ -1,0 +1,282 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Clase 16 — Decisión bajo incertidumbre</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;700;800&family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+<!-- KaTeX -->
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.css" crossorigin="anonymous">
+<script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.js" crossorigin="anonymous"></script>
+<script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/contrib/auto-render.min.js" crossorigin="anonymous"></script>
+<style>
+:root {
+  --magenta: #ff2e93;
+  --cyan: #00f0ff;
+  --violet: #b388ff;
+  --lime: #ccff00;
+  --orange: #ffab40;
+  --red: #ff5252;
+  --green: #00e676;
+  --ink: #0a0014;
+  --ink2: #13031f;
+}
+* { -webkit-tap-highlight-color: transparent; box-sizing: border-box; }
+html { scroll-behavior: smooth; }
+body {
+  font-family: 'Inter', system-ui, sans-serif;
+  background: var(--ink);
+  color: #fff;
+  min-height: 100vh;
+  overflow-x: hidden;
+  position: relative;
+  margin: 0;
+}
+
+/* ===== BACKGROUND ===== */
+.bg-grid {
+  position: fixed; inset: 0; z-index: 0; pointer-events: none;
+  background-image:
+    linear-gradient(rgba(255,46,147,.04) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(0,240,255,.04) 1px, transparent 1px);
+  background-size: 60px 60px;
+  mask-image: radial-gradient(ellipse at center, #000 30%, transparent 80%);
+}
+.bg-orb {
+  position: fixed; z-index: 0; pointer-events: none;
+  border-radius: 50%; filter: blur(80px); opacity: .3;
+  animation: orbFloat 20s ease-in-out infinite alternate;
+}
+.bg-orb-1 { width: 500px; height: 500px; background: var(--magenta); top: -100px; left: -100px; }
+.bg-orb-2 { width: 400px; height: 400px; background: var(--cyan); bottom: -100px; right: -50px; animation-delay: -7s; }
+.bg-orb-3 { width: 300px; height: 300px; background: var(--violet); top: 50%; left: 60%; animation-delay: -14s; }
+@keyframes orbFloat { 0%{transform:translate(0,0) scale(1);} 100%{transform:translate(40px,-30px) scale(1.1);} }
+.scanlines::before {
+  content: ''; position: fixed; inset: 0; z-index: 1; pointer-events: none;
+  background: repeating-linear-gradient(0deg, rgba(255,255,255,.015) 0 1px, transparent 1px 3px);
+  mix-blend-mode: overlay;
+}
+
+/* ===== HUD ===== */
+.hud-top {
+  position: fixed; top: 0; left: 0; right: 0; z-index: 50;
+  padding: 14px 22px;
+  background: linear-gradient(180deg, rgba(10,0,20,.95), rgba(10,0,20,.6) 70%, transparent);
+  backdrop-filter: blur(12px);
+  display: flex; align-items: center; gap: 18px;
+  border-bottom: 1px solid rgba(255,46,147,.15);
+}
+.hud-logo { font-family: 'JetBrains Mono', monospace; font-weight: 800; font-size: 13px; letter-spacing: 2px; color: var(--magenta); text-shadow: 0 0 12px var(--magenta); }
+.hud-progress { flex: 1; display: flex; gap: 4px; }
+.hud-seg { flex: 1; height: 4px; border-radius: 2px; background: rgba(255,255,255,.08); transition: all .4s; position: relative; overflow: hidden; cursor: pointer; }
+.hud-seg.done { background: rgba(255,46,147,.4); }
+.hud-seg.active { background: var(--magenta); box-shadow: 0 0 14px var(--magenta), 0 0 28px rgba(255,46,147,.5); }
+.hud-seg.active::after { content: ''; position: absolute; inset: 0; background: linear-gradient(90deg, transparent, rgba(255,255,255,.6), transparent); animation: hudPulse 2s linear infinite; }
+@keyframes hudPulse { 0% { transform: translateX(-100%);} 100% { transform: translateX(100%);} }
+.hud-counter { font-family: 'JetBrains Mono', monospace; font-size: 12px; color: var(--cyan); letter-spacing: 1px; min-width: 80px; text-align: right; }
+.hud-help-btn { font-family: 'JetBrains Mono', monospace; font-size: 11px; color: rgba(255,255,255,.6); border: 1px solid rgba(255,255,255,.15); padding: 4px 10px; border-radius: 4px; cursor: pointer; transition: all .2s; background: transparent; }
+.hud-help-btn:hover { color: var(--cyan); border-color: var(--cyan); box-shadow: 0 0 12px rgba(0,240,255,.3); }
+
+.hud-bottom {
+  position: fixed; bottom: 0; left: 0; right: 0; z-index: 50;
+  padding: 12px 22px; display: flex; justify-content: space-between; align-items: center;
+  background: linear-gradient(0deg, rgba(10,0,20,.95), transparent);
+  pointer-events: none;
+  font-family: 'JetBrains Mono', monospace; font-size: 11px; color: rgba(255,255,255,.4);
+  letter-spacing: 1px;
+}
+.hud-step-counter { color: var(--cyan); }
+.hud-next-hint { display: inline-block; color: var(--magenta); animation: blink 1.4s ease-in-out infinite; }
+@keyframes blink { 0%, 100% { opacity: 1; } 50% { opacity: 0.3; } }
+.hud-timer { color: var(--lime); display: none; }
+.hud-timer.show { display: inline; }
+
+.mobile-nav { position: fixed; bottom: 50px; right: 20px; z-index: 60; display: none; gap: 10px; }
+.mobile-nav button { width: 56px; height: 56px; border-radius: 50%; background: rgba(10,0,20,.85); border: 2px solid var(--magenta); color: var(--magenta); font-size: 24px; cursor: pointer; box-shadow: 0 0 20px rgba(255,46,147,.4); display: flex; align-items: center; justify-content: center; }
+@media (max-width: 768px) { .mobile-nav { display: flex; } }
+
+/* ===== HELP OVERLAY ===== */
+.help-overlay { position: fixed; inset: 0; z-index: 100; background: rgba(10,0,20,.92); backdrop-filter: blur(20px); display: flex; align-items: center; justify-content: center; opacity: 0; pointer-events: none; transition: opacity .3s; }
+.help-overlay.show { opacity: 1; pointer-events: auto; }
+.help-card { max-width: 600px; padding: 40px; border: 1px solid var(--cyan); border-radius: 12px; background: rgba(0,240,255,.04); box-shadow: 0 0 60px rgba(0,240,255,.15); }
+.help-card h2 { font-family: 'JetBrains Mono', monospace; color: var(--cyan); margin-bottom: 24px; text-transform: uppercase; letter-spacing: 3px; font-size: 14px; }
+.help-card kbd { font-family: 'JetBrains Mono', monospace; background: rgba(255,46,147,.15); border: 1px solid var(--magenta); color: var(--magenta); padding: 3px 9px; border-radius: 4px; font-size: 12px; min-width: 38px; display: inline-block; text-align: center; }
+.help-card .row { display: flex; align-items: center; gap: 14px; padding: 8px 0; font-size: 14px; }
+
+/* ===== SECTIONS ===== */
+.scene { position: relative; z-index: 2; min-height: 100vh; padding: 90px 24px 70px; display: flex; align-items: center; justify-content: center; }
+.scene-inner { max-width: 1100px; width: 100%; margin: 0 auto; }
+.chapter-tag { display: inline-flex; align-items: center; gap: 10px; font-family: 'JetBrains Mono', monospace; font-size: 11px; color: var(--cyan); letter-spacing: 3px; text-transform: uppercase; padding: 6px 14px; border: 1px solid rgba(0,240,255,.3); border-radius: 50px; margin-bottom: 24px; }
+.chapter-tag::before { content: ''; width: 8px; height: 8px; border-radius: 50%; background: var(--cyan); box-shadow: 0 0 10px var(--cyan); animation: tagPulse 1.5s ease-in-out infinite; }
+@keyframes tagPulse { 50% { opacity: .4; } }
+
+/* ===== STEP REVEAL ===== */
+[data-step] { opacity: 0; transform: translateY(20px); transition: opacity .8s cubic-bezier(.2,.7,.3,1), transform .8s cubic-bezier(.2,.7,.3,1); pointer-events: none; }
+[data-step].is-revealed { opacity: 1; transform: translateY(0); pointer-events: auto; }
+[data-step][data-anim="slide-left"] { transform: translateX(-60px); }
+[data-step][data-anim="slide-left"].is-revealed { transform: translateX(0); }
+[data-step][data-anim="slide-right"] { transform: translateX(60px); }
+[data-step][data-anim="slide-right"].is-revealed { transform: translateX(0); }
+[data-step][data-anim="zoom"] { transform: scale(.7); }
+[data-step][data-anim="zoom"].is-revealed { transform: scale(1); }
+[data-step][data-anim="glitch"].is-revealed { animation: glitchIn .8s steps(8); }
+@keyframes glitchIn {
+  0% { opacity: 0; clip-path: inset(45% 0 50% 0); transform: translate(-2px, 0); }
+  20% { clip-path: inset(20% 0 70% 0); transform: translate(2px, 0); }
+  40% { clip-path: inset(70% 0 10% 0); transform: translate(-1px, 1px); }
+  60% { clip-path: inset(10% 0 80% 0); transform: translate(1px, -1px); }
+  80% { clip-path: inset(0 0 0 0); transform: translate(0, 0); }
+  100% { opacity: 1; clip-path: inset(0); transform: translate(0); }
+}
+
+/* ===== TYPOGRAPHY ===== */
+h1.cyber { font-family: 'JetBrains Mono', monospace; font-weight: 800; font-size: clamp(2.5rem, 6vw, 4.5rem); line-height: 1.05; letter-spacing: -1px; }
+h2.cyber { font-family: 'JetBrains Mono', monospace; font-weight: 700; font-size: clamp(2rem, 4.5vw, 3.2rem); line-height: 1.1; }
+h3.cyber { font-family: 'JetBrains Mono', monospace; font-weight: 700; }
+.gradient-text { background: linear-gradient(135deg, var(--magenta), var(--cyan)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }
+.gradient-text-2 { background: linear-gradient(135deg, var(--cyan), var(--violet)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }
+.gradient-text-3 { background: linear-gradient(135deg, var(--lime), var(--cyan)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }
+.glow-magenta { text-shadow: 0 0 24px var(--magenta), 0 0 8px var(--magenta); }
+.glow-cyan { text-shadow: 0 0 24px var(--cyan), 0 0 8px var(--cyan); }
+.glow-lime { text-shadow: 0 0 24px var(--lime); color: var(--lime); }
+
+/* ===== CARDS ===== */
+.cyber-card { background: linear-gradient(135deg, rgba(255,46,147,.04), rgba(0,240,255,.03)); border: 1px solid rgba(255,255,255,.1); border-radius: 14px; padding: 28px; position: relative; backdrop-filter: blur(10px); }
+.cyber-card.magenta { border-color: rgba(255,46,147,.4); box-shadow: 0 0 30px rgba(255,46,147,.1); }
+.cyber-card.cyan { border-color: rgba(0,240,255,.4); box-shadow: 0 0 30px rgba(0,240,255,.1); }
+.cyber-card.violet { border-color: rgba(179,136,255,.4); box-shadow: 0 0 30px rgba(179,136,255,.1); }
+.cyber-card.lime { border-color: rgba(204,255,0,.4); box-shadow: 0 0 30px rgba(204,255,0,.08); }
+.cyber-card .corner { position: absolute; width: 14px; height: 14px; border-color: currentColor; border-style: solid; border-width: 0; }
+.cyber-card .c-tl { top: -1px; left: -1px; border-top-width: 2px; border-left-width: 2px; }
+.cyber-card .c-tr { top: -1px; right: -1px; border-top-width: 2px; border-right-width: 2px; }
+.cyber-card .c-bl { bottom: -1px; left: -1px; border-bottom-width: 2px; border-left-width: 2px; }
+.cyber-card .c-br { bottom: -1px; right: -1px; border-bottom-width: 2px; border-right-width: 2px; }
+
+/* ===== BUTTONS ===== */
+.cyber-btn { font-family: 'JetBrains Mono', monospace; font-weight: 700; padding: 12px 28px; border-radius: 6px; background: transparent; color: var(--cyan); border: 1px solid var(--cyan); cursor: pointer; letter-spacing: 1px; text-transform: uppercase; font-size: 13px; transition: all .2s; }
+.cyber-btn:hover { background: rgba(0,240,255,.1); box-shadow: 0 0 24px rgba(0,240,255,.4); text-shadow: 0 0 8px var(--cyan); }
+.cyber-btn.magenta { color: var(--magenta); border-color: var(--magenta); }
+.cyber-btn.magenta:hover { background: rgba(255,46,147,.1); box-shadow: 0 0 24px rgba(255,46,147,.4); text-shadow: 0 0 8px var(--magenta); }
+.cyber-btn.lime { color: var(--lime); border-color: var(--lime); }
+.cyber-btn.lime:hover { background: rgba(204,255,0,.1); box-shadow: 0 0 24px rgba(204,255,0,.4); }
+.cyber-btn.violet { color: var(--violet); border-color: var(--violet); }
+.cyber-btn.violet:hover { background: rgba(179,136,255,.1); box-shadow: 0 0 24px rgba(179,136,255,.4); }
+</style>
+</head>
+<body class="scanlines">
+  <div class="bg-grid"></div>
+  <div class="bg-orb bg-orb-1"></div>
+  <div class="bg-orb bg-orb-2"></div>
+  <div class="bg-orb bg-orb-3"></div>
+
+  <header class="hud-top">
+    <div class="hud-logo">CLASE 16 · DECISIÓN</div>
+    <div class="hud-progress" id="hudProgress">
+      <div class="hud-seg active" data-scene="acto1"></div>
+      <div class="hud-seg" data-scene="acto2"></div>
+      <div class="hud-seg" data-scene="acto3"></div>
+      <div class="hud-seg" data-scene="acto4"></div>
+    </div>
+    <div class="hud-counter" id="hudCounter">01 / 04</div>
+    <button class="hud-help-btn" id="helpBtn">?</button>
+  </header>
+
+  <main>
+    <section class="scene" id="acto1">
+      <div class="scene-inner">
+        <span class="chapter-tag">Acto 01 · La trampa del promedio</span>
+        <h1 class="cyber gradient-text" data-step data-anim="zoom">Acto 1 (placeholder)</h1>
+      </div>
+    </section>
+    <section class="scene" id="acto2">
+      <div class="scene-inner">
+        <span class="chapter-tag">Acto 02 · Una vida posible</span>
+        <h1 class="cyber gradient-text-2" data-step data-anim="zoom">Acto 2 (placeholder)</h1>
+      </div>
+    </section>
+    <section class="scene" id="acto3">
+      <div class="scene-inner">
+        <span class="chapter-tag">Acto 03 · Diez mil vidas</span>
+        <h1 class="cyber gradient-text-3" data-step data-anim="zoom">Acto 3 (placeholder)</h1>
+      </div>
+    </section>
+    <section class="scene" id="acto4">
+      <div class="scene-inner">
+        <span class="chapter-tag">Acto 04 · La decisión</span>
+        <h1 class="cyber gradient-text" data-step data-anim="zoom">Acto 4 (placeholder)</h1>
+      </div>
+    </section>
+  </main>
+
+  <footer class="hud-bottom">
+    <span><span class="hud-step-counter" id="stepCounter">Paso 1</span></span>
+    <span><kbd>→</kbd> avanzar · <kbd>←</kbd> atrás · <kbd>T</kbd> oráculo</span>
+  </footer>
+
+  <script>
+  // === Step reveal controller (igual a Clase15) ===
+  const scenes = ['acto1','acto2','acto3','acto4'];
+  let currentScene = 0;
+  let currentStep = 0;
+  function getSteps() { return document.querySelectorAll(`#${scenes[currentScene]} [data-step]`); }
+  function revealStep(i) {
+    const steps = getSteps();
+    if (i < 0 || i >= steps.length) return false;
+    steps[i].classList.add('is-revealed');
+    return true;
+  }
+  function nextStep() {
+    const steps = getSteps();
+    if (currentStep < steps.length) {
+      revealStep(currentStep);
+      currentStep++;
+    } else if (currentScene < scenes.length - 1) {
+      currentScene++;
+      currentStep = 0;
+      document.getElementById(scenes[currentScene]).scrollIntoView({behavior:'smooth'});
+      updateHud();
+    }
+    updateStepCounter();
+  }
+  function prevStep() {
+    if (currentStep > 0) {
+      currentStep--;
+      const steps = getSteps();
+      steps[currentStep].classList.remove('is-revealed');
+    } else if (currentScene > 0) {
+      currentScene--;
+      document.getElementById(scenes[currentScene]).scrollIntoView({behavior:'smooth'});
+      const steps = getSteps();
+      currentStep = steps.length;
+      updateHud();
+    }
+    updateStepCounter();
+  }
+  function updateHud() {
+    document.querySelectorAll('.hud-seg').forEach((seg, i) => {
+      seg.classList.toggle('active', i === currentScene);
+      seg.classList.toggle('done', i < currentScene);
+    });
+    document.getElementById('hudCounter').textContent =
+      `${String(currentScene+1).padStart(2,'0')} / 04`;
+  }
+  function updateStepCounter() {
+    document.getElementById('stepCounter').textContent = `Paso ${currentStep+1}`;
+  }
+  document.addEventListener('keydown', (e) => {
+    if (e.key === 'ArrowRight' || e.key === ' ') { e.preventDefault(); nextStep(); }
+    if (e.key === 'ArrowLeft') { e.preventDefault(); prevStep(); }
+  });
+  // Reveal first step on load for each scene
+  window.addEventListener('DOMContentLoaded', () => {
+    document.querySelectorAll('.scene').forEach(sc => {
+      const first = sc.querySelector('[data-step]');
+      if (first) first.classList.add('is-revealed');
+    });
+  });
+  </script>
+</body>
+</html>
