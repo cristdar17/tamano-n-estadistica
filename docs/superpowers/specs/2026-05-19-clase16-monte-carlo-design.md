@@ -1,6 +1,6 @@
 ---
 name: Clase 16 — Decisión bajo incertidumbre (Monte Carlo + Xolver)
-description: Última clase del curso. 60 min cinemáticos sobre Monte Carlo aplicado al runway de una startup, con aterrizaje hands-on en xolver.cgrajales.dev para la decisión optimizada
+description: Última clase del curso. 60 min cinemáticos sobre Monte Carlo aplicado al runway de una startup, donde cada estudiante simula su propia trayectoria (seeded por ID) llenando una guía impresa, con aterrizaje hands-on en xolver.cgrajales.dev para la decisión optimizada
 status: aprobado
 ---
 
@@ -11,7 +11,7 @@ status: aprobado
 - **Público:** mismos estudiantes de Clases 7–15 (estadística aplicada, UTP). Ya vieron probabilidad, intervalos, AB testing, hipótesis.
 - **Duración:** 60 min exactos (última clase del curso).
 - **Entrega:** archivo HTML único `Clase16_Decision_Bajo_Incertidumbre.html` proyectado por el docente; estudiantes con laptop para el hands-on del Acto 4.
-- **Interacción:** demo cinematic (Actos 1–3) + xolver hands-on (Acto 4).
+- **Interacción:** cada estudiante simula **su propia trayectoria** (seeded por ID) escribiéndola en la guía impresa que llenan durante toda la clase. El docente es el oráculo de datos. Hands-on en xolver al final.
 - **Stack:** Tailwind CDN + Inter/JetBrains Mono + KaTeX. Sin build. Sin dependencias locales. Patrón idéntico a Clase15.
 
 ## Identidad visual
@@ -54,11 +54,19 @@ Definimos distribuciones explícitas:
 - Ingresos ~ **Uniforme($5M, $15M)**
 - Gastos ~ **Triangular($9M, moda $11M, $14M)**
 
-Animación de "tragamonedas": el estudiante ve un mes lanzarse en vivo. Mes 1: ingreso $5.2M, gasto $14.1M → caja $41.1M (Pedro celebra). Mes 2: ingreso $13.4M, gasto $9.3M → caja $45.2M (Lucho celebra).
+**Beat 1 (5 min) — Demo proyectada.** Animación de "tragamonedas": el estudiante ve un mes lanzarse en vivo. Mes 1: ingreso $5.2M, gasto $14.1M → caja $41.1M (Pedro celebra). Mes 2: ingreso $13.4M, gasto $9.3M → caja $45.2M (Lucho celebra). Aceleramos meses 3–12. Llega a $0 en mes 9. Quiebra. Mostramos una segunda trayectoria que sobrevive. La pregunta queda servida.
 
-Aceleramos meses 3–12. La línea serpentea. Llega a $0 en mes 9. **Quiebra.**
+**Beat 2 (8 min) — Cada estudiante simula su propia vida.** El docente dice: *"Ahora cada uno tiene SU propia TintoApp. Vengan en orden alfabético; les voy a dar sus 12 meses."* Los estudiantes hacen fila. El docente:
 
-Reset. Segunda trayectoria con semilla nueva — sobrevive el año. Lucho celebra. La pregunta queda: *"¿Quién tiene razón?"*
+1. Pulsa **T** (teclado) → aparece **Panel del Oráculo** sobre la pantalla cinematic (panel oculto del estudiantado, color distinto).
+2. Ingresa el ID del estudiante (cédula o código UTP).
+3. El panel muestra **la trayectoria completa** del estudiante: tabla de 12 meses con `ingreso`, `gasto`, `caja final`, y un veredicto destacado (`Quebraste mes X` o `Sobreviviste con $Y M`).
+4. El estudiante copia los números a su guía impresa (tabla preformateada de 12 filas).
+5. ESC o **T** cierra el panel; la clase continúa proyectada mientras la fila avanza.
+
+Mecánica clave: la simulación es **seeded por el ID** (hash + PRNG mulberry32). Si el docente vuelve a meter el mismo ID, sale la misma trayectoria → reproducible y auditable.
+
+**Beat 3 (2 min) — Cierre del acto.** El docente pregunta al aire: *"Levanten la mano los que quebraron antes del mes 6. Los que sobrevivieron. ¿Cuántos hubo en la mitad?"* Conteo a ojo. La diversidad del salón ya es Monte Carlo en miniatura. Transición: *"Y eso fueron 30 vidas. ¿Qué pasa si vemos 10.000?"*
 
 ### Acto 3 — Diez mil vidas (20 min)
 
@@ -73,6 +81,15 @@ Tres tarjetas grandes al cierre:
 - **Peor 5% = mes 4**
 
 Veredicto: *"Pedro tenía razón: probablemente quiebran. Lucho tenía razón: hay 38% de salir vivos. Ambos pensaban en blanco y negro; la realidad es una distribución."*
+
+**Momento personal:** el docente proyecta el histograma global y pide a los estudiantes anotar en su guía:
+
+- "Mi mes de quiebra: ___" (o "Sobreviví")
+- "¿Estoy en el 38% que sobrevive? ___"
+- "¿Estoy en el peor 5% (mes ≤ 4)? ___"
+- "¿Mi destino es típico o atípico?" (una frase)
+
+Cada estudiante se sitúa en la distribución que acaba de ver formarse. La estadística deja de ser abstracta.
 
 Cliffhanger: *"Ya saben el riesgo. ¿Qué van a hacer?"*
 
@@ -154,6 +171,49 @@ const PARAMS = {
 };
 ```
 
+### Panel del Oráculo (modo docente)
+
+Capa oculta del estudiantado que el docente activa por teclado para entregar trayectorias personalizadas durante el Acto 2.
+
+**Activación:** tecla `T` (toggle). ESC cierra. El panel cubre la pantalla con overlay translúcido oscuro, banner amarillo "MODO DOCENTE — NO PROYECTAR" arriba, para evitar confusiones si está conectado al cañón.
+
+**UI del panel:**
+
+- Input grande: `ID del estudiante` (acepta cédula, código UTP, o nombre)
+- Botón **Generar trayectoria**
+- Tarjeta de resultado con:
+  - Tabla 12 filas × 4 columnas (Mes / Ingreso / Gasto / Caja final), meses 1–12 (mes 0 con caja $50M ya está impreso en la guía)
+  - Banner grande con el destino: `🔴 QUEBRASTE MES 7` o `🟢 SOBREVIVISTE — CAJA FINAL $14.3M`
+  - Botón "Limpiar" para el siguiente estudiante
+
+**Seeded PRNG (reproducible por ID):**
+
+```js
+function hashStr(s) {
+  let h = 2166136261;
+  for (let i = 0; i < s.length; i++) h = Math.imul(h ^ s.charCodeAt(i), 16777619);
+  return h >>> 0;
+}
+function mulberry32(seed) {
+  return function() {
+    seed = (seed + 0x6D2B79F5) | 0;
+    let t = Math.imul(seed ^ (seed >>> 15), 1 | seed);
+    t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t;
+    return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
+  };
+}
+function simularPorID(id, params) {
+  const rng = mulberry32(hashStr(id.trim().toLowerCase()));
+  // misma lógica de simularUnaVida pero usando rng() en vez de Math.random()
+}
+```
+
+**Propiedades clave:**
+
+- Determinístico: el mismo ID siempre produce la misma trayectoria → si un estudiante pide repetir, sale igual.
+- Bien distribuido: el hash FNV-1a + mulberry32 reparte uniformemente; no hay sesgos por orden alfabético.
+- Independiente de la simulación del Acto 3: el Acto 3 sigue usando `Math.random()` para sus 10K corridas; las 30 trayectorias del salón son una **submuestra** de la población simulada.
+
 ### Orquestación de animaciones
 
 - **Acto 2:** botón "Lanzar mes" dispara una corrida visible con cuenta atrás 600ms. Botón "Otra vida" reinicia.
@@ -189,6 +249,67 @@ Snippet del ejemplo (a pegar en el repo de xolver):
 
 (Los coeficientes son redondos y didácticos, calibrados para dar una respuesta "subir precio ~12%, contratar 1 repartidor, no pivotar".)
 
+## Guía impresa del estudiante
+
+Archivo `Guia_Clase16_Decision_Bajo_Incertidumbre.docx`. **Carga pedagógica real**, no fallback. ~4 páginas A4.
+
+### Estructura
+
+**Página 1 — Portada + Acto 1**
+
+- Título, fecha, espacio para "Nombre" e "ID".
+- Mini-texto: *"Hoy vas a montar TintoApp con Lucho y Pedro. Y vas a vivir TU propia historia. Pide tu trayectoria al docente cuando llegue el Acto 2."*
+- Tabla pequeña: *"¿Cuánto dura Lucho?* ___ meses · *¿Cuánto dura Pedro?* ___ meses".
+- Pregunta abierta: *"¿Por qué los dos cálculos están mal?"* (3 líneas).
+
+**Página 2 — Mi vida en TintoApp (Acto 2)**
+
+- Encabezado: *"Mi ID: ___ · Caja inicial: $50M"*
+- Tabla de 13 filas × 4 columnas:
+
+  | Mes | Ingreso ($M) | Gasto ($M) | Caja final ($M) |
+  |---|---|---|---|
+  | 0 | — | — | 50.0 |
+  | 1 | | | |
+  | … hasta 12 … | | | |
+
+- Recuadro destacado abajo: *"🎯 MI DESTINO: __________________"* (quebraste mes X / sobreviviste con $Y M).
+- Mini-gráfico cuadriculado para que el estudiante dibuje a mano la trayectoria de su caja (eje X: meses 0–12, eje Y: $0–60M).
+
+**Página 3 — Mi lugar en la distribución (Acto 3)**
+
+- Tres datos para anotar mientras se proyecta el histograma:
+
+  | Stat poblacional | Valor |
+  |---|---|
+  | P(quebrar antes mes 12) | _____ % |
+  | Mes esperado de quiebra | _____ |
+  | Peor 5% (quiebra mes ≤ ___ ) | _____ |
+
+- Tres preguntas reflexivas:
+
+  - "¿Sobreviví o quebré?" ☐ Sobreviví  ☐ Quebré mes ___
+  - "¿Estoy en el 38% que sobrevive o en el 62% que quiebra?"
+  - "¿Mi destino es típico (cerca del esperado) o atípico (cola)?"
+
+**Página 4 — La decisión (Acto 4 + xolver)**
+
+- Enunciado base del problema (~10 líneas) con variables, objetivo y restricciones en lenguaje natural.
+- **Variante asignada al grupo** (3 variantes circulando entre mesas):
+  - Variante A: meta de mejora ≥ 20 puntos porcentuales (base)
+  - Variante B: presupuesto restringido — no puedes subir precio más de 15%
+  - Variante C: meta agresiva — mejora ≥ 30 puntos porcentuales
+- Tabla en blanco para que el grupo escriba:
+  - Variables (nombre, tipo, mínimo, máximo) — 4 filas
+  - Función objetivo (espacio para escribir la fórmula)
+  - Restricciones (espacio para 2–3 reglas)
+- Recuadro grande: *"Respuesta de xolver: __________________"* (valores óptimos de cada palanca).
+- Pregunta de cierre: *"¿Tu decisión coincidió con la de otros grupos? ¿Por qué cambió cuando la restricción cambió?"* (4 líneas).
+
+### Generación del .docx
+
+Script Node generador (similar a los `gen_guia8.js` y `create_taller5.js` ya presentes en el repo). Una sola corrida, output checkeado al repo. La guía es estática (la personalización ocurre en clase vía el Panel del Oráculo, no en el .docx).
+
 ## Verificación
 
 | Check | Cómo |
@@ -200,14 +321,19 @@ Snippet del ejemplo (a pegar en el repo de xolver):
 | Palancas Acto 4 responden | <200ms para actualizar P(sobrevivir) al mover un slider |
 | Link xolver carga TintoApp | Click en "Abrir en xolver" llega con modelo precargado |
 | Móvil no se rompe | Probar en celular: HUD, navegación, Canvas escalan |
+| Panel del Oráculo se oculta bien | Tecla `T` lo abre, ESC lo cierra, banner amarillo evidente |
+| Mismo ID → misma trayectoria | Generar 2 veces el ID "12345" debe dar trayectoria idéntica |
+| IDs distintos → trayectorias distintas | Generar 30 IDs distintos: la dispersión de "mes de quiebra" debe ser ancha (no todos sobreviven ni todos mueren) |
+| Generador .docx funciona | Correr el script Node; abrir el .docx; verificar 4 páginas, tablas presentes, sin overflow |
 
 ## Entregables
 
 | # | Archivo | Descripción |
 |---|---|---|
 | 1 | `Clase16_Decision_Bajo_Incertidumbre.html` | Archivo único, ~350 KB estimados |
-| 2 | `Guia_Clase16_Decision_Bajo_Incertidumbre.docx` | Guía imprimible: enunciado del Acto 4 + 3 variantes por grupo, para hands-on offline-fallback |
-| 3 | Snippet `tintoapp` para repo xolver | Se entrega como código en este spec; se pega manualmente cuando el Pi sea accesible |
+| 2 | `Guia_Clase16_Decision_Bajo_Incertidumbre.docx` | Guía impresa de 4 páginas que cada estudiante llena durante la clase (Acto 1 reflexión, Acto 2 su trayectoria, Acto 3 su lugar en la distribución, Acto 4 modelado xolver). **Carga pedagógica real, no fallback.** |
+| 3 | `gen_guia_clase16.js` | Script Node que genera el .docx (patrón idéntico a `gen_guia8.js` ya en el repo) |
+| 4 | Snippet `tintoapp` para repo xolver | Se entrega como código en este spec; se pega manualmente cuando el Pi sea accesible |
 
 ## Riesgos y mitigaciones
 
@@ -218,6 +344,12 @@ Snippet del ejemplo (a pegar en el repo de xolver):
 3. **10K trayectorias podría no animar suave en laptops antiguos.** Mitigación: motor mide `performance.now()` del primer frame y baja a 5K automáticamente si >50ms.
 
 4. **Cambio en repo xolver depende del Pi.** Mitigación: snippet listo en este spec; aplicable cuando el Pi sea accesible. Si no se llega a aplicar antes de clase, el botón apunta al xolver vacío y el docente modela en vivo (degrada un poco la experiencia pero no rompe).
+
+5. **30 estudiantes haciendo fila puede comerse el Acto 2.** Mitigación: la animación cinematic del slot machine queda corriendo en loop mientras la fila avanza; el docente puede pausar fácil entre IDs. Estimado: 10–15 s por estudiante × 30 = 5–8 min, encaja en los 15 min del Acto 2 con margen. Si el grupo es más grande de lo esperado, el docente puede empezar a procesar IDs en paralelo durante Acto 1 (estudiantes que ya hayan llegado al salón).
+
+6. **Estudiante pierde su guía o no la copia bien.** Mitigación: el Panel del Oráculo es reproducible — mismo ID, misma trayectoria. El estudiante puede volver a pedirla al final si la quiere completa.
+
+7. **El docente puede proyectar el Panel sin querer.** Mitigación: banner amarillo gigante "MODO DOCENTE — NO PROYECTAR" + overlay oscuro que rompe la estética cinematic visualmente, para que el docente NOTE el cambio. Recomendación operativa en el spec: el docente tiene un segundo monitor (laptop sin proyectar) para esto.
 
 ## Fuera de alcance (YAGNI)
 
