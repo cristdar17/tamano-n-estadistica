@@ -1061,6 +1061,101 @@ h3.cyber { font-family: 'JetBrains Mono', monospace; font-weight: 700; }
     document.getElementById('oraculoTabLookup').addEventListener('click', () => switchOraculoTab('Lookup'));
     document.getElementById('oraculoTabBatch').addEventListener('click', () => switchOraculoTab('Batch'));
   });
+
+// === Modo Batch ===
+let batchData = null;
+function parseBatchInput(raw) {
+  return raw.split('\n')
+    .map(line => line.trim())
+    .filter(line => line.length > 0)
+    .map(line => {
+      const [id, ...rest] = line.split(',');
+      return { id: id.trim(), nombre: rest.join(',').trim() || null };
+    });
+}
+function generarBatch() {
+  const raw = document.getElementById('oraculoBatchInput').value;
+  const entradas = parseBatchInput(raw);
+  if (entradas.length === 0) { alert('Pega al menos un ID'); return; }
+  batchData = entradas.map(e => ({ ...e, simulacion: simularPorID(e.id) }));
+  const pv = document.getElementById('oraculoBatchPreview');
+  let html = `<div class="text-xs text-zinc-400 mb-2">${batchData.length} trayectorias generadas</div>`;
+  html += '<table style="width:100%"><thead><tr><th>ID</th><th>Nombre</th><th>Destino</th></tr></thead><tbody>';
+  batchData.forEach(b => {
+    const d = b.simulacion.mesQuiebra
+      ? `🔴 Mes ${b.simulacion.mesQuiebra}`
+      : `🟢 $${b.simulacion.trayectoria.slice(-1)[0].toFixed(1)}M`;
+    html += `<tr><td>${b.id}</td><td>${b.nombre || '—'}</td><td>${d}</td></tr>`;
+  });
+  html += '</tbody></table>';
+  pv.innerHTML = html;
+}
+function imprimirBatch() {
+  if (!batchData) { alert('Primero genera las trayectorias'); return; }
+  const w = window.open('', '_blank');
+  let html = `<!DOCTYPE html><html><head><title>Tarjetas Clase16</title>
+    <style>
+      body { font-family: Arial, sans-serif; margin: 0; padding: 10mm; }
+      .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 6mm; }
+      .card { border: 1px solid #333; padding: 6mm; page-break-inside: avoid; height: 130mm; }
+      .card h2 { margin: 0 0 2mm; font-size: 14pt; }
+      .card .id { font-family: monospace; font-size: 10pt; color: #666; }
+      .card table { width: 100%; border-collapse: collapse; font-family: monospace; font-size: 9pt; margin-top: 3mm; }
+      .card th, .card td { border: 1px solid #999; padding: 1mm 2mm; text-align: right; }
+      .card th { background: #eee; }
+      .card td:first-child, .card th:first-child { text-align: center; }
+      .veredicto { margin-top: 3mm; padding: 3mm; font-weight: bold; text-align: center; font-size: 11pt; border-radius: 4mm; }
+      .veredicto.q { background: #ffe6ed; color: #c0007a; border: 1px solid #c0007a; }
+      .veredicto.s { background: #e6fbe9; color: #008c3a; border: 1px solid #008c3a; }
+      @media print { .grid { grid-template-columns: 1fr 1fr; } }
+    </style></head><body><div class="grid">`;
+  batchData.forEach(b => {
+    html += `<div class="card">
+      <h2>TintoApp · Mi vida</h2>
+      <div class="id">ID: ${b.id}${b.nombre ? ' · ' + b.nombre : ''}</div>
+      <table><thead><tr><th>Mes</th><th>Ingreso</th><th>Gasto</th><th>Caja</th></tr></thead><tbody>`;
+    b.simulacion.meses.forEach(m => {
+      html += `<tr><td>${m.mes}</td><td>${m.ingreso.toFixed(1)}</td><td>${m.gasto.toFixed(1)}</td><td>${m.caja.toFixed(1)}</td></tr>`;
+    });
+    html += '</tbody></table>';
+    if (b.simulacion.mesQuiebra) {
+      html += `<div class="veredicto q">🔴 QUEBRASTE MES ${b.simulacion.mesQuiebra}</div>`;
+    } else {
+      const final = b.simulacion.trayectoria.slice(-1)[0];
+      html += `<div class="veredicto s">🟢 SOBREVIVISTE · $${final.toFixed(1)}M</div>`;
+    }
+    html += '</div>';
+  });
+  html += '</div></body></html>';
+  w.document.write(html);
+  w.document.close();
+  setTimeout(() => w.print(), 500);
+}
+function exportarCSV() {
+  if (!batchData) { alert('Primero genera las trayectorias'); return; }
+  const rows = [['id','nombre','mes','ingreso','gasto','caja','quebrado_en_mes']];
+  batchData.forEach(b => {
+    b.simulacion.meses.forEach(m => {
+      rows.push([
+        b.id, b.nombre || '',
+        m.mes, m.ingreso.toFixed(3), m.gasto.toFixed(3), m.caja.toFixed(3),
+        b.simulacion.mesQuiebra || ''
+      ]);
+    });
+  });
+  const csv = rows.map(r => r.map(c => `"${String(c).replace(/"/g,'""')}"`).join(',')).join('\n');
+  const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url; a.download = 'trayectorias_clase16.csv';
+  a.click();
+  URL.revokeObjectURL(url);
+}
+window.addEventListener('DOMContentLoaded', () => {
+  document.getElementById('oraculoBatchGen').addEventListener('click', generarBatch);
+  document.getElementById('oraculoBatchPrint').addEventListener('click', imprimirBatch);
+  document.getElementById('oraculoBatchCSV').addEventListener('click', exportarCSV);
+});
   </script>
 </body>
 </html>
