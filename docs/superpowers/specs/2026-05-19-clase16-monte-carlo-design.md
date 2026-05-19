@@ -51,8 +51,8 @@ Fórmula KaTeX visible: `caja(t) = caja(0) + Σ(ingresos_i − gastos_i)`. La Σ
 
 Definimos distribuciones explícitas:
 
-- Ingresos ~ **Uniforme($5M, $15M)**
-- Gastos ~ **Triangular($9M, moda $11M, $14M)**
+- Ingresos ~ **Uniforme($2M, $16M)** (esperado ≈ $9M)
+- Gastos ~ **Triangular($9M, moda $14M, $18M)** (esperado ≈ $13.7M)
 
 **Beat 1 (5 min) — Demo proyectada.** Animación de "tragamonedas": el estudiante ve un mes lanzarse en vivo. Mes 1: ingreso $5.2M, gasto $14.1M → caja $41.1M (Pedro celebra). Mes 2: ingreso $13.4M, gasto $9.3M → caja $45.2M (Lucho celebra). Aceleramos meses 3–12. Llega a $0 en mes 9. Quiebra. Mostramos una segunda trayectoria que sobrevive. La pregunta queda servida.
 
@@ -78,13 +78,13 @@ Definición de Monte Carlo en pantalla: *"Simular muchas veces el mismo experime
 
 **Animación signature de la clase:** cascada de 10K trayectorias dibujándose en Canvas. Color violeta translúcido (`rgba(179,136,255,0.04)`). La nube formada revela la zona densa donde pasa la mayoría. En paralelo, cada vez que una línea toca $0, un pixel cae al histograma "mes de quiebra" a la derecha.
 
-Tres tarjetas grandes al cierre:
+Tres tarjetas grandes al cierre (valores típicos; lo que la sim muestre en vivo):
 
-- **P(quebrar antes mes 12) = 62%**
-- **Mes esperado de quiebra = 11**
-- **Peor 5% = mes 4**
+- **P(quebrar antes mes 12) ≈ 66%**
+- **Mes esperado de quiebra ≈ 10**
+- **Peor 5% = mes 7**
 
-Veredicto: *"Pedro tenía razón: probablemente quiebran. Lucho tenía razón: hay 38% de salir vivos. Ambos pensaban en blanco y negro; la realidad es una distribución."*
+Veredicto: *"Pedro tenía razón: probablemente quiebran. Lucho tenía razón: hay ~34% de salir vivos. Ambos pensaban en blanco y negro; la realidad es una distribución."*
 
 **Momento personal:** el docente proyecta el histograma global y pide a los estudiantes anotar en su guía:
 
@@ -170,10 +170,12 @@ Parámetros base hardcodeados:
 ```js
 const PARAMS = {
   cajaInicial: 50,
-  ingMin: 5,  ingMax: 15,
-  gasMin: 9,  gasModa: 11,  gasMax: 14,
+  ingMin: 2,  ingMax: 16,
+  gasMin: 9,  gasModa: 14,  gasMax: 18,
 };
 ```
+
+Calibrado por simulación para dar **P(quiebra<12) ≈ 66%**, **mes esperado ≈ 10**, **peor 5% = mes 7** — todo dentro del rango target [55–70%] del spec.
 
 ### Panel del Oráculo (modo docente)
 
