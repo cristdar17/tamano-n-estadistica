@@ -167,6 +167,7 @@ h3.cyber { font-family: 'JetBrains Mono', monospace; font-weight: 700; }
 .cyber-btn:disabled { opacity: 0.5; cursor: not-allowed; }
 .cyber-btn-sec { background: transparent; color: var(--cyan); font-family: 'JetBrains Mono', monospace; font-size: 13px; padding: 10px 18px; border-radius: 8px; border: 1px solid var(--cyan); cursor: pointer; }
 .cyber-btn-sec:hover { background: rgba(0,240,255,.08); }
+.active-pivot { background: var(--cyan); color: var(--ink); border-color: var(--cyan); }
 </style>
 </head>
 <body class="scanlines">
@@ -341,7 +342,59 @@ h3.cyber { font-family: 'JetBrains Mono', monospace; font-weight: 700; }
     <section class="scene" id="acto4">
       <div class="scene-inner">
         <span class="chapter-tag">Acto 04 · La decisión</span>
-        <h1 class="cyber gradient-text" data-step data-anim="zoom">Acto 4 (placeholder)</h1>
+
+        <h1 class="cyber gradient-text mb-6" data-step data-anim="zoom">
+          ¿Y ahora qué <span class="glow-lime">hacemos</span>?
+        </h1>
+
+        <p class="text-zinc-300 mb-6 max-w-3xl" data-step data-anim="slide-left">
+          Toca palancas para mejorar la probabilidad de sobrevivir.
+          <strong class="glow-cyan">Xolver no hace Monte Carlo</strong> — usa los promedios que cada decisión produce.
+          Perdés la cola, pero ganás una <em>respuesta concreta</em>.
+        </p>
+
+        <div class="grid md:grid-cols-2 gap-4 mb-6" data-step data-anim="zoom">
+          <div class="cyber-card cyan">
+            <label class="text-xs font-mono text-zinc-400">SUBIR PRECIO <span id="lblPrecio">0</span>%</label>
+            <input type="range" id="ctlPrecio" min="0" max="40" value="0" class="w-full">
+          </div>
+          <div class="cyber-card magenta">
+            <label class="text-xs font-mono text-zinc-400">RECORTAR MARKETING <span id="lblMkt">0</span>%</label>
+            <input type="range" id="ctlMkt" min="0" max="50" value="0" class="w-full">
+          </div>
+          <div class="cyber-card violet">
+            <label class="text-xs font-mono text-zinc-400">CONTRATAR REPARTIDORES: <span id="lblRep">0</span></label>
+            <input type="range" id="ctlRep" min="0" max="3" step="1" value="0" class="w-full">
+          </div>
+          <div class="cyber-card">
+            <label class="text-xs font-mono text-zinc-400">PIVOTAR A B2B</label>
+            <div class="flex gap-2 mt-2">
+              <button id="ctlPivotN" class="cyber-btn-sec flex-1 active-pivot">No</button>
+              <button id="ctlPivotS" class="cyber-btn-sec flex-1">Sí</button>
+            </div>
+          </div>
+        </div>
+
+        <div class="cyber-card text-center mb-6" data-step data-anim="zoom">
+          <div class="text-xs text-zinc-400 mb-1 font-mono">P(SOBREVIVIR 12 MESES) — mini Monte Carlo en vivo</div>
+          <div id="acto4P" class="text-6xl cyber glow-lime">34%</div>
+        </div>
+
+        <div class="text-center mb-8" data-step data-anim="zoom">
+          <a id="acto4XolverLink" href="https://xolver.cgrajales.dev/?ejemplo=tintoapp" target="_blank"
+             class="cyber-btn text-base px-8 py-3 inline-block no-underline">
+            Abrir en xolver →
+          </a>
+        </div>
+
+        <div class="cyber-card violet text-center" data-step data-anim="glitch">
+          <p class="text-lg italic">
+            Monte Carlo te muestra <strong>cómo es el futuro</strong>.<br>
+            La optimización te dice <strong>qué hacer con él</strong>.<br>
+            <span class="glow-lime">Eso es decidir como adulto.</span>
+          </p>
+          <p class="text-xs text-zinc-500 mt-4 font-mono">— fin del curso —</p>
+        </div>
       </div>
     </section>
   </main>
@@ -830,6 +883,68 @@ h3.cyber { font-family: 'JetBrains Mono', monospace; font-weight: 700; }
     const btn = document.getElementById('acto3Soltar');
     if (btn) btn.addEventListener('click', runCascada);
   });
+
+  // === Acto 4 mini Monte Carlo ===
+  const ACTO4 = { precio: 0, mkt: 0, rep: 0, pivot: 0 };
+
+  function paramsAjustados(d) {
+    // Cada decisión modifica el promedio de ingreso y/o gasto.
+    // Coeficientes redondos y didácticos.
+    const ingShift = 0.04 * d.precio + 0.10 * d.pivot + 0.3 * d.rep;
+    const gasShift = -0.02 * d.mkt + 0.2 * d.rep + 0.5 * d.pivot;
+    return {
+      cajaInicial: PARAMS.cajaInicial,
+      ingMin: PARAMS.ingMin + ingShift,
+      ingMax: PARAMS.ingMax + ingShift,
+      gasMin: PARAMS.gasMin + gasShift,
+      gasModa: PARAMS.gasModa + gasShift,
+      gasMax: PARAMS.gasMax + gasShift,
+    };
+  }
+  function actualizarActo4() {
+    const p = paramsAjustados(ACTO4);
+    const corridas = monteCarlo(p, 1000);
+    const s = resumen(corridas);
+    const pSobrevivir = ((1 - s.pQuiebra) * 100).toFixed(0);
+    const el = document.getElementById('acto4P');
+    el.textContent = pSobrevivir + '%';
+    el.classList.remove('glow-lime', 'glow-magenta', 'glow-cyan');
+    if (pSobrevivir >= 60) el.classList.add('glow-lime');
+    else if (pSobrevivir >= 45) el.classList.add('glow-cyan');
+    else el.classList.add('glow-magenta');
+  }
+  function bindActo4() {
+    const ctlPrecio = document.getElementById('ctlPrecio');
+    const ctlMkt = document.getElementById('ctlMkt');
+    const ctlRep = document.getElementById('ctlRep');
+    const lblPrecio = document.getElementById('lblPrecio');
+    const lblMkt = document.getElementById('lblMkt');
+    const lblRep = document.getElementById('lblRep');
+    if (!ctlPrecio) return;
+    ctlPrecio.addEventListener('input', () => {
+      ACTO4.precio = +ctlPrecio.value; lblPrecio.textContent = ACTO4.precio; actualizarActo4();
+    });
+    ctlMkt.addEventListener('input', () => {
+      ACTO4.mkt = +ctlMkt.value; lblMkt.textContent = ACTO4.mkt; actualizarActo4();
+    });
+    ctlRep.addEventListener('input', () => {
+      ACTO4.rep = +ctlRep.value; lblRep.textContent = ACTO4.rep; actualizarActo4();
+    });
+    document.getElementById('ctlPivotN').addEventListener('click', () => {
+      ACTO4.pivot = 0;
+      document.getElementById('ctlPivotN').classList.add('active-pivot');
+      document.getElementById('ctlPivotS').classList.remove('active-pivot');
+      actualizarActo4();
+    });
+    document.getElementById('ctlPivotS').addEventListener('click', () => {
+      ACTO4.pivot = 1;
+      document.getElementById('ctlPivotS').classList.add('active-pivot');
+      document.getElementById('ctlPivotN').classList.remove('active-pivot');
+      actualizarActo4();
+    });
+    actualizarActo4();
+  }
+  window.addEventListener('DOMContentLoaded', bindActo4);
   </script>
 </body>
 </html>
